@@ -1,3 +1,6 @@
+dlpt_playground.py
+.coverage
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

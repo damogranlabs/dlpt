@@ -1,0 +1,67 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+
+    "settings": {
+        // language server
+        "python.languageServer": "Pylance",
+        "python.analysis.typeCheckingMode": "basic",
+        "python.analysis.diagnosticMode": "openFilesOnly",
+        
+        //pylint
+        "python.linting.enabled": true,
+        "python.linting.pylintArgs": [ // linting according to iSystem 'Coding Guidelines for Python'
+            "--rcfile=${workspaceFolder}/rules.pylint"
+        ],
+        
+        // autoformat
+        "python.formatting.autopep8Args": [ //autoformatting: https://pypi.org/project/autopep8/#more-advanced-usage
+            "--max-line-length",
+            "120",
+            "--experimental",
+            "--ignore",
+            "E402,W690" // do not sort imports, do not fix various deprecated code
+        ],
+
+        // pytest
+        "python.testing.unittestEnabled": false,
+        "python.testing.nosetestsEnabled": false,
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": [
+            "--ignore=temp",
+            "-s",
+            "-v",
+            "--cov-config=${workspaceFolder}/.coveragerc",
+            "--cov=dlpt",
+            // "--cov=dlpt.log",  // when developing single module
+            "--cov-report", "term-missing"
+        ],
+
+        // editor settings
+        "editor.wordWrap": "on",
+        "[python]": { // python specific editor settings
+            "editor.formatOnSave": true,
+            "editor.rulers": [
+                80,
+                120
+            ],
+        },
+
+        // spell checker settings
+        "cSpell.enabledLanguageIds": [
+            "python"
+        ]
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-python.python",
+            "ms-python.vscode-pylance",
+            "visualstudioexptteam.vscodeintellicode",
+            "streetsidesoftware.code-spell-checker",
+            "coenraads.bracket-pair-colorizer-2"
+        ]
+    },
+}

@@ -1,0 +1,502 @@
+"""
+Functions for common path, file and folder manipulation.
+"""
+import errno
+import os
+import pathlib
+import shutil
+import stat
+import time
+import webbrowser
+from typing import Optional, List
+
+import dlpt
+
+
+FILE_FOLDER_REMOVE_RETRY_DELAY_SEC = 0.5
+
+
+class ChangeDir:
+    def __init__(self, path: str):
+        """
+        Temporary change working directory of a block of code and revert to 
+        an original one on exit.
+            @param path: path to an existing local folder/file that is
+                temporary set as working directory. If file path is given,
+                its folder is taken as new working dir folder.
+        Usage:
+            `with dlpt.pth.ChangeDir("C:/somePath"):`
+                `answer = 42 # do some stuff with cwd changed to "C:/somePath"`
+        """
+        self.path = resolve(path)
+        self.originalWd = os.getcwd()
+
+        if os.path.isfile(self.path):
+            self.path = os.path.dirname(self.path)
+        check(self.path)
+
+    def __enter__(self):
+        self.originalWd = os.getcwd()
+        os.chdir(self.path)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        os.chdir(self.originalWd)
+
+
+def check(path: Optional[str]) -> str:
+    """
+    Check if given path exists and return normalized path.
+    If path does not exist, raise Exception.
+        @param path: path to check
+    Note: use standard 'os.path.exists()' if you don't want to raise exception.
+    """
+    path = _pathValidationCheck(path)
+
+    if os.path.exists(path):
+        return os.path.normpath(path)
+
+    callerLocation = dlpt.utils.getCallerLocation()
+    errorMsg = f"Path does not exist: {path}\n\t{callerLocation}"
+    raise FileNotFoundError(errorMsg)
+
+
+def resolve(path: str) -> str:
+    """
+    Resolve path with pathlib module. This will (for existing files) fix any 
+    case mismatch, for example, drive letter.
+        @param path: abs path to resolve
+    """
+    return str(pathlib.Path(path).resolve())
+
+
+def _setWritePermissions(path: str):
+    """
+    Change file/folder attributes so the given path is writeable.
+        @param path: absolute path to a file/folder to modify permissions.
+    """
+    os.chmod(path, stat.S_IWRITE)
+    if not os.access(path, os.W_OK):  # pragma no cover
+        errorMsg = f"Unable to modify write permission of a given path: {path}"
+        raise Exception(errorMsg)
+
+
+def copyFile(srcFilePath: str, dstPath: str) -> str:
+    """
+    Copy given file to a new location, while dstFile is removed prior copying. 
+    Return path to a copied file.
+    Any intermediate folders are created automatically.
+        @param srcFilePath: path to a file to be copied.
+        @param dstPath: new destination path (absolute file or folder path).
+    """
+    _pathValidationCheck(srcFilePath)
+    srcFilePath = check(srcFilePath)
+    if not os.path.isfile(srcFilePath):
+        errorMsg = f"'copyFile()' is meant only for files, not folders/links: {srcFilePath}"
+        raise ValueError(errorMsg)
+
+    _pathValidationCheck(dstPath)
+    dstPath = os.path.normpath(dstPath)
+    # determine dst file path
+    _, extension = os.path.splitext(dstPath)
+    if extension == '':
+        # folder
+        fileName = getName(srcFilePath)
+        dstFolderPath = dstPath
+    else:
+        # file
+        fileName = os.path.basename(dstPath)
+        dstFolderPath = os.path.dirname(dstPath)
+    dstFilePath = os.path.join(dstFolderPath, fileName)
+
+    removeFile(dstFilePath)
+    if not os.path.exists(dstFolderPath):
+        createFolder(dstFolderPath)
+
+    shutil.copyfile(srcFilePath, dstFilePath)
+
+    return dstFilePath
+
+
+def copyFolder(srcFolderPath: str, dstFolderPath: str) -> str:
+    """
+    Copy given folder to a new location, while dstFolder is removed prior copying.
+    Return path to a copied folder. Any intermediate folders are created automatically.
+        @param srcFolderPath: path to a file to be copied.
+        @param dstFolderPath: new destination path.
+    """
+    _pathValidationCheck(srcFolderPath)
+    check(srcFolderPath)
+    srcFolderPath = os.path.normpath(srcFolderPath)
+
+    _pathValidationCheck(dstFolderPath)
+    dstFolderPath = os.path.normpath(dstFolderPath)
+    removeFolderTree(dstFolderPath)
+
+    shutil.copytree(srcFolderPath, dstFolderPath)
+
+    return dstFolderPath
+
+
+def removeFile(filePath: str, forceWritePermissions: bool = True, retry: int = 3):
+    """
+    This function tries to remove file (FILE, not FOLDER) on a given path. 
+    Optionally, write permissions are set to a file.
+        @param filePath: path to a file.
+        @param forceWritePermissions: if True, write permissions are set to
+            a file so it can be removed.
+        @param retry: on failure, retry removal specified number of times.
+    """
+    _pathValidationCheck(filePath)
+
+    if os.path.exists(filePath):
+        if not os.path.isfile(filePath):
+            errorMsg = f"Function 'removeFile()' is designed to remove files only! Path is not a file: {filePath}"
+            raise ValueError(errorMsg)
+
+        take = 0
+        for take in range(retry):
+            try:
+                if forceWritePermissions:
+                    _setWritePermissions(filePath)
+                # else: don't force it, see what will happen - don't care about the
+                # consequences. Might raise an exception.
+                os.unlink(filePath)
+            except Exception as err:
+                time.sleep(FILE_FOLDER_REMOVE_RETRY_DELAY_SEC)
+            else:
+                break  # on success, escape retrying
+        else:
+            errorMsg = f"Unable to 'removeFile()' after {take+1} times: {filePath}"
+            raise Exception(errorMsg)
+
+
+def _removeFolderErrorHandler(function, path, exception):
+    """
+    This is a private function, which is called on shutil.rmtree() exception.
+    If exception cause was permission error, write permissions are added,
+    otherwise exception is re-raised.
+    For arguments, see shutil.rmtree() docs.
+    """
+    excvalue = exception[1]
+    if excvalue.errno == errno.EACCES:
+        _setWritePermissions(path)
+        function(path)
+    else:  # pragma: no cover
+        raise  # re-raise exception (this function is exception callback)
+
+
+def removeFolderTree(folderPath: str, forceWritePermissions: bool = True, retry: int = 3):
+    """
+    Remove folder and all its content on a given path.
+        @param folderPath: path of a folder to remove.
+        @param forceWritePermissions: if True, shutil.rmtree() error callback 
+            function is used to change permissions and retry.
+        @param retry: on failure, retry removal specified number of times.
+            Sometimes file are locked with other processes, or a race
+            condition occurred.
+    """
+    _pathValidationCheck(folderPath)
+
+    if os.path.exists(folderPath):
+        if not os.path.isdir(folderPath):
+            errorMsg = f"'removeFolderTree()' should be given folder (not file) path: {folderPath}"
+            raise ValueError(errorMsg)
+
+        if retry == 0:
+            # don't retry, just remove
+            retry = 1  # pragma: no cover
+        elif retry > 1:
+            # remove + (retry -1)
+            retry = retry - 1  # pragma: no cover
+        # else: retry == 1
+
+        take = 0
+        for take in range(retry):
+            try:
+                if forceWritePermissions:
+                    shutil.rmtree(folderPath, ignore_errors=False, onerror=_removeFolderErrorHandler)
+                else:
+                    shutil.rmtree(folderPath)
+            except Exception as err:
+                time.sleep(FILE_FOLDER_REMOVE_RETRY_DELAY_SEC)
+            else:
+                break  # on success, escape retrying
+        else:
+            errorMsg = f"Unable to 'removeFolderTree()' after {take+1} times: {folderPath}"
+            raise Exception(errorMsg)
+
+
+def cleanFolder(folderPath: str, forceWritePermissions: bool = True):
+    """
+    Delete all folder content (files, sub-folders) in a given folder, but not 
+    the root folder.
+        @param folderPath: path to a folder to clean all its content
+        @param forceWritePermissions: if True, write permissions are set to be
+            able to delete files.
+    """
+    _pathValidationCheck(folderPath)
+
+    allItems = os.listdir(folderPath)
+    for item in allItems:
+        itemPath = os.path.join(folderPath, item)
+        if os.path.isfile(itemPath):
+            removeFile(itemPath, forceWritePermissions)
+        elif os.path.isdir(itemPath):
+            removeFolderTree(itemPath, forceWritePermissions)
+
+
+def createFolder(folderPath: str):
+    """
+    Create folder (or folder tree) on a given specified path.
+        @param folderPath: absolute path of a folder to create
+    Path existence is checked with pathExists() at the end.
+    """
+    _pathValidationCheck(folderPath)
+
+    folderPath = os.path.normpath(folderPath)
+    os.makedirs(folderPath, exist_ok=True)
+    check(folderPath)
+
+    _setWritePermissions(folderPath)
+
+
+def createCleanFolder(folderPath: str):
+    """
+    Create new or clean existing folder on a given specified path.
+        @param folderPath: absolute path of a folder to create
+    Path existence is checked with pathExists() at the end.
+    """
+    _pathValidationCheck(folderPath)
+
+    if os.path.exists(folderPath):
+        cleanFolder(folderPath)
+    else:
+        createFolder(folderPath)
+
+
+def removeOldItems(folderPath: str, days: int) -> List[str]:
+    """
+    Remove items (files, folders) inside given folder path that were modified 
+    more than specified number days ago and return a list of removed items.
+        @param folderPath: path to a folder with files/folders to remove.
+        @param days: number of days file/folder must be old before to be 
+            removed (last modification time).
+    NOTE: modification time and current time can be exactly the same when this
+        function is called after creation. For example, in tests. Hence, decimal
+        part (milliseconds) of current/modification timestamp is discarded.
+    """
+    folderPath = check(folderPath)
+
+    removedItems: List[str] = []
+    daysInSeconds = dlpt.time.timeToSeconds(d=days)
+    currentTime = int(time.time())  # see note about int()
+    for item in os.listdir(folderPath):
+        itemPath = os.path.join(folderPath, item)
+        lastModTime = int(os.path.getmtime(itemPath))  # see note about int()
+        if lastModTime < (currentTime - daysInSeconds):
+            if os.path.isfile(itemPath):
+                removeFile(itemPath)
+            else:
+                removeFolderTree(itemPath)
+            removedItems.append(itemPath)
+
+    return removedItems
+
+
+def withFwSlashes(path: str) -> str:
+    """
+    Convert path to use forward slashes.
+        @param path: path to convert
+    NOTE: this function does not do os.path.normpath() so this function is 
+        also usable for UNCs.
+    """
+    _pathValidationCheck(path)
+
+    path = path.replace("\\", "/")
+
+    return path
+
+
+def withDoubleBwSlashes(path: str) -> str:
+    """
+    Convert and return path to use double back slashes.
+        @param path: path to convert
+    """
+    path = _pathValidationCheck(path)
+    path = os.path.normpath(path)
+
+    path = path.replace("\\", "\\\\")
+
+    return path
+
+
+def getName(filePath: str, withExt: bool = True) -> str:
+    """
+    Return file name from file path or raise exception. '.' must be found to 
+    determine a file name.
+        @param filePath: file path where file name will be fetched from
+        @param withExt: if False, extension is striped from file name
+    NOTE: no file existence check is performed.
+    """
+    _pathValidationCheck(filePath)
+
+    fileName = os.path.basename(filePath)
+    ext = getExt(filePath)
+
+    if not withExt:
+        fileName = fileName.replace(ext, "")
+
+    return fileName
+
+
+def getExt(filePath: str) -> str:
+    """
+    Return file extension (with dot if available) from file path or raise exception.
+        @param filePath: file path where file name will be fetched from
+    NOTE: no file existence check is performed.
+    """
+    _pathValidationCheck(filePath)
+
+    _, ext = os.path.splitext(filePath)
+
+    return ext
+
+
+def getFilesInFolder(folderPath: str,
+                     includeExt: Optional[List[str]] = None,
+                     excludeExt: Optional[List[str]] = None) -> List[str]:
+    """
+    Get list of files in a given 'folderPath'. If 'extensionFilter' is set, 
+    only files that has the same extension are taken.
+        @param folderPath: path to a folder to scan.
+        @param includeExt: if set, only files with given extension(s) are returned.
+        @param excludeExt: if set, files with given extension(s) are excluded 
+            from return list.
+            NOTE: extension should not be present in both, includeExt and 
+            excludeExt list. However, if it is, excludeExt has 'higher priority'.
+            NOTE: lower case extension strings are compared.
+    """
+    _pathValidationCheck(folderPath)
+    check(folderPath)
+    folderPath = os.path.normpath(folderPath)
+
+    _includeFilter: List[str] = []
+    if includeExt:
+        for ext in includeExt:
+            _includeFilter.append(ext.lower())
+    _excludeFilter: List[str] = []
+    if excludeExt:
+        for ext in excludeExt:
+            _excludeFilter.append(ext.lower())
+
+    files = []
+    for item in os.listdir(folderPath):
+        itemPath = os.path.join(folderPath, item)
+        if os.path.isfile(itemPath):
+            _, ext = os.path.splitext(item)
+            ext = ext.lower()
+
+            if excludeExt:
+                if ext in _excludeFilter:
+                    continue
+
+            if includeExt:
+                if ext in _includeFilter:
+                    files.append(itemPath)
+            else:
+                files.append(itemPath)
+
+    return files
+
+
+def getFilesInFolderTree(folderTreePath: str,
+                         includeExt: Optional[List[str]] = None,
+                         excludeExt: Optional[List[str]] = None) -> List[str]:
+    """
+    Same as getFilesInFolder(), but scan through all files in all folders.
+    """
+    folderTreePath = check(folderTreePath)
+
+    allFiles = []
+    for (rootFolderPath, _, _) in os.walk(folderTreePath):
+        thisFolderFiles = getFilesInFolder(rootFolderPath, includeExt, excludeExt)
+        allFiles.extend(thisFolderFiles)
+
+    return allFiles
+
+
+def getFoldersInFolder(folderPath: str,
+                       nameFilter: Optional[str] = None,
+                       compareLowerCase: bool = True) -> List[str]:
+    """
+    Get a list of folders in a given 'folderPath'.
+        @param folderPath: path to a folder to scan.
+        @param nameFilter: if set, folders that contain this string are returned,
+            based on compareLowerCase setting.
+        @param compareLowerCase: if True, lower-cased nameFilter string (if set)
+            is checked in folder name.
+    """
+    _pathValidationCheck(folderPath)
+    check(folderPath)
+    folderPath = os.path.normpath(folderPath)
+
+    if nameFilter is not None:
+        if compareLowerCase:
+            nameFilter = nameFilter.lower()
+
+    folders = []
+    for item in os.listdir(folderPath):
+        itemPath = os.path.join(folderPath, item)
+        if os.path.isdir(itemPath):
+            if nameFilter is None:
+                folders.append(itemPath)
+            else:  # name filtering is in place
+                if nameFilter in item:
+                    folders.append(itemPath)
+
+    return folders
+
+
+def openWithDefaultBrowser(url: str):  # pragma: no cover
+    """
+    Open given address in a default web browser as a non-blocking subprocess.
+        @param url: web address to open.
+    """
+    webbrowser.open(url, new=2)  # 2 = new tab
+
+
+def openWithDefaultApp(filePath: str):  # pragma: no cover
+    """
+    Open given file with OS default application as a non-blockin subprocess.
+        @param filePath: path to a file to open.
+    """
+    filePath = check(filePath)
+    filePath = f"\"{filePath}\""
+
+    args = []
+    if os.name == "nt":
+        # Windows
+        os.startfile(filePath)
+    else:
+        # MacOS/X # NOTE: not tested!
+        os.popen(f"open {filePath}")
+
+
+def _pathValidationCheck(path: Optional[str]) -> str:
+    """
+    Raise exception if given path is not a string or it is an empty string.
+        @param path: path to check.
+    """
+    if isinstance(path, str):
+        if path.strip() != '':
+            return path
+
+    # 0 - current frame  of getCallerLocation scope
+    # 1 - frame of this _pathValidationCheck()
+    # 2 - frame of the caller of this function (_pathValidationCheck() is a
+    #   private function, should be only used inside pth.py)
+    # 3 - frame of the caller of a function in paths, that further called
+    # _pathValidationCheck() func
+    callerLocation = dlpt.utils.getCallerLocation(3)
+    errorMsg = f"Invalid path format - expected non-empty string: '{path}'\n\t{callerLocation}"
+    raise ValueError(errorMsg)

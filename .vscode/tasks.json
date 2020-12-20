@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Get callable objects from current file",
+            "type": "process",
+            "command": "python",
+            "args": [
+                "${workspaceFolder}\\dlpt\\printFileCallables.py",
+                "${file}"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": false,
+            }
+        }
+    ]
+}
