@@ -16,6 +16,41 @@
                 "panel": "shared",
                 "showReuseMessage": false,
             }
+        },
+        {
+            "label": "Build distribution",
+            "type": "process",
+            "command": "python",
+            "args": [
+                "setup.py",
+                "sdist",
+                "bdist_wheel"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": false,
+            }
+        },
+        {
+            "label": "Upload distribution",
+            "type": "process",
+            "command": "python",
+            "args": [
+                "-m",
+                "twine",
+                "upload",
+                "dist/*"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": false,
+            }
         }
     ]
 }
