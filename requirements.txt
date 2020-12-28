@@ -4,4 +4,7 @@ pytest-cov
 autopep8
 pylint
 
+wheel
+twine
+
 -e .
