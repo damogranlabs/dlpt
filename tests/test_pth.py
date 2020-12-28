@@ -141,19 +141,18 @@ def test_fileFolderHandlers(tmpFolderPath):
 
     # create a copy of this file and delete it
     thisFileCopyName = dlpt.pth.getName(thisFile, False) + "Copy.py"
-    dstFilePath = os.path.join(tmpFolderPath, thisFileCopyName)
-    dstFilePath = dlpt.pth.copyFile(thisFile, dstFilePath)
+    dstFilePath = dlpt.pth.copyFile(thisFile, tmpFolderPath, thisFileCopyName)
     assert os.path.exists(dstFilePath) is True
     with pytest.raises(ValueError):
         dlpt.pth.removeFolderTree(dstFilePath)
     dlpt.pth.removeFile(dstFilePath)
     assert os.path.exists(dstFilePath) is False
     # create intermediate folders
-    dstFilePath = os.path.join(tmpFolderPath, "subOne", "subTwo", thisFileCopyName)
-    dstFilePath = dlpt.pth.copyFile(thisFile, dstFilePath)
+    dstFolderPath = os.path.join(tmpFolderPath, "subOne", "subTwo")
+    dstFilePath = dlpt.pth.copyFile(thisFile, dstFolderPath, thisFileCopyName)
     assert os.path.exists(dstFilePath) is True
     # check if copy will remove file before if already existing
-    dstFilePath = dlpt.pth.copyFile(thisFile, dstFilePath)
+    dstFilePath = dlpt.pth.copyFile(thisFile, dstFolderPath, thisFileCopyName)
     assert os.path.exists(dstFilePath) is True
     dlpt.pth.removeFile(dstFilePath)
     assert os.path.exists(dstFilePath) is False

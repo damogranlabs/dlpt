@@ -80,13 +80,15 @@ def _setWritePermissions(path: str):
         raise Exception(errorMsg)
 
 
-def copyFile(srcFilePath: str, dstPath: str) -> str:
+def copyFile(srcFilePath: str, dstFolderPath: str, dstFileName: Optional[str] = None) -> str:
     """
     Copy given file to a new location, while dstFile is removed prior copying. 
     Return path to a copied file.
     Any intermediate folders are created automatically.
         @param srcFilePath: path to a file to be copied.
-        @param dstPath: new destination path (absolute file or folder path).
+        @param dstFolderPath: absolute destination folder path.
+        @param dstFileName: new destination file name. If None, original file
+            name is used.
     """
     _pathValidationCheck(srcFilePath)
     srcFilePath = check(srcFilePath)
@@ -94,24 +96,14 @@ def copyFile(srcFilePath: str, dstPath: str) -> str:
         errorMsg = f"'copyFile()' is meant only for files, not folders/links: {srcFilePath}"
         raise ValueError(errorMsg)
 
-    _pathValidationCheck(dstPath)
-    dstPath = os.path.normpath(dstPath)
-    # determine dst file path
-    _, extension = os.path.splitext(dstPath)
-    if extension == '':
-        # folder
-        fileName = getName(srcFilePath)
-        dstFolderPath = dstPath
-    else:
-        # file
-        fileName = os.path.basename(dstPath)
-        dstFolderPath = os.path.dirname(dstPath)
-    dstFilePath = os.path.join(dstFolderPath, fileName)
-
-    removeFile(dstFilePath)
+    dstFolderPath = os.path.normpath(dstFolderPath)
     if not os.path.exists(dstFolderPath):
         createFolder(dstFolderPath)
+    if dstFileName is None:
+        dstFileName = getName(srcFilePath)
+    dstFilePath = os.path.join(dstFolderPath, dstFileName)
 
+    removeFile(dstFilePath)
     shutil.copyfile(srcFilePath, dstFilePath)
 
     return dstFilePath
