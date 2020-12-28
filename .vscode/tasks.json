@@ -42,7 +42,8 @@
                 "-m",
                 "twine",
                 "upload",
-                "dist/*"
+                "dist/*",
+                "-u", "schperplata"
             ],
             "problemMatcher": [],
             "presentation": {
