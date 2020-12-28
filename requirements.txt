@@ -1,0 +1,7 @@
+pip
+pytest
+pytest-cov
+autopep8
+pylint
+
+-e .
