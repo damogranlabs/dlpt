@@ -6,6 +6,8 @@
 	],
 
     "settings": {
+        "python.pythonPath": "env\\Scripts\\python.exe",
+        
         // language server
         "python.languageServer": "Pylance",
         "python.analysis.typeCheckingMode": "basic",
