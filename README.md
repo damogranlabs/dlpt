@@ -1,5 +1,7 @@
 # dlpt
 Damogran Labs Python Tools, a collection of modules with utility functions to ease everyday Python usage.  
+PyPi: [https://pypi.org/project/dlpt/](https://pypi.org/project/dlpt/)  
+Install: `pip install -U dlpt`  
 
 ## Why?
 This package main purpose is to stop reinventing the wheel on top of the built-in Python functions 
