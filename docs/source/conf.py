@@ -61,3 +61,24 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 autodoc_mock_imports = ['psutil', 'jsonpickle']
+
+
+def run_apidoc(_):
+    ignore_paths = [
+    ]
+
+    argv = [
+        "-f",
+        "-T",
+        "-e",
+        "-M",
+        "-o", ".",
+        ".."
+    ] + ignore_paths
+
+    from sphinx.ext import apidoc
+    apidoc.main(argv)
+
+
+def setup(app):
+    app.connect('builder-inited', run_apidoc)
