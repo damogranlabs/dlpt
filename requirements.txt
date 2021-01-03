@@ -1,8 +1,9 @@
-pip
 pytest
 pytest-cov
 autopep8
 pylint
+
+sphinx
 
 wheel
 twine
