@@ -63,9 +63,12 @@ html_static_path = ['_static']
 
 autodoc_mock_imports = ['psutil', 'jsonpickle']
 
+master_doc = 'index'
 
 # Run apidoc plug-in manually, as readthedocs doesn't support it
 #   https://github.com/rtfd/readthedocs.org/issues/1139
+
+
 def run_apidoc(_):
     here = os.path.abspath(os.path.dirname(__file__))
     out = here
