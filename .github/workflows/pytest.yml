@@ -26,9 +26,10 @@ jobs:
         pip install -r requirements.txt
     
     - name: Test with pytest
+      run: |
+        pytest --cov=./
+
+    - name: codecov
       uses: codecov/codecov-action@v1
-      #run: |
-      #  pytest -s -v --cov-config=.coveragerc --cov=dlpt
-      #      "--cov-report", "term-missing"
       with:
         fail_ci_if_error: true
