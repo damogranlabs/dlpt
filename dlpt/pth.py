@@ -18,15 +18,17 @@ FILE_FOLDER_REMOVE_RETRY_DELAY_SEC = 0.5
 
 class ChangeDir:
     def __init__(self, path: str):
-        """
-        Temporary change working directory of a block of code and revert to 
-        an original one on exit.
-            @param path: path to an existing local folder/file that is
+        """ Temporary change working directory of a block of code and revert to 
+        an original on exit.
+
+        Args:
+            path: path to an existing local folder/file that is
                 temporary set as working directory. If file path is given,
                 its folder is taken as new working dir folder.
-        Usage:
-            `with dlpt.pth.ChangeDir("C:/somePath"):`
-                `answer = 42 # do some stuff with cwd changed to "C:/somePath"`
+
+        Example:
+            >>> with dlpt.pth.ChangeDir("C:/somePath"):
+                    answer = 42 # do some stuff with cwd changed to "C:/somePath"
         """
         self.path = resolve(path)
         self.originalWd = os.getcwd()
@@ -44,11 +46,14 @@ class ChangeDir:
 
 
 def check(path: Optional[str]) -> str:
-    """
-    Check if given path exists and return normalized path.
-    If path does not exist, raise Exception.
-        @param path: path to check
-    Note: use standard 'os.path.exists()' if you don't want to raise exception.
+    """ Check if given path exists and return normalized path. Return normalized
+    path (if valid) or raise exception.
+
+    Note:
+        use standard ``os.path.exists()`` if you don't want to raise exception.
+
+    Args:
+        path: path to check
     """
     path = _pathValidationCheck(path)
 
@@ -61,18 +66,20 @@ def check(path: Optional[str]) -> str:
 
 
 def resolve(path: str) -> str:
-    """
-    Resolve path with pathlib module. This will (for existing files) fix any 
-    case mismatch, for example, drive letter.
-        @param path: abs path to resolve
+    """ Resolve path with pathlib module. This will (for existing files) fix any 
+    case mismatch, for example, drive letter. Return resolved path.
+
+    Args:
+        path: abs path to resolve
     """
     return str(pathlib.Path(path).resolve())
 
 
 def _setWritePermissions(path: str):
-    """
-    Change file/folder attributes so the given path is writeable.
-        @param path: absolute path to a file/folder to modify permissions.
+    """ Set file/folder write permmissions.
+
+    Args:
+        path: absolute path to a file/folder to modify permissions.
     """
     os.chmod(path, stat.S_IWRITE)
     if not os.access(path, os.W_OK):  # pragma no cover
@@ -81,13 +88,14 @@ def _setWritePermissions(path: str):
 
 
 def copyFile(srcFilePath: str, dstFolderPath: str, dstFileName: Optional[str] = None) -> str:
-    """
-    Copy given file to a new location, while dstFile is removed prior copying. 
-    Return path to a copied file.
-    Any intermediate folders are created automatically.
-        @param srcFilePath: path to a file to be copied.
-        @param dstFolderPath: absolute destination folder path.
-        @param dstFileName: new destination file name. If None, original file
+    """ Copy given file to a new location, while dstFile is removed prior 
+    copying. Any intermediate folders are created automatically. Return path to 
+    a copied file.
+
+    Args:
+        srcFilePath: path to a file to be copied.
+        dstFolderPath: absolute destination folder path.
+        dstFileName: new destination file name. If None, original file
             name is used.
     """
     _pathValidationCheck(srcFilePath)
@@ -110,11 +118,13 @@ def copyFile(srcFilePath: str, dstFolderPath: str, dstFileName: Optional[str] = 
 
 
 def copyFolder(srcFolderPath: str, dstFolderPath: str) -> str:
-    """
-    Copy given folder to a new location, while dstFolder is removed prior copying.
-    Return path to a copied folder. Any intermediate folders are created automatically.
-        @param srcFolderPath: path to a file to be copied.
-        @param dstFolderPath: new destination path.
+    """ Copy given folder to a new location, while dstFolder is removed prior 
+    copying. Any intermediate folders are created automatically. Return a path
+    to a copied folder.
+
+    Args:
+        srcFolderPath: path to a file to be copied.
+        dstFolderPath: new destination path.
     """
     _pathValidationCheck(srcFolderPath)
     check(srcFolderPath)
@@ -130,13 +140,14 @@ def copyFolder(srcFolderPath: str, dstFolderPath: str) -> str:
 
 
 def removeFile(filePath: str, forceWritePermissions: bool = True, retry: int = 3):
-    """
-    This function tries to remove file (FILE, not FOLDER) on a given path. 
+    """ This function tries to remove file (FILE, not FOLDER) on a given path. 
     Optionally, write permissions are set to a file.
-        @param filePath: path to a file.
-        @param forceWritePermissions: if True, write permissions are set to
+
+    Args:
+        filePath: path to a file.
+        forceWritePermissions: if True, write permissions are set to
             a file so it can be removed.
-        @param retry: on failure, retry removal specified number of times.
+        retry: on failure, retry removal specified number of times.
     """
     _pathValidationCheck(filePath)
 
@@ -163,11 +174,10 @@ def removeFile(filePath: str, forceWritePermissions: bool = True, retry: int = 3
 
 
 def _removeFolderErrorHandler(function, path, exception):
-    """
-    This is a private function, which is called on shutil.rmtree() exception.
+    """ This is a private function, which is called on shutil.rmtree() exception.
     If exception cause was permission error, write permissions are added,
     otherwise exception is re-raised.
-    For arguments, see shutil.rmtree() docs.
+    For arguments, see ``shutil.rmtree()`` docs.
     """
     excvalue = exception[1]
     if excvalue.errno == errno.EACCES:
@@ -178,12 +188,13 @@ def _removeFolderErrorHandler(function, path, exception):
 
 
 def removeFolderTree(folderPath: str, forceWritePermissions: bool = True, retry: int = 3):
-    """
-    Remove folder and all its content on a given path.
-        @param folderPath: path of a folder to remove.
-        @param forceWritePermissions: if True, shutil.rmtree() error callback 
+    """ Remove folder (FOLDER, not FILE) and all its content on a given path.
+
+    Args:
+        folderPath: path of a folder to remove.
+        forceWritePermissions: if True, shutil.rmtree() error callback 
             function is used to change permissions and retry.
-        @param retry: on failure, retry removal specified number of times.
+        retry: on failure, retry removal specified number of times.
             Sometimes file are locked with other processes, or a race
             condition occurred.
     """
@@ -219,11 +230,12 @@ def removeFolderTree(folderPath: str, forceWritePermissions: bool = True, retry:
 
 
 def cleanFolder(folderPath: str, forceWritePermissions: bool = True):
-    """
-    Delete all folder content (files, sub-folders) in a given folder, but not 
-    the root folder.
-        @param folderPath: path to a folder to clean all its content
-        @param forceWritePermissions: if True, write permissions are set to be
+    """ Delete all folder content (files, sub-folders) in a given folder, but 
+    not the root folder.
+
+    Args:
+        folderPath: path to a folder to clean all its content
+        forceWritePermissions: if True, write permissions are set to be
             able to delete files.
     """
     _pathValidationCheck(folderPath)
@@ -238,10 +250,11 @@ def cleanFolder(folderPath: str, forceWritePermissions: bool = True):
 
 
 def createFolder(folderPath: str):
-    """
-    Create folder (or folder tree) on a given specified path.
-        @param folderPath: absolute path of a folder to create
-    Path existence is checked with pathExists() at the end.
+    """ Create folder (or folder tree) on a given specified path.
+    Path existence is checked with :func:`check()` at the end.
+
+    Args:
+        folderPath: absolute path of a folder to create
     """
     _pathValidationCheck(folderPath)
 
@@ -253,10 +266,11 @@ def createFolder(folderPath: str):
 
 
 def createCleanFolder(folderPath: str):
-    """
-    Create new or clean existing folder on a given specified path.
-        @param folderPath: absolute path of a folder to create
-    Path existence is checked with pathExists() at the end.
+    """ Create new or clean existing folder on a given specified path.
+    Path existence is checked with check() at the end.
+
+    Args:    
+        folderPath: absolute path of a folder to create
     """
     _pathValidationCheck(folderPath)
 
@@ -267,15 +281,18 @@ def createCleanFolder(folderPath: str):
 
 
 def removeOldItems(folderPath: str, days: int) -> List[str]:
-    """
-    Remove items (files, folders) inside given folder path that were modified 
-    more than specified number days ago and return a list of removed items.
-        @param folderPath: path to a folder with files/folders to remove.
-        @param days: number of days file/folder must be old before to be 
-            removed (last modification time).
-    NOTE: modification time and current time can be exactly the same when this
+    """ Remove items (files, folders) inside the given folder that were modified 
+    more than specified number of days ago. Return a list of removed items.
+
+    Note:
+        modification time and current time can be the same when this
         function is called after creation. For example, in tests. Hence, decimal
         part (milliseconds) of current/modification timestamp is discarded.
+
+    Args:
+        folderPath: path to a folder with files/folders to remove.
+        days: number of days file/folder must be old to be 
+            removed (last modification time).
     """
     folderPath = check(folderPath)
 
@@ -296,11 +313,14 @@ def removeOldItems(folderPath: str, days: int) -> List[str]:
 
 
 def withFwSlashes(path: str) -> str:
-    """
-    Convert path to use forward slashes.
-        @param path: path to convert
-    NOTE: this function does not do os.path.normpath() so this function is 
-        also usable for UNCs.
+    """ Convert path to use forward slashes.
+
+    Note: 
+        This function does not do ``os.path.normpath()`` so it is also
+        usable for UNCs.
+
+    Args:
+        path: path to convert
     """
     _pathValidationCheck(path)
 
@@ -310,9 +330,10 @@ def withFwSlashes(path: str) -> str:
 
 
 def withDoubleBwSlashes(path: str) -> str:
-    """
-    Convert and return path to use double back slashes.
-        @param path: path to convert
+    """ Convert and return path to use double back slashes.
+
+    Args:
+        path: path to convert
     """
     path = _pathValidationCheck(path)
     path = os.path.normpath(path)
@@ -323,12 +344,15 @@ def withDoubleBwSlashes(path: str) -> str:
 
 
 def getName(filePath: str, withExt: bool = True) -> str:
-    """
-    Return file name from file path or raise exception. '.' must be found to 
-    determine a file name.
-        @param filePath: file path where file name will be fetched from
-        @param withExt: if False, extension is striped from file name
-    NOTE: no file existence check is performed.
+    """ Return a file name from file path or raise exception. 
+
+    Note:
+        No file existence check is performed.
+
+    Args:
+        filePath: file path where file name will be fetched from
+        withExt: if False, extension is striped from file name
+
     """
     _pathValidationCheck(filePath)
 
@@ -342,10 +366,13 @@ def getName(filePath: str, withExt: bool = True) -> str:
 
 
 def getExt(filePath: str) -> str:
-    """
-    Return file extension (with dot if available) from file path or raise exception.
-        @param filePath: file path where file name will be fetched from
-    NOTE: no file existence check is performed.
+    """ Return file extension (with dot) from file path or raise exception.
+
+    Note:
+        No file existence check is performed.
+
+    Args:
+        filePath: file path where file name will be fetched from
     """
     _pathValidationCheck(filePath)
 
@@ -357,16 +384,22 @@ def getExt(filePath: str) -> str:
 def getFilesInFolder(folderPath: str,
                      includeExt: Optional[List[str]] = None,
                      excludeExt: Optional[List[str]] = None) -> List[str]:
-    """
-    Get list of files in a given 'folderPath'. If 'extensionFilter' is set, 
-    only files that has the same extension are taken.
-        @param folderPath: path to a folder to scan.
-        @param includeExt: if set, only files with given extension(s) are returned.
-        @param excludeExt: if set, files with given extension(s) are excluded 
+    """ Get a list of files in a given 'folderPath'. 
+    If 'extensionFilter' is set, only return files that has the same extension.
+
+    Args:
+        folderPath: path to a folder to scan.
+        includeExt: if set, only files with given extension(s) are returned.
+        excludeExt: if set, files with given extension(s) are excluded 
             from return list.
-            NOTE: extension should not be present in both, includeExt and 
-            excludeExt list. However, if it is, excludeExt has 'higher priority'.
-            NOTE: lower case extension strings are compared.
+
+    Note:
+        Extension should not be present in both, ``includeExt`` and 
+        ``excludeExt`` list. However, if it is, ``excludeExt`` has 
+        'higher priority'.
+
+    Note:
+        Lower case extension strings are compared.
     """
     _pathValidationCheck(folderPath)
     check(folderPath)
@@ -404,8 +437,8 @@ def getFilesInFolder(folderPath: str,
 def getFilesInFolderTree(folderTreePath: str,
                          includeExt: Optional[List[str]] = None,
                          excludeExt: Optional[List[str]] = None) -> List[str]:
-    """
-    Same as getFilesInFolder(), but scan through all files in all folders.
+    """ Same as :func:`getFilesInFolder()`, but scan through all files in 
+    all folders.
     """
     folderTreePath = check(folderTreePath)
 
@@ -420,12 +453,13 @@ def getFilesInFolderTree(folderTreePath: str,
 def getFoldersInFolder(folderPath: str,
                        nameFilter: Optional[str] = None,
                        compareLowerCase: bool = True) -> List[str]:
-    """
-    Get a list of folders in a given 'folderPath'.
-        @param folderPath: path to a folder to scan.
-        @param nameFilter: if set, folders that contain this string are returned,
+    """ Get a list of folders in a given 'folderPath'.
+
+    Args:
+        folderPath: path to a folder to scan.
+        nameFilter: if set, folders that contain this string are returned,
             based on compareLowerCase setting.
-        @param compareLowerCase: if True, lower-cased nameFilter string (if set)
+        compareLowerCase: if True, lower-cased nameFilter string (if set)
             is checked in folder name.
     """
     _pathValidationCheck(folderPath)
@@ -450,17 +484,19 @@ def getFoldersInFolder(folderPath: str,
 
 
 def openWithDefaultBrowser(url: str):  # pragma: no cover
-    """
-    Open given address in a default web browser as a non-blocking subprocess.
-        @param url: web address to open.
+    """Open given address in a default web browser as a non-blocking subprocess.
+
+    Args:
+        url: web address to open.
     """
     webbrowser.open(url, new=2)  # 2 = new tab
 
 
 def openWithDefaultApp(filePath: str):  # pragma: no cover
-    """
-    Open given file with OS default application as a non-blockin subprocess.
-        @param filePath: path to a file to open.
+    """ Open given file with OS default application as a non-blocking subprocess.
+
+    Args:    
+        filePath: path to a file to open.
     """
     filePath = check(filePath)
     filePath = f"\"{filePath}\""
@@ -475,9 +511,10 @@ def openWithDefaultApp(filePath: str):  # pragma: no cover
 
 
 def _pathValidationCheck(path: Optional[str]) -> str:
-    """
-    Raise exception if given path is not a string or it is an empty string.
-        @param path: path to check.
+    """ Raise exception if given path is not a string or it is an empty string.
+
+    Args:
+        path: path to check.
     """
     if isinstance(path, str):
         if path.strip() != '':
