@@ -1,3 +1,7 @@
+![PyPI - License](https://img.shields.io/pypi/l/dlpt)
+![PyPI](https://img.shields.io/pypi/v/dlpt)
+![Read the Docs](https://img.shields.io/readthedocs/dlpt)
+
 # dlpt
 Damogran Labs Python Tools, a collection of modules with utility functions to ease everyday Python usage.  
 Homepage: [https://damogranlabs.com/2021/01/dlpt/](https://damogranlabs.com/2021/01/dlpt/)  
