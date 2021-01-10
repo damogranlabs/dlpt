@@ -56,7 +56,8 @@
         "cSpell.enabledLanguageIds": [
             "python"
         ],
-        "restructuredtext.linter.disabled": true
+        "restructuredtext.linter.disabled": true,
+        "search.useIgnoreFiles": false
     },
     "extensions": {
         "recommendations": [

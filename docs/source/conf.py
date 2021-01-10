@@ -65,11 +65,12 @@ autodoc_mock_imports = ['psutil', 'jsonpickle']
 
 master_doc = 'index'
 
-# Run apidoc plug-in manually, as readthedocs doesn't support it
-#   https://github.com/rtfd/readthedocs.org/issues/1139
-
 
 def run_apidoc(_):
+    """
+    Run apidoc plug-in manually, as readthedocs doesn't support it
+    https://github.com/rtfd/readthedocs.org/issues/1139
+    """
     here = os.path.abspath(os.path.dirname(__file__))
     out = here
     src = os.path.join(here, "..", "..", project)
@@ -90,5 +91,16 @@ def run_apidoc(_):
     apidoc.main(argv)
 
 
+def skip(app, what, name, obj, would_skip, options):
+    """
+    Show classes __init__() docstring.
+    https://stackoverflow.com/a/5599712/9200430
+    """
+    if name == "__init__":
+        return False
+    return would_skip
+
+
 def setup(app):
     app.connect('builder-inited', run_apidoc)
+    app.connect("autodoc-skip-member", skip)
