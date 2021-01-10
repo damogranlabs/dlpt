@@ -1,1 +1,0 @@
-CALL python -m doxypypy.doxypypy %1

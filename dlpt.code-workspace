@@ -55,7 +55,8 @@
         // spell checker settings
         "cSpell.enabledLanguageIds": [
             "python"
-        ]
+        ],
+        "restructuredtext.linter.disabled": true
     },
     "extensions": {
         "recommendations": [

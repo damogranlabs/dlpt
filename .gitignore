@@ -1,4 +1,6 @@
 dlpt_playground.py
+dlpt.*.rst
+dlpt.rst
 .coverage
 
 # Byte-compiled / optimized / DLL files

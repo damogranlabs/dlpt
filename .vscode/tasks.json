@@ -52,6 +52,18 @@
                 "panel": "shared",
                 "showReuseMessage": false,
             }
+        },
+        {
+            "label": "Generate docs",
+            "type": "process",
+            "command": "generateDocs.bat",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": false,
+            }
         }
     ]
 }

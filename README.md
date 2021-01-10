@@ -2,6 +2,7 @@
 Damogran Labs Python Tools, a collection of modules with utility functions to ease everyday Python usage.  
 Homepage: [https://damogranlabs.com/2021/01/dlpt/](https://damogranlabs.com/2021/01/dlpt/)  
 PyPi: [https://pypi.org/project/dlpt/](https://pypi.org/project/dlpt/)  
+Docs: [https://dlpt.readthedocs.io/en/latest/](https://dlpt.readthedocs.io/en/latest/)  
 Install: `pip install -U dlpt`  
 
 ## Why?

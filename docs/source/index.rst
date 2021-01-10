@@ -1,13 +1,13 @@
-Welcome to dlpt's - Damogran Labs Python Tools documentation!
+dlpt - Damogran Labs Python Tools
 =============================================================
+README: https://github.com/damogranlabs/dlpt
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Modules:
+   :glob:
 
-   dlpt
-
-
+   dlpt.*
 
 Indices and tables
 ==================
