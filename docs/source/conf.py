@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../dlpt'))
+sys.path.insert(0, os.path.abspath('..'))
 #sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..', '..', '..', 'dlpt')))
 # sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..', '..', '..')))
 
@@ -63,19 +63,25 @@ html_static_path = ['_static']
 autodoc_mock_imports = ['psutil', 'jsonpickle']
 
 
+# Run apidoc plug-in manually, as readthedocs doesn't support it
+#   https://github.com/rtfd/readthedocs.org/issues/1139
 def run_apidoc(_):
-    ignore_paths = [
-    ]
+    here = os.path.abspath(os.path.dirname(__file__))
+    out = here
+    src = os.path.join(here, "..", "..", project)
+
+    ignore_paths = []
 
     argv = [
         "-f",
         "-T",
         "-e",
         "-M",
-        "-o", ".",
-        ".."
+        "-o", out,
+        src
     ] + ignore_paths
 
+    # Sphinx 1.7+
     from sphinx.ext import apidoc
     apidoc.main(argv)
 

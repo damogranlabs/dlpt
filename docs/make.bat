@@ -29,7 +29,7 @@ if errorlevel 9009 (
 )
 
 REM build package .rst files from python files
-%SPHINXAPIDOC% -o %SOURCEDIR% ../dlpt --force --separate
+REM %SPHINXAPIDOC% -o %SOURCEDIR% ../dlpt --force --separate
 
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
 goto end
@@ -37,5 +37,6 @@ goto end
 :help
 %SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
 
+pause
 :end
 popd
