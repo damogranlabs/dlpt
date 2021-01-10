@@ -12,9 +12,10 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../../dlpt'))
+#sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..', '..', '..')))
+#sys.path.insert(0, os.path.abspath(os.path.join("..", "..")))
 #sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..', '..', '..', 'dlpt')))
-# sys.path.insert(0, os.path.abspath(os.path.join(__file__, '..', '..', '..')))
 
 import sphinx_rtd_theme
 

@@ -7,9 +7,7 @@ REM Command file for Sphinx documentation
 if "%SPHINXBUILD%" == "" (
 	set SPHINXBUILD=sphinx-build
 )
-if "%SPHINXAPIDOC%" == "" (
-	set SPHINXAPIDOC=sphinx-apidoc
-)
+
 set SOURCEDIR=source
 set BUILDDIR=build
 
@@ -27,9 +25,6 @@ if errorlevel 9009 (
 	echo.http://sphinx-doc.org/
 	exit /b 1
 )
-
-REM build package .rst files from python files
-REM %SPHINXAPIDOC% -o %SOURCEDIR% ../dlpt --force --separate
 
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
 goto end
