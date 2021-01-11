@@ -62,6 +62,7 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 autodoc_mock_imports = ['psutil', 'jsonpickle']
+autodoc_member_order = 'bysource'
 
 master_doc = 'index'
 
