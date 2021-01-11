@@ -1,21 +1,25 @@
 """
-Common LogHandler interface and LogSocketServer for general logging.
+Common LogHandler and LogSocketServer interface for general logging.
 
-1. LogHandler: if set, instance of such logger can log to:
-    - console (terminal)
-    - file
-    - socket (client)
-- As all handlers are optional, user must take care to manually configure logger.
-- First instance of LogHandler is stored as a default log handler. Any further 
-    dlpt.log log statement will, by default, use this logger instance.
-- Optionally, modules can initialize custom logger instances and 
-    set 'setAsDefault' to False.
+1. LogHandler if set, instance of such logger can log to:
+ - console (terminal)
+ - file
+ - socket (client)
 
-2. LogSocketServer: is a subprocess that use rotation log file handler to log
+Note:
+    As all handlers are optional, user must take care to manually configure logger.
+    First instance of ``LogHandler`` is stored as a default log handler. Any 
+    further ``dlpt.log`` log statement will, by default, use this logger instance.
+    Optionally, modules can initialize custom logger instances and set ``setAsDefault``
+    to False.
+
+2. LogSocketServer is a subprocess that use rotation log file handler to log 
 data from all configured logs to one place.
-NOTE: LogSocketServer port number must be unique - this means that default 
-'createSocketServerProcess()' can be called only once. Further socket servers
-(of any process) must set ports manually.
+
+Note:
+    LogSocketServer port number must be unique - this means that default 
+    :func:`createSocketServerProc()` can be called only once. Further socket
+    servers (of any process) must set ports manually.
 """
 import functools
 import logging
@@ -63,11 +67,12 @@ _defaultSocketLogger: Optional["LogHandler"] = None
 
 class LogHandler():
     def __init__(self, loggerName: str = DEFAULT_NAME, setAsDefault: bool = True):
-        """
-        This class holds all settings to manage log handler.
-            @param loggerName: unique logger name.
+        """ This class holds all settings to manage log handler.
+
+        Args:
+            loggerName: unique logger name.
                 If logger with such name already exists, it is overwritten.
-            @param setAsDefault: if True, created logger is set as default logger.
+            setAsDefault: if True, created logger is set as default logger.
         """
         self._name: str = loggerName
         self._isDefaultLogHandler: bool = setAsDefault
@@ -93,14 +98,17 @@ class LogHandler():
         self.criticalError = functools.partial(criticalError, handler=self)
 
     def addConsoleHandler(self, formatter: Optional[logging.Formatter] = None, logLevel: int = logging.DEBUG):
-        """
-        Add console handler to this logger instance.
-            @param formatter: if not None, override default formatter.
-            @param logLevel: set log level for this specific handler. 
-                By default, everything is logged (DEBUG level).
+        """ Add console handler to this logger instance.
 
-        NOTE: Create custom formatter with:
-        `logging.Formatter(<formatter string>, datefmt=<time formatter string>)`
+        Note:
+            Create custom formatter with:
+            ``logging.Formatter(<formatter string>, datefmt=<time formatter string>)``
+
+        Args:
+            formatter: if not None, override default formatter.
+            logLevel: set log level for this specific handler. 
+                By default, everything is logged (``DEBUG`` level).
+
         """
         consoleHandler = logging.StreamHandler()
         consoleHandler.setLevel(logLevel)
@@ -117,21 +125,26 @@ class LogHandler():
                        formatter: Optional[logging.Formatter] = None,
                        logLevel: int = logging.DEBUG,
                        mode: str = "w+") -> str:
-        """
-        Add file handler to this logger instance and return a path to a log file.
-            @param fileName: name of a log file. 
-                If there is no file extension, default DEFAULT_LOG_FILE_EXT is appended.
-                If None, default fileName is fetched with 'getDefaultLogFileName()'.
-            @param folderPath: path to a folder where logs will be stored.
-                If None, path is fetched with 'getDefaultLogFolderPath()'.
-                If log folder does not exist, it is created.
-            @param formatter: if not None, override default formatter.
-            @param logLevel: set log level for this specific handler. By default,
-                everything is logged (DEBUG level).
-            @param mode: file open mode ("w+", "a", ... See logging docs.).
-        NOTE: only single file handler per LogHandler can be added.
-        NOTE: Create custom formatter with:
-        `logging.Formatter(<formatter string>, datefmt=<time formatter string>)`
+        """ Add file handler to this logger instance and return a path to a log file.
+
+        Note:
+            Only single file handler per ``LogHandler`` can be added.
+
+        Note:
+            Create custom formatter with:
+            ``logging.Formatter(<formatter string>, datefmt=<time formatter string>)``
+
+        Args:
+            fileName: name of a log file. If there is no file extension, default
+                ``DEFAULT_LOG_FILE_EXT`` is appended. If ``None``, default 
+                file name is fetched with :func:`getDefaultLogFileName()`.
+            folderPath: path to a folder where logs will be stored. If ``None``,
+                path is fetched with :func:`getDefaultLogFolderPath()`.If log
+                folder does not exist, it is created.
+            formatter: if not None, override default formatter.
+            logLevel: set log level for this specific handler. By default,
+                everything is logged (``DEBUG`` level).
+            mode: file open mode ("w+", "a", ... See logging docs.).
         """
         if self._logFilePath is not None:
             errorMsg = f"Unable to add another log file handler - already configured to log to: {self._logFilePath}"
@@ -168,24 +181,29 @@ class LogHandler():
                                backupCount: int = DEFAULT_ROTATING_LOG_FILE_COUNT,
                                formatter: Optional[logging.Formatter] = None,
                                logLevel: int = logging.DEBUG) -> str:
-        """
-        Add rotating file handler to this logger instance and return a path to a
+        """ Add rotating file handler to this logger instance and return a path to a
         log file.
-            @param fileName: name of a log file. 
-                If there is no file extension, default DEFAULT_LOG_FILE_EXT is appended.
-                If None, default fileName is fetched with 'getDefaultLogFileName()'.
-            @param folderPath: path to a folder where logs will be stored.
-                If None, path is fetched with 'getDefaultLogFolderPath()'.
-                If log folder does not exist, it is created.
-            @param maxSizeMb: number of MB at which rollover is performed on a 
+
+        Note:
+            Only single rotation file handler per LogHandler can be added.
+
+        Note:
+            Create custom formatter with:
+            ``logging.Formatter(<formatter string>, datefmt=<time formatter string>)``
+
+        Args:
+            fileName: name of a log file. If there is no file extension, default 
+                ``DEFAULT_LOG_FILE_EXT`` is appended. If ``None``, default file
+                name is fetched with :func:`getDefaultLogFileName()`.
+            folderPath: path to a folder where logs will be stored. If ``None`,
+                path is fetched with :func:`getDefaultLogFolderPath()`. If log
+                folder does not exist, it is created.
+            maxSizeMb: number of MB at which rollover is performed on a 
                 current log file.
-            @param backupCount: number of files to store (if file with given name is already exists).
-            @param formatter: if not None, override default formatter.
-            @param logLevel: set log level for this specific handler. By default,
-                everything is logged (DEBUG level).
-        NOTE: only single rotation file handler per LogHandler can be added.
-        NOTE: Create custom formatter with:
-        `logging.Formatter(<formatter string>, datefmt=<time formatter string>)`
+            backupCount: number of files to store (if file with given name already exists).
+            formatter: if not None, override default formatter.
+            logLevel: set log level for this specific handler. By default,
+                everything is logged (``DEBUG`` level).
         """
         if self._logRotatingFilePath is not None:
             errorMsg = f"Unable to add another log rotating file handler - already configured to log to: "
@@ -225,15 +243,18 @@ class LogHandler():
                          port: int = DEFAULT_SOCKET_PORT,
                          formatter: Optional[logging.Formatter] = None,
                          logLevel: int = logging.DEBUG):
-        """
-        Add log socket handler to this logger instance.
+        """ Add log socket handler to this logger instance.
         This function assume that log socket server is already initialized.
-            @param port: socket port where logger writes data to.
-            @param formatter: if not None, override default formatter
-            @param logLevel: set log level for this specific handler. By default,
-            everything is logged (DEBUG level).
-        NOTE: Create custom formatter with:
-        `logging.Formatter(<formatter string>, datefmt=<time formatter string>)`
+
+        Note:
+            Create custom formatter with:
+            ``logging.Formatter(<formatter string>, datefmt=<time formatter string>)``
+
+        Args:
+            port: socket port where logger writes data to.
+            formatter: if not ``None``, override default formatter
+            logLevel: set log level for this specific handler. By default,
+                everything is logged (DEBUG level).
         """
         for handler in self.loggers.handlers:
             if isinstance(handler, _SocketHandler):
@@ -251,18 +272,19 @@ class LogHandler():
         self.loggers.addHandler(socketHandler)
 
     def removeAllHanders(self):
-        """
-        Safely remove all enabled (example: console, file, ...) log handlers
+        """ Safely remove all enabled (example: console, file, ...) log handlers
         from this logger logHandler instance.
-        NOTE: in contrast to removeFileHandlers(), this function does not clear
-        internal log file/folder paths variables data.
+
+        Note:
+            In contrast to :func:`removeFileHandlers()`, this function does not
+            clear internal log file/folder paths variables data.
         """
         while len(self.loggers.handlers):
             self.loggers.removeHandler(self.loggers.handlers[0])
 
     def removeFileHandlers(self):
-        """
-        Safely remove file and rotating file log handlers from this logger instance.
+        """ Safely remove file and rotating file log handlers from this logger
+        instance.
         """
         handlersCopy = self.loggers.handlers.copy()
         for handler in handlersCopy:
@@ -277,34 +299,29 @@ class LogHandler():
         self._logRotatingFilePath = None
 
     def isDefaultLogHandler(self) -> bool:
-        """
-        Returns True if this logger instance is set as default log handler.
+        """ Returns True if this logger instance is set as default log handler.
         """
         return self._isDefaultLogHandler
 
     def getName(self) -> str:
-        """
-        Return this logger instance name.
+        """ Return this logger instance name.
         Source name is specified only at logger instance creation.
         """
         return self._name
 
     def getLogFilePath(self) -> Optional[str]:
-        """
-        Return this logger instance log file path (if handler is set).
+        """ Return this logger instance log file path (if handler is set).
         """
         return self._logFilePath
 
     def getRotatingLogFilePath(self) -> Optional[str]:
-        """
-        Return this logger instance rotating log file path (if handler is set).
+        """ Return this logger instance rotating log file path (if handler is set).
         """
         return self._logRotatingFilePath
 
 
 def _checkDefaultLogger():
-    """
-    Check if default log handler already exists and raise exception if not.
+    """ Check if default log handler already exists and raise exception if not.
     """
     if _defaultLogger is None:
         errorMsg = "No logger instance available."
@@ -312,24 +329,23 @@ def _checkDefaultLogger():
 
 
 def setDefaultLogger(handler: LogHandler):
-    """
-    Set given handler as a default logger handler.
-        @param handler: new default log handler to set.
+    """ Set given handler as a default logger handler.
+
+    Args:
+        handler: new default log handler to set.
     """
     global _defaultLogger
     _defaultLogger = handler
 
 
 def getDefaultLogger() -> Optional[LogHandler]:
-    """
-    Get default logger handler instance.
+    """ Get default logger handler instance.
     """
     return _defaultLogger
 
 
 def closeAllLoggers():
-    """
-    Close all created loggers and release file handlers, ...
+    """ Close all created loggers and release file handlers, ...
     This is usually by default called on application exit.
     """
     global _defaultLogger
@@ -341,9 +357,10 @@ def closeAllLoggers():
 
 
 def getDefaultLogFileName(loggerName: Optional[str] = None) -> str:
-    """
-    Get default log file name: <logerName>_<DATE_TIME_FORMAT_FILE_NAME>.log.
-        @param loggerName: name of a logger. If None, default log file name
+    """ Get default log file name: <logerName>_<DATE_TIME_FORMAT_FILE_NAME>.log.
+
+    Args:
+        loggerName: name of a logger. If ``None``, default log file name
             is datetime string + extension.
     """
     logFileName = dlpt.time.getCurrentDateTime(dlpt.time.DATE_TIME_FORMAT_FILE_NAME) + DEFAULT_LOG_FILE_EXT
@@ -354,13 +371,16 @@ def getDefaultLogFileName(loggerName: Optional[str] = None) -> str:
 
 
 def getDefaultLogFolderPath(path: Optional[str] = None) -> str:
-    """
-    Get default log folder path.
-        @param path: if None, <cwd>/log folder is returned. Otherwise:
-            - if path is file path: <file directory>/log folder is returned.
-            - if path is folder path: <path>/log folder is returned.
-            NOTE: if given, path must exist (to be able to determine if given
-            path is file or folder).
+    """ Get default log folder path.
+
+    Note:
+        If ``path`` is set, it must exist (to be able to determine if given
+        path is file or folder).
+
+    Args:
+        path: if ``None``, <cwd>/log folder is returned. Otherwise: if path is
+            FILE: <file directory>/log folder is returned. If path is FOLDER:
+            <path>/log folder is returned.
     """
     if path is None:
         path = os.path.join(os.getcwd(), DEFAULT_LOG_FOLDER_NAME)
@@ -375,11 +395,12 @@ def getDefaultLogFolderPath(path: Optional[str] = None) -> str:
 
 
 def _formatExceptionLocation(tracebackStr: str) -> str:
-    """
-    Format traceback file/line format to a default editor format:
-     - original format: <file>, line <lineNumber>, in <function>
-     -new format: <file>:<lineNumber> in <function>
-        @param tracebackStr: traceback string in a default format.
+    """Format traceback file/line format to a default editor format:
+    * original format: <file>, line <lineNumber>, in <function>
+    * new format: <file>:<lineNumber> in <function>
+
+    Args:
+        tracebackStr: traceback string in a default format.
     """
     tracebackStr = tracebackStr.replace("\", line ", ":")
 
@@ -387,12 +408,13 @@ def _formatExceptionLocation(tracebackStr: str) -> str:
 
 
 def getErrorTraceback() -> str:
-    """
-    Get a string of a beautified traceback data.
+    """Get a string of a beautified traceback data.
 
-    NOTE: As it turned out, manually building stack data trace inspect.stack(), 
-        .trace() and sys.exc_info() is quite complicated, so current implementation
-        just analyze lines of traceback data, fetched with traceback.format_exc().
+    Note:
+        As it turned out, manually building stack data trace ``inspect.stack()``, 
+        ``.trace()`` and ``sys.exc_info()`` is quite complicated, so current 
+        implementation just analyze lines of traceback data, fetched with
+        ``traceback.format_exc()``.
     """
     tracebackStr = ''
 
@@ -424,17 +446,18 @@ class _SocketHandler(logging.handlers.SocketHandler):
 
 
 class _SocketRecordDataHandler(socketserver.StreamRequestHandler):
-    """
-    Socket server data handler - every received message is inspected and data is
-    sent to a file.
-    Code base taken from: https://docs.python.org/3/howto/logging-cookbook.html
+    """ Socket server data handler - every received message is inspected and 
+    data is sent to a file.
+    Code base taken from `here`_.
+
+    .. _here:
+        https://docs.python.org/3/howto/logging-cookbook.html
     """
 
     def handle(self):  # pragma: no cover
-        """
-        Handle multiple requests - each expected to be a 4-byte length, followed
-        by the LogRecord in pickle format. Calls self.handleLogRecord() for each
-        successfully received data packet.
+        """ Handle multiple requests - each expected to be a 4-byte length, 
+        followed by the ``LogRecord`` in pickle format. Calls 
+        :func:`self.handleLogRecord()` for each successfully received data packet.
         """
         while True:
             # receive data
@@ -454,32 +477,36 @@ class _SocketRecordDataHandler(socketserver.StreamRequestHandler):
             self.handleLogRecord(record)
 
     def handleLogRecord(self, record):  # pragma: no cover
-        """
-        Handle unpickled received data.
-            @param record: unpickled received data in logging.LogRecord format.
+        """Handle unpickled received data.
+
+        Args:
+            record: unpickled received data in logging.LogRecord format.
         """
         _defaultSocketLogger.loggers.handle(record)
 
 
 class LogSocketServer(socketserver.ThreadingTCPServer):  # Threading TCPServer so multiple connections can be created
-    """
-    Simple TCP socket-based logging server (receiver).
-
+    """ Simple TCP socket-based logging server (receiver).
     All messages are pickled at client TX side and un-pickled here.
     Any received message is than further handled by 'handleLogRecord()'
 
-    Allow address reuse:
-    https://docs.python.org/3/library/socketserver.html?highlight=threadingtcpserver#socketserver.BaseServer.allow_reuse_address
+    Sets `Allow address reuse`_.
+
+    .. _Allow address reuse:
+        https://docs.python.org/3/library/socketserver.html?highlight=threadingtcpserver#socketserver.BaseServer.allow_reuse_address
     """
     allow_reuse_address = True
 
     def __init__(self, logger: LogHandler, port: int = DEFAULT_SOCKET_PORT):  # pragma: no cover
-        """
-        Init log socket server. By default, this server logs all received
+        """Init log socket server. By default, this server logs all received
         messages to file, optionally to console.
-            @param logger: log handler instance that already has configured log handlers.
-                NOTE: socket handler must not be added in this instance.
-            @param port: port where socket server reads data from.
+
+        Note:
+            Socket handler must not be added to a given ``logger`` instance.
+
+        Args:
+            logger: log handler instance that already has configured log handlers.
+            port: port where socket server reads data from.
         """
         global _defaultSocketLogger
         _defaultSocketLogger = logger
@@ -489,12 +516,17 @@ class LogSocketServer(socketserver.ThreadingTCPServer):  # Threading TCPServer s
 
 
 def _isPortFree(port: int, host: str = 'localhost') -> bool:
-    """
-    Return True if port is free, False otherwise.
-    NOTE: only TCP IPv4 is checked.
-        @param port: port number to check.
-        @param host: IP address or 'localhost' where port is checked.
-    SO: https://stackoverflow.com/questions/2470971/fast-way-to-test-if-a-port-is-in-use-using-python
+    """Return True if port is free, False otherwise.
+
+    Note:
+        Only TCP IPv4 port is checked.
+
+    Args:
+        port: port number to check.
+        host: IP address or 'localhost' where port is `checked`_.
+
+    .. _checked:
+        https://stackoverflow.com/questions/2470971/fast-way-to-test-if-a-port-is-in-use-using-python
     """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socketHandler:
         socketHandler.settimeout(0.2)
@@ -509,14 +541,15 @@ def _isPortFree(port: int, host: str = 'localhost') -> bool:
 
 
 def createSocketServerProc(logFilePath: str, port=DEFAULT_SOCKET_PORT) -> int:
-    """
-    Create socket server subprocess that use given socketServerLogger to log 
-    data to one place with file log handler. 
-    Return PID of spawned socket server process.
-        @param logFilePath: absolute path to a log file, including extension.
-        @param port: port where socket server will listen.
-    NOTE: exception is raised if default timeout is reached while waiting for
-        a socket server process PID.
+    """Create socket server subprocess that use given ``socketServerLogger`` to
+    log data to one place with file log handler. Return PID of spawned socket
+    server process.
+    Exception is raised if default timeout is reached while waiting for a socket
+    server process PID.
+
+    Args:
+        logFilePath: absolute path to a log file, including extension.
+        port: port where socket server will listen.
     """
     SPAWN_TIMEOUT_SEC = 4
     if not _isPortFree(port):  # pragma: no cover
@@ -539,11 +572,12 @@ def createSocketServerProc(logFilePath: str, port=DEFAULT_SOCKET_PORT) -> int:
 
 
 def _spawnSocketServerProc(logFilePath: str, port: int):  # pragma: no cover
-    """
-    Function that is spawned as subprocess (see createSocketServerProcess()) and 
-    initialize log socket server and file log handler.
-        @param logFilePath: absolute path to a log file, including extension.
-        @param port: port where socket server will listen.
+    """ Function that is spawned as subprocess (see ``createSocketServerProc()``)
+    and  initialize log socket server and file log handler.
+
+    Args:
+        logFilePath: absolute path to a log file, including extension.
+        port: port where socket server will listen.
     """
     socketServerLogger = LogHandler()
     formatter = logging.Formatter(DEFAULT_SOCKET_FORMATTER, datefmt=DEFAULT_SOCKET_FORMATTER_TIME)
@@ -557,10 +591,11 @@ def _spawnSocketServerProc(logFilePath: str, port: int):  # pragma: no cover
 
 
 def debug(msg: str, handler: Optional[LogHandler] = None):
-    """
-    Log with 'DEBUG' level.
-        @param msg: message to log.
-        @param handler: use specific handler, otherwise use default log handler.
+    """Log with 'DEBUG' level.
+
+    Args:
+        msg: message to log.
+        handler: use specific handler, otherwise use default log handler.
     """
     if handler is None:
         _checkDefaultLogger()
@@ -570,10 +605,11 @@ def debug(msg: str, handler: Optional[LogHandler] = None):
 
 
 def info(msg: str, handler: Optional[LogHandler] = None):
-    """
-    Log with 'INFO' level.
-        @param msg: message to log.
-        @param handler: use specific handler, otherwise use default log handler
+    """ Log with 'INFO' level.
+
+    Args:
+        msg: message to log.
+        handler: use specific handler, otherwise use default log handler
     """
     if handler is None:
         _checkDefaultLogger()
@@ -586,11 +622,12 @@ def warning(msg: str,
             showTraceback: bool = False,
             handler: Optional[LogHandler] = None,
             ignoreCallerFuncDepth: int = 2):
-    """
-    Log with 'WARNING' level.
-        @param msg: message to log.
-        @param handler: use specific handler, otherwise use default log handler.
-        @param ignoreCallerFuncDepth: number of stack traces to ignore when 
+    """ Log with 'WARNING' level.
+
+    Args:
+        msg: message to log.
+        handler: use specific handler, otherwise use default log handler.
+        ignoreCallerFuncDepth: number of stack traces to ignore when 
             getting log location.
     """
     if handler is None:
@@ -610,12 +647,13 @@ def error(msg: str,
           showTraceback: bool = True,
           handler: Optional[LogHandler] = None,
           ignoreCallerFuncDepth: int = 2):
-    """
-    Log with 'ERROR' level.
-        @param msg: message to log.
-        @param showTraceback: if True, error traceback is added to message.
-        @param handler: use specific handler, otherwise use default log handler.
-        @param ignoreCallerFuncDepth: number of stack traces to ignore when 
+    """ Log with 'ERROR' level.
+
+    Args:
+        msg: message to log.
+        showTraceback: if True, error traceback is added to message.
+        handler: use specific handler, otherwise use default log handler.
+        ignoreCallerFuncDepth: number of stack traces to ignore when 
             getting log location.
     """
     if handler is None:
@@ -633,11 +671,12 @@ def error(msg: str,
 def criticalError(msg: str,
                   handler: Optional[LogHandler] = None,
                   ignoreCallerFuncDepth: int = 2):
-    """
-    Log with 'CRITICAL' level, always add error traceback
-        @param msg: message to log.
-        @param handler: use specific handler, otherwise use default log handler.
-        @param ignoreCallerFuncDepth: number of stack traces to ignore when 
+    """ Log with 'CRITICAL' level, always add error traceback
+
+    Args:
+        msg: message to log.
+        handler: use specific handler, otherwise use default log handler.
+        ignoreCallerFuncDepth: number of stack traces to ignore when 
             getting log location.
     """
     if handler is None:

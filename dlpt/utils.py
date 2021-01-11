@@ -367,7 +367,7 @@ def pingAddress(ip: str, timeoutSec: float = 1) -> bool:
     False otherwise.
 
     Note:
-        There is no ``count`` parameter. This is due win10 `ping` timeout issues, 
+        There is no ``count`` parameter. This is due win10 ``ping`` timeout issues, 
         which can yield unpredictable times when using timeouts. Therefore, to
         wait for a specific state with ``pingAddress()``, implement custom  
         ``for...loop``. Ping timeout (``-w``) is always set to a larger value 
