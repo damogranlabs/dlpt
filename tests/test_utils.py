@@ -144,7 +144,7 @@ def test_mapDictToClass():
 
 
 def test_ping():
-    PING_OK = "127.0.0.1"
+    PING_OK = "www.google.com"
     PING_FAIL = "127.255.255.255"  # should not be taken, but not 100%
 
     assert dlpt.utils.pingAddress(PING_OK) is True
@@ -242,7 +242,3 @@ def test_callerLocation():
     assert "unable to display" in dlpt.utils.getCallerLocation(100)
 
     assert "unable to display" in dlpt.utils.getCallerLocation(100)
-
-
-def test_isDbgSession():
-    assert dlpt.utils.isDbgSession() == bool(sys.gettrace())

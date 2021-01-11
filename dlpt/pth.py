@@ -384,14 +384,8 @@ def getExt(filePath: str) -> str:
 def getFilesInFolder(folderPath: str,
                      includeExt: Optional[List[str]] = None,
                      excludeExt: Optional[List[str]] = None) -> List[str]:
-    """ Get a list of files in a given 'folderPath'. 
-    If 'extensionFilter' is set, only return files that has the same extension.
-
-    Args:
-        folderPath: path to a folder to scan.
-        includeExt: if set, only files with given extension(s) are returned.
-        excludeExt: if set, files with given extension(s) are excluded 
-            from return list.
+    """ Get a list of files in a given ``folderPath``. 
+    If ``extensionFilter`` is set, only return files that has the same extension.
 
     Note:
         Extension should not be present in both, ``includeExt`` and 
@@ -400,6 +394,12 @@ def getFilesInFolder(folderPath: str,
 
     Note:
         Lower case extension strings are compared.
+
+    Args:
+        folderPath: path to a folder to scan.
+        includeExt: if set, only files with given extension(s) are returned.
+        excludeExt: if set, files with given extension(s) are excluded 
+            from return list.
     """
     _pathValidationCheck(folderPath)
     check(folderPath)

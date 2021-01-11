@@ -1,13 +1,8 @@
-import asyncore
-import getpass
-import smtpd
-import threading
 from typing import Tuple
 
 import pytest
 
 import dlpt
-import dlpt.log as log
 
 from dlpt.tfix import *
 

@@ -31,9 +31,9 @@ def _waitForChildProcesses(parentPid: Union[None, str, int], numOfChilds: int, t
 
 
 def test_getProcData():
-    assert dlpt.proc.getName(currentPid) == 'python.exe'
+    assert "python" in dlpt.proc.getName(currentPid)
 
-    assert os.path.samefile(dlpt.proc.getExecutable(currentPid), sys.executable) is True
+    assert "python" in dlpt.proc.getExecutable(currentPid)
 
     assert dlpt.proc.getCmdArgs(currentPid) != []
 

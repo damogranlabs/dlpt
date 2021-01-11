@@ -58,6 +58,11 @@ def test_basic(tmpFilePath):
         with pytest.raises(ValueError):
             dlpt.importer.ModuleImporter(relPath)
 
+    # file is not inside base folder
+    baseFolder = os.path.dirname(os.path.dirname(tmpFilePath))
+    with pytest.raises(ValueError):
+        dlpt.importer.ModuleImporter(__file__, baseFolder)
+
     # folder, not file
     with pytest.raises(ValueError):
         dlpt.importer.ModuleImporter(os.path.dirname(tmpFilePath))
