@@ -27,7 +27,7 @@ jobs:
     
     - name: Test with pytest
       run: |
-        pytest -s -v --cov=dlpt --cov-config=.coveragerc
+        pytest -s -v --cov=dlpt --cov-report html
 
     - name: codecov
       uses: codecov/codecov-action@v1
