@@ -14,10 +14,11 @@ import dlpt.log as log
 
 
 def createTempFolder(name: str) -> str:
-    """
-    Create temp folder and return path, where name is built from: 
+    """ Create temp folder and return path, where name is built from: 
     <testName>_<unique 4 chars>
-        @param name: base name of the temp folder that will be created
+
+    Args:
+        name: base name of the temp folder that will be created
     """
     folderName = f"{name}_{uuid.uuid4().hex[:3]}"
     folderPath = os.path.join(tempfile.gettempdir(), folderName)
@@ -27,12 +28,9 @@ def createTempFolder(name: str) -> str:
 
 
 @pytest.fixture
-def tmpFolderPath(request) -> Iterator[str]:
-    """
-    Create temporary test folder and return path. Remove it at the end.
-    Folder is created with createTempFolder().
-    """
-    folderPath = createTempFolder(request.node.name)
+def tmpFolderPath(request, tmpdir) -> Iterator[str]:
+    """Create temporary test folder and return path. Remove it at the end. """
+    folderPath = str(tmpdir)
 
     yield folderPath
 
@@ -40,14 +38,12 @@ def tmpFolderPath(request) -> Iterator[str]:
 
 
 @pytest.fixture
-def tmpFilePath(request) -> Iterator[str]:
-    """
-    Create temporary test folder and return a (non-existing) file path (".txt").
+def tmpFilePath(request, tmpdir) -> Iterator[str]:
+    """ Create temporary test folder and return a (non-existing) file path (".txt").
     Remove complete folder at the end. Folder is created with createTempFolder().
     """
-    folderPath = folderPath = createTempFolder(request.node.name)
-    fileName = pathlib.Path(folderPath).parts[-1] + ".txt"
-    filePath = os.path.join(folderPath, fileName)
+    folderPath = str(tmpdir)
+    filePath = os.path.join(folderPath, request.node.name)
 
     yield filePath
 
@@ -56,9 +52,7 @@ def tmpFilePath(request) -> Iterator[str]:
 
 @pytest.fixture
 def closeAllLogHandlers():
-    """
-    Close all log handlers at the end of test case.
-    """
+    """ Close all log handlers at the end of test case."""
     yield
 
     log.closeAllLoggers()
@@ -66,8 +60,7 @@ def closeAllLogHandlers():
 
 @pytest.fixture
 def consoleLogger(request) -> Iterator[log.LogHandler]:
-    """
-    Create default log handler with added console handler and pass it to test func.
+    """ Create default log handler with added console handler and pass it to test func.
     Name of created logger is the same as current test case function.
     Close all logs at the end.
     """
@@ -80,14 +73,13 @@ def consoleLogger(request) -> Iterator[log.LogHandler]:
 
 
 @pytest.fixture
-def consoleFileLogger(request) -> Iterator[Tuple[log.LogHandler, str]]:
-    """
-    Create a default log.LogHandler and add console and file handlers. 
+def consoleFileLogger(request, tmpdir) -> Iterator[Tuple[log.LogHandler, str]]:
+    """ Create a default log.LogHandler and add console and file handlers. 
     Return a tuple: (<log handler>, <log file path>)
     Name of created logger is the same as current test case function.
     Close all logs at the end.
     """
-    folderPath = createTempFolder(request.node.name)
+    folderPath = str(tmpdir)
 
     logger = log.LogHandler(request.node.name)
     logger.addConsoleHandler()
@@ -101,7 +93,7 @@ def consoleFileLogger(request) -> Iterator[Tuple[log.LogHandler, str]]:
 
 @pytest.fixture
 def killChildProcesses():
-    # kill only test-spawned child processes
+    """ Kill only test-spawned child processes. """
     processesBeforeTest = dlpt.proc.getChilds(os.getpid())
 
     yield
