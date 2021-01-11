@@ -1,6 +1,5 @@
 pytest
 pytest-cov
-pytest-github-actions-annotate-failures
 
 autopep8
 pylint
