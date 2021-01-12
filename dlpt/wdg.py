@@ -14,8 +14,8 @@ class Watchdog():
                  timeoutSec: int):
         """
         Class to initialise PID watchdog by creating new watchdog timer subprocess.
-            @param userPid: pid to kill once watchdog is started and time has passed.
-            @param timeoutSec: time after userPid is killed.
+            userPid: pid to kill once watchdog is started and time has passed.
+            timeoutSec: time after userPid is killed.
                 NOTE: WARNING: while setting WDG timeout, use common 
                 sense - very small timeouts can be problematic if observed 
                 process will spawn child processes. In this case a race 
@@ -96,10 +96,10 @@ class Watchdog():
 def _wdgCountdownTimer(pidToKill: int, timeoutSec: int):
     """
     Private countdown timer, initiated as a sub-process from Watchdog().start().
-        @param pidToKill: pid to kill after watchdog time passed
-        @param timeoutSec: time in seconds after this function will kill process
+        pidToKill: pid to kill after watchdog time passed
+        timeoutSec: time in seconds after this function will kill process
             with pidToKill PID
-        @param killChildProcs: If True, on timeout wdg try to kill all child 
+        killChildProcs: If True, on timeout wdg try to kill all child 
             processes. Otherwise, only given process is killed.
     """
     while timeoutSec > 0:

@@ -20,8 +20,8 @@ def getCallableObjectsStr(filePath: str, includePrivate: bool = False) -> List[s
         performs a dynamic import.
     NOTE: this function is meant for test/code development, not for actual 
         production usage.
-        @param filePath: path to a file to check for object definitions.
-        @param includePrivate: if True, object that starts with '_' are also added. 
+        filePath: path to a file to check for object definitions.
+        includePrivate: if True, object that starts with '_' are also added. 
             NOTE: '__' objects are always ignored.
     """
     dlpt.pth.check(filePath)
@@ -85,8 +85,8 @@ def printCallableObjects(filePath: str, includePrivate: bool):
         performs a dynamic import.
     NOTE: this function is meant for test/code development, not for actual 
         production usage.
-        @param filePath: path to a file to check for object definitions.
-        @param includePrivate: if True, object that starts with '_' are also added. 
+        filePath: path to a file to check for object definitions.
+        includePrivate: if True, object that starts with '_' are also added. 
             NOTE: '__' objects are always ignored.
     """
     lines = getCallableObjectsStr(filePath, includePrivate)

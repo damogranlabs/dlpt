@@ -9,8 +9,8 @@ import dlpt.log as log
 from dlpt.tfix import *
 
 
-def test_jsonFileValidation(tmpFolderPath):
-    filePath = os.path.join(tmpFolderPath, 'jsonTest.json')
+def test_jsonFileValidation(tmp_path):
+    filePath = os.path.join(tmp_path, 'jsonTest.json')
 
     # JSON file checking
     # create empty file
@@ -32,13 +32,13 @@ def test_jsonFileValidation(tmpFolderPath):
         dlpt.json.read(filePath)
 
 
-def test_rwDict(tmpFolderPath):
+def test_rwDict(tmp_path):
     def _check(data: dict, originalData: dict):
         assert dlpt.utils.areDictKeysEqual(data, originalData)
         assert dlpt.utils.areDictValuesEqual(data, originalData)
         assert (data['asd'] == 'qwe') and (data['zxc'] == 123)
 
-    filePath = os.path.join(tmpFolderPath, 'jsonTest.json')
+    filePath = os.path.join(tmp_path, 'jsonTest.json')
 
     # test data
     testData = {
@@ -99,8 +99,8 @@ class JsonTestSubclass():
 
 
 @pytest.mark.usefixtures("closeAllLogHandlers")
-def test_rwJsonpickleClass(tmpFolderPath):
-    filePath = os.path.join(tmpFolderPath, 'jsonTest.json')
+def test_rwJsonpickleClass(tmp_path):
+    filePath = os.path.join(tmp_path, 'jsonTest.json')
 
     # object from globally available module
     data = log.LogHandler()

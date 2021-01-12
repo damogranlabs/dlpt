@@ -75,7 +75,7 @@ class SubprocTimeoutError(subprocess.SubprocessError):
 def getName(pid: T_STR_INT) -> str:
     """
     Return process name. Raise Exception on error.
-        @param pid: PID number.
+        pid: PID number.
     NOTE: No PID existence check is performed.
     """
     pid = int(pid)
@@ -88,7 +88,7 @@ def getName(pid: T_STR_INT) -> str:
 def getExecutable(pid: T_STR_INT) -> str:
     """
     Return process executable path. Raise Exception on error.
-        @param pid: PID number.
+        pid: PID number.
     NOTE: No PID existence check is performed.
     """
     pid = int(pid)
@@ -103,7 +103,7 @@ def getCmdArgs(pid: T_STR_INT) -> List[str]:
     """
     Return a list of process command line arguments as it was intially spawned.
     Raise Exception on error. 
-        @param pid: PID number.
+        pid: PID number.
     NOTE: First item on the list is always process executable.
     NOTE: No PID existence check is performed.
     """
@@ -118,7 +118,7 @@ def getCmdArgs(pid: T_STR_INT) -> List[str]:
 def exist(pid: Optional[T_STR_INT]) -> bool:
     """
     Return True if PID exists, False otherwise.
-        @param pid: PID number, string or integer. 
+        pid: PID number, string or integer. 
             Raise exception if given PID is None.
     """
     if pid is None:
@@ -133,7 +133,7 @@ def exist(pid: Optional[T_STR_INT]) -> bool:
 def getChilds(pid: T_STR_INT) -> List[int]:
     """
     Return a list of child processes PIDs.
-        @param pid: PID number of a parent process, string or integer. 
+        pid: PID number of a parent process, string or integer. 
             Raise Exception if None.
     NOTE: No PID existence check is performed.
     """
@@ -153,10 +153,10 @@ def kill(pid: T_STR_INT, raiseException: bool = True, waitUntilKilledSec: int = 
     """
     Kill process with a given PID. Return True if process does not exist,
     Exception or False otherwise.
-        @param pid: PID number.
-        @param raiseException: if True, exception is raised if process wasn't 
+        pid: PID number.
+        raiseException: if True, exception is raised if process wasn't 
             successfully killed. Otherwise return False.
-        @param waitUntilKilledSec: wait for specified number of seconds for
+        waitUntilKilledSec: wait for specified number of seconds for
             a process to be killed. If 0, return immediately.
     """
     if exist(pid):
@@ -190,8 +190,8 @@ def killChilds(pid: T_STR_INT, raiseException: bool = True) -> List[int]:
     """
     Kill all child processes of a process with a given PID. Return a list of
     killed processes.
-        @param pid: PID number, string or integer. Raise Exception if None. 
-        @param raiseException: if True, exception is raised if any of child
+        pid: PID number, string or integer. Raise Exception if None. 
+        raiseException: if True, exception is raised if any of child
             processes can't be killed.
     """
     killedProcs: List[int] = []
@@ -209,8 +209,8 @@ def killTree(pid: T_STR_INT, raiseException: bool = True) -> List[int]:
     Kill parent process and all child processes. Return a list of 
     killed processes. 
     NOTE: First, child processes are killed, than parent process.
-        @param pid: PID number, string or integer. Raise Exception if None.
-        @param raiseException: if True, exception is raised if any of processes
+        pid: PID number, string or integer. Raise Exception if None.
+        raiseException: if True, exception is raised if any of processes
             can't be killed. Otherwise, False is returned.
     """
     killedProcs = killChilds(pid, raiseException)  # child procs
@@ -224,8 +224,8 @@ def killTreeMultiple(pids: T_PROC_ARGS, raiseException: bool = True) -> List[int
     """
     Iterate over pids and perform 'killProcessTree()'. Return a list of 
     killed processes.
-        @param pids: a list of PIDs - string or integer. Raise Exception if None.
-        @param raiseException: if True, exception is raised if any of processes can't be killed.
+        pids: a list of PIDs - string or integer. Raise Exception if None.
+        raiseException: if True, exception is raised if any of processes can't be killed.
     """
     killedProcs = []
     for parentPid in pids:
@@ -238,7 +238,7 @@ def killByName(nameFilter: str) -> List[int]:
     """
     Kill parent process and all child processes. Return a list of killed processes. 
     First child processes are killed, than parent process.
-        @param nameFilter: filter processes by finding nameFilter in a process
+        nameFilter: filter processes by finding nameFilter in a process
             name (lower case string is compared). 
     NOTE: exceptions are silently ignored since function doesn't check how
         processes are related to each other
@@ -259,7 +259,7 @@ def killByName(nameFilter: str) -> List[int]:
 def getAlive(nameFilter: Optional[str] = None) -> List[int]:
     """
     Return a list of currently alive process PIDs. 
-        @param nameFilter: if specified, filter return list by finding nameFilter
+        nameFilter: if specified, filter return list by finding nameFilter
             in a process name (lower case string is compared). 
     """
     if nameFilter is not None:
@@ -281,7 +281,7 @@ def getAlive(nameFilter: Optional[str] = None) -> List[int]:
 def spawnNonBlockingSubproc(args: T_PROC_ARGS) -> int:
     """
     Spawn non-blockin subprocess with given command line arguments and return PID.
-        @param args: list of subprocess arguments.
+        args: list of subprocess arguments.
             Example: ['python.exe', 'proc.py']
 
     NOTE: if spawned subprocess throw:
@@ -316,16 +316,16 @@ def spawnSubproc(args: T_PROC_ARGS,
     """
     Spawn subprocess and return CompletedProcess or raise exception.
     By default, raise exception on timeout (if given) or if return code is not zero.
-        @param args: command line arguments with which process will be spawned. 
+        args: command line arguments with which process will be spawned. 
             Can be shell commands, like ping.
             NOTE: all commandline arguments (specifically paths) must be 
                 properly encoded.
                 For example, path containing tilde will throw error.
-        @param cwd: root directory from where subprocess will be executed.
-        @param timeoutSec: timeout in seconds. If None, no timeout is implemented. 
+        cwd: root directory from where subprocess will be executed.
+        timeoutSec: timeout in seconds. If None, no timeout is implemented. 
             Else, if timeout is reached, process is killed and TimeoutExpired 
             exception re-raised.
-        @param checkReturnCode: if True, return code is checked by run() function.
+        checkReturnCode: if True, return code is checked by run() function.
             In case it is not zero, SubprocessReturncodeError() is raised. 
             If False, CompletedProcess is returned.
 
@@ -348,11 +348,11 @@ def spawnSubprocWithRunArgs(args: T_PROC_ARGS, **runArgs) -> subprocess.Complete
     Same as spawnSubprocess(), but enable user to specify all run() arguments. 
     Return CompletedProcess or raise exception on timeout (if given) or
     non-zero return code.
-        @param args: command line arguments with which process will be spawned.
+        args: command line arguments with which process will be spawned.
             NOTE: all commandline arguments (specifically paths) must be 
             properly encoded. 
             For example, path containing: tilde will throw error.
-        @param *runArgs: optional key-worded subprocess.run() arguments, that 
+        *runArgs: optional key-worded subprocess.run() arguments, that 
             are added to run() call.
             https://docs.python.org/3.6/library/subprocess.html#popen-constructor
             NOTE: for the common, basic run() args, see spawnSubprocess()
@@ -392,7 +392,7 @@ def _checkIfArgIsList(args: T_PROC_ARGS):
     """
     Check if given 'args' is a list and raise exception if not.
     Used for all subprocess spawning functions.
-        @param args: argument variable to check (must be list)
+        args: argument variable to check (must be list)
     """
     if not isinstance(args, list):
         errorMsg = f"'args' parameter must be list, not '{type(args)}':{args}"
@@ -402,7 +402,7 @@ def _checkIfArgIsList(args: T_PROC_ARGS):
 def _getCmdString(args: T_PROC_ARGS) -> str:
     """
     Cast all list items (args) to string and return joined string. 
-        @param args: list of arguments to convert to string
+        args: list of arguments to convert to string
     """
     cmdString = ""
     for arg in args:

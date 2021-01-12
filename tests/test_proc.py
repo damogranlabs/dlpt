@@ -13,7 +13,7 @@ from dlpt.tfix import *
 from tests import helpers
 
 currentPid = os.getpid()
-print("currentPid", currentPid)
+# print("currentPid", currentPid)
 # print(f"This process child PIDs: {dlpt.proc.getChildProcesses(currentPid)}")  # for debugging purposes.
 
 

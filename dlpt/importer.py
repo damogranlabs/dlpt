@@ -16,9 +16,9 @@ class ModuleImporter():
     def __init__(self, filePath: str, baseFolderPath: Optional[str] = None):
         """
         Dynamically import module from given filePath and return its instance.
-            @param filePath: abs path to a python module (file) which will be 
+            filePath: abs path to a python module (file) which will be 
                 dynamically imported.
-            @param baseFolderPath: path to a root folder from where module
+            baseFolderPath: path to a root folder from where module
                 will be imported. Example:
                     `filePath = C:/root/someFolder/someSubfolder/myModule.py`
                     `baseFolderPath = C:/root/someFolder/`
@@ -90,8 +90,8 @@ class ModuleImporter():
     def hasObject(self, objectName: str, raiseException: bool = True) -> bool:
         """
         Check if imported module has object with objectName.
-            @param objectName: name of the object to check in imported module
-            @param raiseException: if True, exception is raised if object is not
+            objectName: name of the object to check in imported module
+            raiseException: if True, exception is raised if object is not
                 found. Otherwise bool is returned (True if object is found,
                 False otherwise).
         """

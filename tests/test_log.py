@@ -25,8 +25,8 @@ CUSTOM_FORMATTER = "%(asctime)s.%(msecs)05d %(levelname)s: %(message)s"
 THIS_FILE = str(pathlib.Path(__file__).resolve())
 
 
-@pytest.mark.usefixtures("tmpFolderPath", "closeAllLogHandlers")
-def test_basic(tmpFolderPath):
+@pytest.mark.usefixtures("tmp_path", "closeAllLogHandlers")
+def test_basic(tmp_path):
     # no existing logger
     with pytest.raises(Exception):
         log.warning("Will fail, no existing logger.")
@@ -34,14 +34,14 @@ def test_basic(tmpFolderPath):
     # use default logger and log to a console and file
     logger = log.LogHandler()
     logger.addConsoleHandler()
-    logFilePath = logger.addFileHandler(LOG_TEST_FILE_NAME, tmpFolderPath)
-    rotLogFilePath = logger.addRotatingFileHandler(fileName="rotating", folderPath=tmpFolderPath)
+    logFilePath = logger.addFileHandler(LOG_TEST_FILE_NAME, tmp_path)
+    rotLogFilePath = logger.addRotatingFileHandler(fileName="rotating", folderPath=tmp_path)
     # logger.addSocketHandler() # see socket server test for logging via socket server
 
     log.info("Something should be logged, files should be created.")
 
     timeout = time.time() + 2
-    while(len(dlpt.pth.getFilesInFolder(tmpFolderPath)) != 2):
+    while(len(dlpt.pth.getFilesInFolder(tmp_path)) != 2):
         if time.time() > timeout:
             assert False, f"2 files are expected, but they were not generated in 2 seconds after log statement!"
 
@@ -52,12 +52,12 @@ def test_basic(tmpFolderPath):
         logger.addRotatingFileHandler()
 
 
-@pytest.mark.usefixtures("tmpFolderPath", "closeAllLogHandlers")
-def test_logLevel(tmpFolderPath):
+@pytest.mark.usefixtures("tmp_path", "closeAllLogHandlers")
+def test_logLevel(tmp_path):
     # use default logger and log to a console and file
     logger = log.LogHandler()
     logger.addConsoleHandler(logLevel=logging.WARNING)
-    logFilePath = logger.addFileHandler(folderPath=tmpFolderPath, logLevel=logging.WARNING)
+    logFilePath = logger.addFileHandler(folderPath=tmp_path, logLevel=logging.WARNING)
 
     log.debug("This log statement should not be visible in console and file should not be created.")
     log.info("This log statement should not be visible in console and file should not be created.")
@@ -69,11 +69,11 @@ def test_logLevel(tmpFolderPath):
         assert len(fHandler.readlines()) == 1
 
 
-@pytest.mark.usefixtures("tmpFolderPath", "closeAllLogHandlers")
-def test_removeHandlers(tmpFolderPath):
+@pytest.mark.usefixtures("tmp_path", "closeAllLogHandlers")
+def test_removeHandlers(tmp_path):
     logger = log.LogHandler()
     logger.addConsoleHandler()
-    filePath = logger.addFileHandler(folderPath=tmpFolderPath)
+    filePath = logger.addFileHandler(folderPath=tmp_path)
     log.info("Something should be logged, files should be created.")  # 1
     with open(filePath, 'r') as fHandler:
         assert len(fHandler.readlines()) == 1
@@ -87,18 +87,18 @@ def test_removeHandlers(tmpFolderPath):
     log.info("Another thing is logged, not visible anywhere (no handlers)")
 
 
-@pytest.mark.usefixtures("tmpFolderPath", "closeAllLogHandlers")
-def test_fileMode(tmpFolderPath):
+@pytest.mark.usefixtures("tmp_path", "closeAllLogHandlers")
+def test_fileMode(tmp_path):
     logger = log.LogHandler()
     logger.addConsoleHandler()
     # default mode
-    filePath = logger.addFileHandler(folderPath=tmpFolderPath)
+    filePath = logger.addFileHandler(folderPath=tmp_path)
     log.info("Something should be logged, files should be created.")  # 1
     logger.removeFileHandlers()
     log.info("Another thing is logged, but only to console")
 
     # reopen file in 'append' mode
-    filePath = logger.addFileHandler(folderPath=tmpFolderPath, mode='a')
+    filePath = logger.addFileHandler(folderPath=tmp_path, mode='a')
     log.info("Another thing is logged, added also to the file")  # 2
 
     log.closeAllLoggers()
@@ -106,18 +106,18 @@ def test_fileMode(tmpFolderPath):
         assert len(fHandler.readlines()) == 2
 
 
-@pytest.mark.usefixtures("tmpFolderPath", "closeAllLogHandlers")
-def test_multipleLoggers(tmpFolderPath):
+@pytest.mark.usefixtures("tmp_path", "closeAllLogHandlers")
+def test_multipleLoggers(tmp_path):
     LOG_HANDLER_METHOD_STR = "LogHandler class method: "
     # use default logger and log to a console and file (custom formatter).
     defaultLogger = log.LogHandler()
     defaultLogger.addConsoleHandler()
-    defaultLoggerFilePath = defaultLogger.addFileHandler(folderPath=tmpFolderPath)
+    defaultLoggerFilePath = defaultLogger.addFileHandler(folderPath=tmp_path)
 
     # additional logger, only logs to file
     extraLogger = log.LogHandler(EXTRA_LOGGER_NAME, setAsDefault=False)
     extraLogger.addConsoleHandler()
-    extraLoggerFilePath = extraLogger.addFileHandler(folderPath=tmpFolderPath)
+    extraLoggerFilePath = extraLogger.addFileHandler(folderPath=tmp_path)
 
     assert defaultLogger.isDefaultLogHandler() is True
     assert extraLogger.isDefaultLogHandler() is False
@@ -152,8 +152,8 @@ def test_multipleLoggers(tmpFolderPath):
         assert len(defaultLoggerLines) == 6  # 2 at the beginning, 4 now: all levels
 
 
-@pytest.mark.usefixtures("tmpFolderPath", "closeAllLogHandlers")
-def test_pathsNames(tmpFolderPath):
+@pytest.mark.usefixtures("tmp_path", "closeAllLogHandlers")
+def test_pathsNames(tmp_path):
     logFolder = log.getDefaultLogFolderPath()
     assert str(pathlib.Path(os.getcwd()).resolve()) in logFolder
     assert logFolder.endswith("log")
@@ -170,14 +170,14 @@ def test_pathsNames(tmpFolderPath):
     defaultLogger = log.LogHandler()
     assert defaultLogger.getName() == log.DEFAULT_NAME
     defaultLogger.addConsoleHandler()
-    defaultLoggerFilePath = defaultLogger.addFileHandler(fileName="nameWithoutExtension", folderPath=tmpFolderPath)
-    assert defaultLoggerFilePath.startswith(tmpFolderPath)
+    defaultLoggerFilePath = defaultLogger.addFileHandler(fileName="nameWithoutExtension", folderPath=tmp_path)
+    assert defaultLoggerFilePath.startswith(str(tmp_path))
     filePath = defaultLogger.getLogFilePath()
     assert filePath is not None
     assert os.path.samefile(defaultLoggerFilePath, filePath)
 
-    defaultLoggerRotFilePath = defaultLogger.addRotatingFileHandler(folderPath=tmpFolderPath)
-    assert defaultLoggerRotFilePath.startswith(tmpFolderPath)
+    defaultLoggerRotFilePath = defaultLogger.addRotatingFileHandler(folderPath=tmp_path)
+    assert defaultLoggerRotFilePath.startswith(str(tmp_path))
 
     # check default log file path (instead of specifying folder path)
     logger = log.LogHandler()
@@ -209,8 +209,8 @@ def test_pathsNames(tmpFolderPath):
             dlpt.pth.removeFolderTree(os.path.dirname(defaultLogFilePath))
 
 
-@pytest.mark.usefixtures("tmpFolderPath", "closeAllLogHandlers")
-def test_customFormatter(tmpFolderPath):
+@pytest.mark.usefixtures("tmp_path", "closeAllLogHandlers")
+def test_customFormatter(tmp_path):
     CUSTOM_MSG = "MessageWithoutAnySpacesForParsing"
     TEST_FORMATTER = "%(levelname)s: %(message)s (%(asctime)s.%(msecs)05d)"
 
@@ -219,7 +219,7 @@ def test_customFormatter(tmpFolderPath):
     defaultLogger.addConsoleHandler()
     # msec digits specified in TEST_FORMATTER
     formatter = logging.Formatter(TEST_FORMATTER, datefmt=log.DEFAULT_FORMATTER_TIME)
-    defaultLoggerFilePath = defaultLogger.addFileHandler(folderPath=tmpFolderPath, formatter=formatter)
+    defaultLoggerFilePath = defaultLogger.addFileHandler(folderPath=tmp_path, formatter=formatter)
 
     log.debug(CUSTOM_MSG)
 
@@ -261,15 +261,15 @@ def test_customFormatter(tmpFolderPath):
         assert f"{dlpt.pth.getName(__file__)}:" in line
 
 
-@pytest.mark.usefixtures("tmpFolderPath", "closeAllLogHandlers")
-def test_rotatingLogHandler(tmpFolderPath):
+@pytest.mark.usefixtures("tmp_path", "closeAllLogHandlers")
+def test_rotatingLogHandler(tmp_path):
     # use default logger and log to a console and file.
     ROT_LOG_FILENAME = 'rotLogName.log'
     ROT_LOG_FILE_SIZE_MB = 0.05
 
     defaultLogger = log.LogHandler()
     formatter = logging.Formatter(CUSTOM_FORMATTER)  # msec digits specified in TEST_FORMATTER
-    filePath = defaultLogger.addRotatingFileHandler(ROT_LOG_FILENAME, tmpFolderPath,
+    filePath = defaultLogger.addRotatingFileHandler(ROT_LOG_FILENAME, tmp_path,
                                                     maxSizeMb=ROT_LOG_FILE_SIZE_MB, backupCount=2,
                                                     formatter=formatter)
     assert filePath == defaultLogger.getRotatingLogFilePath()
@@ -282,7 +282,7 @@ def test_rotatingLogHandler(tmpFolderPath):
     for byte in range(numOfWrites):
         log.info(f"Write: {byte}".ljust(15, ' '))
 
-    logFiles = dlpt.pth.getFilesInFolder(tmpFolderPath)
+    logFiles = dlpt.pth.getFilesInFolder(tmp_path)
     assert len(logFiles) == 3
 
     assert filePath in logFiles
@@ -294,8 +294,8 @@ def test_rotatingLogHandler(tmpFolderPath):
     assert logFileSize < 51 * 1e3
 
 
-@pytest.mark.usefixtures("tmpFolderPath", "closeAllLogHandlers", "killChildProcesses")
-def test_socketServer(tmpFolderPath):
+@pytest.mark.usefixtures("tmp_path", "closeAllLogHandlers", "killChildProcesses")
+def test_socketServer(tmp_path):
     log1 = log.LogHandler('logger1')
     log1.addSocketHandler()
     log2 = log.LogHandler('logger2', setAsDefault=False)
@@ -303,7 +303,7 @@ def test_socketServer(tmpFolderPath):
     log3 = log.LogHandler('logger3', setAsDefault=False)
     log3.addConsoleHandler()
 
-    logFilePath = os.path.join(tmpFolderPath, LOG_TEST_SOCKETSRV_FILE_NAME)
+    logFilePath = os.path.join(tmp_path, LOG_TEST_SOCKETSRV_FILE_NAME)
     socketServerPid = log.createSocketServerProc(logFilePath)
 
     log.info('infoMsg')

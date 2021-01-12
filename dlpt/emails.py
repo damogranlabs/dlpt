@@ -51,8 +51,8 @@ class Data():
 def send(sender: Sender, cfgData: Data):
     """
     Send email with given data.
-        @param sender: object with all relevant sender email data info.
-        @param cfgData: object with all relevant email data.
+        sender: object with all relevant sender email data info.
+        cfgData: object with all relevant email data.
     """
     # Create a multipart message and set headers
     message = MIMEMultipart()
@@ -90,7 +90,7 @@ def send(sender: Sender, cfgData: Data):
 def _toBinary(filePath: str) -> MIMEBase:
     """
     Get binary file representation (as expected by email lib) 
-        @param filePath: path to a file to encode.
+        filePath: path to a file to encode.
     """
     dlpt.pth.check(filePath)
 

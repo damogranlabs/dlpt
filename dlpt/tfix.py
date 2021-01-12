@@ -13,43 +13,6 @@ import dlpt
 import dlpt.log as log
 
 
-def createTempFolder(name: str) -> str:
-    """ Create temp folder and return path, where name is built from: 
-    <testName>_<unique 4 chars>
-
-    Args:
-        name: base name of the temp folder that will be created
-    """
-    folderName = f"{name}_{uuid.uuid4().hex[:3]}"
-    folderPath = os.path.join(tempfile.gettempdir(), folderName)
-    dlpt.pth.createCleanFolder(folderPath)
-
-    return folderPath
-
-
-@pytest.fixture
-def tmpFolderPath(request, tmpdir) -> Iterator[str]:
-    """Create temporary test folder and return path. Remove it at the end. """
-    folderPath = str(tmpdir)
-
-    yield folderPath
-
-    dlpt.pth.removeFolderTree(folderPath)
-
-
-@pytest.fixture
-def tmpFilePath(request, tmpdir) -> Iterator[str]:
-    """ Create temporary test folder and return a (non-existing) file path (".txt").
-    Remove complete folder at the end. Folder is created with createTempFolder().
-    """
-    folderPath = str(tmpdir)
-    filePath = os.path.join(folderPath, request.node.name)
-
-    yield filePath
-
-    dlpt.pth.removeFolderTree(folderPath)
-
-
 @pytest.fixture
 def closeAllLogHandlers():
     """ Close all log handlers at the end of test case."""
@@ -73,13 +36,13 @@ def consoleLogger(request) -> Iterator[log.LogHandler]:
 
 
 @pytest.fixture
-def consoleFileLogger(request, tmpdir) -> Iterator[Tuple[log.LogHandler, str]]:
+def consoleFileLogger(request, tmp_path) -> Iterator[Tuple[log.LogHandler, str]]:
     """ Create a default log.LogHandler and add console and file handlers. 
     Return a tuple: (<log handler>, <log file path>)
     Name of created logger is the same as current test case function.
     Close all logs at the end.
     """
-    folderPath = str(tmpdir)
+    folderPath = str(tmp_path)
 
     logger = log.LogHandler(request.node.name)
     logger.addConsoleHandler()

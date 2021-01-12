@@ -44,8 +44,8 @@ def checkModule(importer: "dlpt.importer.ModuleImporter"):
     assert module.variableToChange == VARIABLE_DEFAULT_VALUE
 
 
-def test_basic(tmpFilePath):
-    tmpFilePath = tmpFilePath.replace(".txt", ".py")
+def test_basic(tmp_path):
+    tmpFilePath = os.path.join(tmp_path, "test_basic.py")
 
     createTempPyFile(tmpFilePath)
     importer = dlpt.importer.ModuleImporter(tmpFilePath)
@@ -79,17 +79,17 @@ def test_basic(tmpFilePath):
         dlpt.importer.ModuleImporter(tmpFilePath)
 
 
-def test_customBaseFolder(tmpFolderPath):
-    inRootFolder = os.path.join(tmpFolderPath, MODULE_NAME)
+def test_customBaseFolder(tmp_path):
+    inRootFolder = os.path.join(tmp_path, MODULE_NAME)
     createTempPyFile(inRootFolder)
-    importer = dlpt.importer.ModuleImporter(inRootFolder, tmpFolderPath)
+    importer = dlpt.importer.ModuleImporter(inRootFolder, tmp_path)
     checkModule(importer)
 
-    folderPath = os.path.join(tmpFolderPath, "root", "package", "subFolder")
+    folderPath = os.path.join(tmp_path, "root", "package", "subFolder")
     dlpt.pth.createFolder(folderPath)
     filePath = os.path.join(folderPath, MODULE_NAME)
     createTempPyFile(filePath)
-    importer = dlpt.importer.ModuleImporter(filePath, tmpFolderPath)
+    importer = dlpt.importer.ModuleImporter(filePath, tmp_path)
     checkModule(importer)
 
     # file not inside base folder

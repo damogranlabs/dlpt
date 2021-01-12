@@ -8,7 +8,7 @@ import shutil
 import stat
 import time
 import webbrowser
-from typing import Optional, List
+from typing import Optional, List, Union, overload
 
 import dlpt
 
@@ -510,7 +510,13 @@ def openWithDefaultApp(filePath: str):  # pragma: no cover
         os.popen(f"open {filePath}")
 
 
-def _pathValidationCheck(path: Optional[str]) -> str:
+@overload
+def _pathValidationCheck(path: str) -> str: ...
+@overload
+def _pathValidationCheck(path: pathlib.Path) -> pathlib.Path: ...
+
+
+def _pathValidationCheck(path: Union[str, pathlib.Path]) -> Union[str, pathlib.Path]:
     """ Raise exception if given path is not a string or it is an empty string.
 
     Args:
@@ -519,6 +525,8 @@ def _pathValidationCheck(path: Optional[str]) -> str:
     if isinstance(path, str):
         if path.strip() != '':
             return path
+    elif isinstance(path, pathlib.Path):
+        return path
 
     # 0 - current frame  of getCallerLocation scope
     # 1 - frame of this _pathValidationCheck()

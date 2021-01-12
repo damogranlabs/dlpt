@@ -22,37 +22,37 @@ def test_pathManipulation():
     assert dlpt.pth.withDoubleBwSlashes(thisFile) == thisFile.replace("\\", "\\\\")
 
 
-def test_fileFolderRemoval(tmpFolderPath):
+def test_fileFolderRemoval(tmp_path):
     # create files
     allFiles = [
-        os.path.join(tmpFolderPath, 'testFile1.txt'),
-        os.path.join(tmpFolderPath, 'testFile2.txt'),
-        os.path.join(tmpFolderPath, 'testFile3.txt'),
-        os.path.join(tmpFolderPath, 'testFile4.txt')
+        os.path.join(tmp_path, 'testFile1.txt'),
+        os.path.join(tmp_path, 'testFile2.txt'),
+        os.path.join(tmp_path, 'testFile3.txt'),
+        os.path.join(tmp_path, 'testFile4.txt')
     ]
     for filePath in allFiles:
         with open(filePath, 'w+') as fHandler:
             fHandler.write('asdasdasdasd')
     for filePath in allFiles:
         dlpt.pth.removeFile(filePath)
-    assert os.listdir(tmpFolderPath) == []
+    assert os.listdir(tmp_path) == []
 
     for filePath in allFiles:
         with open(filePath, 'w+') as fHandler:
             fHandler.write('qweqweqwe')
-    dlpt.pth.cleanFolder(tmpFolderPath)
-    assert os.listdir(tmpFolderPath) == []
+    dlpt.pth.cleanFolder(tmp_path)
+    assert os.listdir(tmp_path) == []
 
-    subFolder = os.path.join(tmpFolderPath, 'subFolder')
+    subFolder = os.path.join(tmp_path, 'subFolder')
     os.mkdir(subFolder)
     for filePath in allFiles:
         with open(filePath, 'w+') as fHandler:
             fHandler.write('qweqweqwe')
-        filePath = filePath.replace(tmpFolderPath, subFolder)
+        filePath = filePath.replace(str(tmp_path), subFolder)
         with open(filePath, 'w+') as fHandler:
             fHandler.write('qweqweqwe')
     dlpt.pth.removeFolderTree(subFolder)
-    assert dlpt.utils.areListValuesEqual(dlpt.pth.getFilesInFolder(tmpFolderPath), allFiles)
+    assert dlpt.utils.areListValuesEqual(dlpt.pth.getFilesInFolder(tmp_path), allFiles)
 
     # what if file is locked?
     try:
@@ -64,19 +64,19 @@ def test_fileFolderRemoval(tmpFolderPath):
     except:
         os.chmod(allFiles[0], stat.S_IWRITE)
 
-    dlpt.pth.createCleanFolder(tmpFolderPath)
-    assert os.path.exists(tmpFolderPath) is True
-    assert len(os.listdir(tmpFolderPath)) == 0
+    dlpt.pth.createCleanFolder(tmp_path)
+    assert os.path.exists(tmp_path) is True
+    assert len(os.listdir(tmp_path)) == 0
 
     # what if folder is locked?
     try:
-        os.chmod(tmpFolderPath, stat.S_IREAD)
+        os.chmod(tmp_path, stat.S_IREAD)
         with pytest.raises(Exception):
-            dlpt.pth.removeFolderTree(tmpFolderPath, forceWritePermissions=False)
-        dlpt.pth.removeFolderTree(tmpFolderPath)
-        assert os.path.exists(tmpFolderPath) is False
+            dlpt.pth.removeFolderTree(tmp_path, forceWritePermissions=False)
+        dlpt.pth.removeFolderTree(tmp_path)
+        assert os.path.exists(tmp_path) is False
     except:
-        os.chmod(tmpFolderPath, stat.S_IWRITE)
+        os.chmod(tmp_path, stat.S_IWRITE)
 
 
 def test_pathCheckers():
@@ -113,22 +113,22 @@ def test_pathCheckers():
         assert f"{os.path.abspath(__file__).lower()}" in splitErr[1].lower()
 
 
-def test_fileFolderHandlers(tmpFolderPath):
+def test_fileFolderHandlers(tmp_path):
     # create a folder and clean it and delete it
-    newSubFolder = os.path.join(tmpFolderPath, "subOne")
+    newSubFolder = os.path.join(tmp_path, "subOne")
     dlpt.pth.createFolder(newSubFolder)
     dlpt.pth.check(newSubFolder)
 
     # cleanup tmp folder
-    assert os.listdir(tmpFolderPath) != []
-    dlpt.pth.cleanFolder(tmpFolderPath)
-    assert os.listdir(tmpFolderPath) == []
+    assert os.listdir(tmp_path) != []
+    dlpt.pth.cleanFolder(tmp_path)
+    assert os.listdir(tmp_path) == []
 
     dlpt.pth.createFolder(newSubFolder)
     dlpt.pth.createFolder(os.path.join(newSubFolder, "subTwo"))
 
     # copy folder
-    newSubFolderCopy = tmpFolderPath + "Copy"
+    newSubFolderCopy = str(tmp_path) + "Copy"
     dlpt.pth.copyFolder(newSubFolder, newSubFolderCopy)
     dlpt.pth.check(newSubFolder)
     dlpt.pth.check(newSubFolderCopy)
@@ -141,14 +141,14 @@ def test_fileFolderHandlers(tmpFolderPath):
 
     # create a copy of this file and delete it
     thisFileCopyName = dlpt.pth.getName(thisFile, False) + "Copy.py"
-    dstFilePath = dlpt.pth.copyFile(thisFile, tmpFolderPath, thisFileCopyName)
+    dstFilePath = dlpt.pth.copyFile(thisFile, tmp_path, thisFileCopyName)
     assert os.path.exists(dstFilePath) is True
     with pytest.raises(ValueError):
         dlpt.pth.removeFolderTree(dstFilePath)
     dlpt.pth.removeFile(dstFilePath)
     assert os.path.exists(dstFilePath) is False
     # create intermediate folders
-    dstFolderPath = os.path.join(tmpFolderPath, "subOne", "subTwo")
+    dstFolderPath = os.path.join(tmp_path, "subOne", "subTwo")
     dstFilePath = dlpt.pth.copyFile(thisFile, dstFolderPath, thisFileCopyName)
     assert os.path.exists(dstFilePath) is True
     # check if copy will remove file before if already existing
@@ -158,21 +158,21 @@ def test_fileFolderHandlers(tmpFolderPath):
     assert os.path.exists(dstFilePath) is False
 
     # copy to dst as folder (not file)
-    dstFilePath = dlpt.pth.copyFile(thisFile, tmpFolderPath)
+    dstFilePath = dlpt.pth.copyFile(thisFile, tmp_path)
     assert os.path.exists(dstFilePath) is True
-    assert dstFilePath == os.path.join(tmpFolderPath, dlpt.pth.getName(thisFile))
+    assert dstFilePath == os.path.join(tmp_path, dlpt.pth.getName(thisFile))
 
     with pytest.raises(ValueError):
-        dlpt.pth.copyFile(tmpFolderPath, tmpFolderPath)
+        dlpt.pth.copyFile(tmp_path, tmp_path)
 
     with pytest.raises(ValueError):
-        dlpt.pth.removeFile(tmpFolderPath)
+        dlpt.pth.removeFile(tmp_path)
 
 
-def test_fileFolderExplorer(tmpFolderPath, tmpFilePath):
+def test_fileFolderExplorer(tmp_path):
     # create a subfolder
     subFolderName = "subfolder"
-    subfolderPath = os.path.join(tmpFolderPath, subFolderName)
+    subfolderPath = os.path.join(tmp_path, subFolderName)
     dlpt.pth.createFolder(subfolderPath)
     # create test files in temp folder
     pyFileNames = ["file1.py", "file2.py", "file 3.py", "custom.py", "customPy.py"]
@@ -187,7 +187,7 @@ def test_fileFolderExplorer(tmpFolderPath, tmpFilePath):
     allFiles = []
     # py files
     for fileName in pyFileNames:
-        filePath = os.path.join(tmpFolderPath, fileName)
+        filePath = os.path.join(tmp_path, fileName)
         allFiles.append(filePath)
         rootFiles.append(filePath)
         rootPyFilePaths.append(filePath)
@@ -201,7 +201,7 @@ def test_fileFolderExplorer(tmpFolderPath, tmpFilePath):
         shutil.copyfile(thisFile, filePath)
     # txt
     for fileName in txtFileNames:
-        filePath = os.path.join(tmpFolderPath, fileName)
+        filePath = os.path.join(tmp_path, fileName)
         allFiles.append(filePath)
         rootFiles.append(filePath)
         rootTxtFilePaths.append(filePath)
@@ -215,31 +215,32 @@ def test_fileFolderExplorer(tmpFolderPath, tmpFilePath):
         shutil.copyfile(thisFile, filePath)
 
     # getAllFilesInFolder()
-    fileList = dlpt.pth.getFilesInFolder(tmpFolderPath)
+    fileList = dlpt.pth.getFilesInFolder(tmp_path)
     assert dlpt.utils.areListValuesEqual(fileList, rootFiles)
     fileList = dlpt.pth.getFilesInFolder(subfolderPath)
     assert dlpt.utils.areListValuesEqual(fileList, subfolderPyFilePaths + subfolderTxtFilePaths)
 
     # getAllFilesInFolderTree()
-    fileList = dlpt.pth.getFilesInFolderTree(tmpFolderPath)
+    fileList = dlpt.pth.getFilesInFolderTree(tmp_path)
     assert dlpt.utils.areListValuesEqual(fileList, (allPyFilePaths + allTxtFilePaths) * 2)
-    fileList = dlpt.pth.getFilesInFolderTree(tmpFolderPath, includeExt=[".py"])
+    fileList = dlpt.pth.getFilesInFolderTree(tmp_path, includeExt=[".py"])
     assert dlpt.utils.areListValuesEqual(fileList, allPyFilePaths)
-    fileList = dlpt.pth.getFilesInFolderTree(tmpFolderPath, includeExt=[".py"])
+    fileList = dlpt.pth.getFilesInFolderTree(tmp_path, includeExt=[".py"])
     assert dlpt.utils.areListValuesEqual(fileList, allPyFilePaths)
-    fileList = dlpt.pth.getFilesInFolderTree(tmpFolderPath, excludeExt=[".txt"])
+    fileList = dlpt.pth.getFilesInFolderTree(tmp_path, excludeExt=[".txt"])
     assert dlpt.utils.areListValuesEqual(fileList, allPyFilePaths)
 
     # getAllFoldersInFolder()
-    folderList = dlpt.pth.getFoldersInFolder(tmpFolderPath)
+    folderList = dlpt.pth.getFoldersInFolder(tmp_path)
     assert folderList == [subfolderPath]
-    folderList = dlpt.pth.getFoldersInFolder(tmpFolderPath, nameFilter="sub")
+    folderList = dlpt.pth.getFoldersInFolder(tmp_path, nameFilter="sub")
     assert folderList == [subfolderPath]
-    folderList = dlpt.pth.getFoldersInFolder(tmpFolderPath, nameFilter="qwe")
+    folderList = dlpt.pth.getFoldersInFolder(tmp_path, nameFilter="qwe")
     assert len(folderList) == 0
 
 
-def test_changeDir(tmpFilePath):
+def test_changeDir(tmp_path):
+    tmpFilePath = os.path.join(tmp_path, "test_changeDir.txt")
     with open(tmpFilePath, "w+") as fHandler:
         pass  # create actual empty file
 
@@ -258,13 +259,13 @@ def test_changeDir(tmpFilePath):
             pass
 
 
-def test_removeOldItems(tmpFolderPath):
+def test_removeOldItems(tmp_path):
     subFolders = [  # path, days
-        (os.path.join(tmpFolderPath, "now"), 0),
-        (os.path.join(tmpFolderPath, "one"), 1),
-        (os.path.join(tmpFolderPath, "two"), 2),
-        (os.path.join(tmpFolderPath, "three"), 3),
-        (os.path.join(tmpFolderPath, "four"), 10)
+        (os.path.join(tmp_path, "now"), 0),
+        (os.path.join(tmp_path, "one"), 1),
+        (os.path.join(tmp_path, "two"), 2),
+        (os.path.join(tmp_path, "three"), 3),
+        (os.path.join(tmp_path, "four"), 10)
     ]
     for fData in subFolders:
         path, daysAgo = fData
@@ -279,5 +280,5 @@ def test_removeOldItems(tmpFolderPath):
         newTimestamp = time.time() - dlpt.time.timeToSeconds(d=daysAgo)
         os.utime(path, (newTimestamp, newTimestamp))
 
-    dlpt.pth.removeOldItems(tmpFolderPath, 1)
-    assert dlpt.utils.areListValuesEqual(os.listdir(tmpFolderPath), ["now", "one", "now.txt", "one.txt"])
+    dlpt.pth.removeOldItems(tmp_path, 1)
+    assert dlpt.utils.areListValuesEqual(os.listdir(tmp_path), ["now", "one", "now.txt", "one.txt"])
