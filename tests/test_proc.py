@@ -38,7 +38,7 @@ def test_getProcData():
     assert dlpt.proc.getCmdArgs(currentPid) != []
 
 
-@pytest.mark.usefixtures("killChildProcesses")
+@pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_spawnSetting():
     # spawn a valid subprocess
     args: dlpt.proc.T_PROC_ARGS = [sys.executable, "-c", "\"import sys; sys.exit(0)\""]
@@ -74,7 +74,7 @@ def test_spawnSetting():
     proc = dlpt.proc.spawnSubproc(args)
 
 
-@pytest.mark.usefixtures("killChildProcesses")
+@pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_spawnWithRunArgs():
     """
     Spawn a subprocess with extra key-worded run() args.
@@ -97,7 +97,7 @@ def test_spawnWithRunArgs():
         dlpt.proc.spawnSubprocWithRunArgs(["čšž"])
 
 
-@pytest.mark.usefixtures("killChildProcesses")
+@pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_spawnAndKillProcess():
     """
     Spawn one parent subprocess, which spawns another NUMBER_OF_CHILD_PROCESSES child processes. 
@@ -153,41 +153,25 @@ def test_getAlive():
     assert currentPid in pyPids
 
 
-@pytest.mark.usefixtures("killChildProcesses")
-def test_processByName():
-    killedProcesses = dlpt.proc.killByName('notepad.exe')
-    assert len(dlpt.proc.getAlive('notepad.exe')) == 0
-
-    proc = subprocess.Popen('notepad.exe')
-    proc2 = subprocess.Popen('notepad.exe')
-    proc3 = subprocess.Popen('notepad.exe')
-    pids = [proc.pid, proc2.pid, proc3.pid]
-
-    pidsList = dlpt.proc.getAlive('notepad')
-    assert dlpt.utils.areListValuesEqual(pidsList, pids)
-
-    killedProcesses = dlpt.proc.killByName('notepad.exe')
-    assert dlpt.utils.areListValuesEqual(killedProcesses, pids)
-
-
-@pytest.mark.usefixtures("killChildProcesses")
+@pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_nonBlockingProcess():
+    cmdStr = helpers.getTestProcArgs()
     with pytest.raises(Exception) as err:
         dlpt.proc.spawnNonBlockingSubproc(["qweasdzxc"])
 
-    procPid = dlpt.proc.spawnNonBlockingSubproc(['notepad.exe'])
+    procPid = dlpt.proc.spawnNonBlockingSubproc([cmdStr])
     assert dlpt.proc.exist(procPid) is True
     dlpt.proc.kill(procPid)
 
 
-@pytest.mark.usefixtures("killChildProcesses")
+@pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_shellCommand():
     args = ["ping", "www.google.com", "-n 1", "-w 1000"]
     proc = dlpt.proc.spawnSubproc(args)
     assert proc.returncode == 0
 
 
-@pytest.mark.usefixtures("killChildProcesses")
+@pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_timeout():
     args = ["ping", "127.255.255.255"]
     startTime = time.time()

@@ -1,6 +1,7 @@
 import multiprocessing
 import sys
 import time
+from typing import Optional
 
 
 class TestDictClass():
@@ -70,5 +71,25 @@ def mpParent(childNum: int, sleepTime: float = 3):
     time.sleep(1)
 
 
+def getTestProcArgs(sleepTimeSec: Optional[float] = 10) -> str:
+    """ Return command line string necessary to spawn this file as a subprocess 
+    (and execute __main__).
+
+    Args:
+        sleepTimeSec: set the time spawned process should sleep.
+
+    Returns:
+        [description]
+
+    """
+    cmdStr = f"python {__file__} {sleepTimeSec}"
+
+    return cmdStr
+
+
 if __name__ == "__main__":
-    pass
+    if len(sys.argv) == 2:
+        sleepTime = float(sys.argv[1])
+    else:
+        sleepTime = 10
+    sleep(sleepTime)

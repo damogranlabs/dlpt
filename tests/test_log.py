@@ -294,7 +294,7 @@ def test_rotatingLogHandler(tmp_path):
     assert logFileSize < 51 * 1e3
 
 
-@pytest.mark.usefixtures("tmp_path", "closeAllLogHandlers", "killChildProcesses")
+@pytest.mark.usefixtures("tmp_path", "closeAllLogHandlers", "dlptKillTestSubprocs")
 def test_socketServer(tmp_path):
     log1 = log.LogHandler('logger1')
     log1.addSocketHandler()

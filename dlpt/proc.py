@@ -234,7 +234,7 @@ def killTreeMultiple(pids: T_PROC_ARGS, raiseException: bool = True) -> List[int
     return killedProcs
 
 
-def killByName(nameFilter: str) -> List[int]:
+def killByName(nameFilter: str) -> List[int]: # pragma: no cover
     """
     Kill parent process and all child processes. Return a list of killed processes. 
     First child processes are killed, than parent process.

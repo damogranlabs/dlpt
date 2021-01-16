@@ -511,12 +511,12 @@ def openWithDefaultApp(filePath: str):  # pragma: no cover
 
 
 @overload
-def _pathValidationCheck(path: str) -> str: ...
+def _pathValidationCheck(path: Optional[str]) -> str: ...
 @overload
-def _pathValidationCheck(path: pathlib.Path) -> pathlib.Path: ...
+def _pathValidationCheck(path: Optional[pathlib.Path]) -> pathlib.Path: ...
 
 
-def _pathValidationCheck(path: Union[str, pathlib.Path]) -> Union[str, pathlib.Path]:
+def _pathValidationCheck(path: Optional[Union[str, pathlib.Path]]) -> Union[str, pathlib.Path]:
     """ Raise exception if given path is not a string or it is an empty string.
 
     Args:

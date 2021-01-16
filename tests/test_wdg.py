@@ -42,7 +42,7 @@ def test_basic():
     assert wdg.getTimeoutSec() == 100
 
 
-@pytest.mark.usefixtures("killChildProcesses")
+@pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_wdgDoesNotKillProcess(spawnSubprocess):
     # watchdog does not have to kill user PID
     timeoutSec = 3
@@ -64,7 +64,7 @@ def test_wdgDoesNotKillProcess(spawnSubprocess):
     assert wdg.isWdgAlive() is False
 
 
-@pytest.mark.usefixtures("killChildProcesses")
+@pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_wdgKillsProcess(spawnSubprocess):
     # watchdog must kill user PID
     timeoutSec = 1
