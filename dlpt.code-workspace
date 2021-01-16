@@ -51,14 +51,16 @@
                 120
             ],
         },
+        "search.useIgnoreFiles": false,
 
         // spell checker settings
         "cSpell.enabledLanguageIds": [
             "python"
         ],
         "restructuredtext.linter.disabled": true,
-        "search.useIgnoreFiles": false,
-        "restructuredtext.languageServer.disabled": true
+        "restructuredtext.languageServer.disabled": true,
+        "autoDocstring.customTemplatePath": "docstring.mustache"
+
     },
     "extensions": {
         "recommendations": [
