@@ -57,7 +57,8 @@
             "python"
         ],
         "restructuredtext.linter.disabled": true,
-        "search.useIgnoreFiles": false
+        "search.useIgnoreFiles": false,
+        "restructuredtext.languageServer.disabled": true
     },
     "extensions": {
         "recommendations": [
