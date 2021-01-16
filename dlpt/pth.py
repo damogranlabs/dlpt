@@ -50,7 +50,7 @@ def check(path: Optional[str]) -> str:
     path (if valid) or raise exception.
 
     Note:
-        use standard ``os.path.exists()`` if you don't want to raise exception.
+        Use standard ``os.path.exists()`` if you don't want to raise exception.
 
     Args:
         path: path to check
