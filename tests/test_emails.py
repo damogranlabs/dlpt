@@ -22,7 +22,7 @@ def _getTestEmailData() -> Tuple[dlpt.emails.Sender, dlpt.emails.Data]:
     return sender, emailData
 
 
-@pytest.mark.skipif(not dlpt.utils.isDbgSession(), reason="User must check email inbox manually.")
+@pytest.mark.skip("User must check email inbox manually.")
 def test_textMailSingleRecipient():
     datum = dlpt.time.getCurrentDateTime(dlpt.time.DATE_FORMAT)
     # send email
@@ -34,7 +34,7 @@ def test_textMailSingleRecipient():
     dlpt.emails.send(sender, emailData)
 
 
-@pytest.mark.skipif(not dlpt.utils.isDbgSession(), reason="User must check email inbox manually.")
+@pytest.mark.skip("User must check email inbox manually.")
 def test_textMailMultipleRecipients():
     datum = dlpt.time.getCurrentDateTime(dlpt.time.DATE_FORMAT)
     # send email
@@ -48,7 +48,7 @@ def test_textMailMultipleRecipients():
     dlpt.emails.send(sender, emailData)
 
 
-@pytest.mark.skipif(not dlpt.utils.isDbgSession(), reason="User must check email inbox manually.")
+@pytest.mark.skip("User must check email inbox manually.")
 def test_htmlMail():
     datum = dlpt.time.getCurrentDateTime(dlpt.time.DATE_FORMAT)
     # send email
