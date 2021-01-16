@@ -98,7 +98,7 @@ class JsonTestSubclass():
         self._nestedPrivate = '654'
 
 
-@pytest.mark.usefixtures("closeAllLogHandlers")
+@pytest.mark.usefixtures("dlptCloseLogHandlers")
 def test_rwJsonpickleClass(tmp_path):
     filePath = os.path.join(tmp_path, 'jsonTest.json')
 

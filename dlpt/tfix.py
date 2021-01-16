@@ -2,8 +2,6 @@
 Test fixtures to be used with pytest for any project.
 """
 import os
-from typing import Iterator, Tuple
-
 import pytest
 
 import dlpt
@@ -14,20 +12,6 @@ import dlpt.log as log
 def dlptCloseLogHandlers():
     """ Close all log handlers at the end of test case."""
     yield
-
-    log.closeAllLoggers()
-
-
-@pytest.fixture
-def dlptConsoleLogger(request) -> Iterator[log.LogHandler]:
-    """ Create default log handler with added console handler and pass it to test func.
-    Name of created logger is the same as current test case function.
-    Close all logs at the end.
-    """
-    logger = log.LogHandler(request.node.name)
-    logger.addConsoleHandler()
-
-    yield logger
 
     log.closeAllLoggers()
 
