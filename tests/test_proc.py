@@ -31,14 +31,19 @@ def _waitForChildProcesses(parentPid: Union[None, str, int], numOfChilds: int, t
 
 
 def test_getProcData():
-    assert "python" in dlpt.proc.getName(currentPid)
+    name = dlpt.proc.getName(currentPid)
+    assert ("python" in name) or ("pytest" in name)
 
-    assert "python" in dlpt.proc.getExecutable(currentPid)
+    executableName = dlpt.proc.getExecutable(currentPid)
+    assert ("python" in executableName) or ("pytest" in executableName)
 
-    assert dlpt.proc.getCmdArgs(currentPid) != []
+    if name == "pytest":
+        assert len(dlpt.proc.getCmdArgs(currentPid)) >= 0
+    else:  # python
+        assert len(dlpt.proc.getCmdArgs(currentPid)) >= 2  # <python> -m pytest
 
 
-@pytest.mark.usefixtures("dlptKillTestSubprocs")
+@ pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_spawnSetting():
     # spawn a valid subprocess
     args: dlpt.proc.T_PROC_ARGS = [sys.executable, "-c", "\"import sys; sys.exit(0)\""]
@@ -74,7 +79,7 @@ def test_spawnSetting():
     proc = dlpt.proc.spawnSubproc(args)
 
 
-@pytest.mark.usefixtures("dlptKillTestSubprocs")
+@ pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_spawnWithRunArgs():
     """
     Spawn a subprocess with extra key-worded run() args.
@@ -97,10 +102,10 @@ def test_spawnWithRunArgs():
         dlpt.proc.spawnSubprocWithRunArgs(["čšž"])
 
 
-@pytest.mark.usefixtures("dlptKillTestSubprocs")
+@ pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_spawnAndKillProcess():
     """
-    Spawn one parent subprocess, which spawns another NUMBER_OF_CHILD_PROCESSES child processes. 
+    Spawn one parent subprocess, which spawns another NUMBER_OF_CHILD_PROCESSES child processes.
     Manipulate child processes and check states.
     """
     NUMBER_OF_CHILD_PROCESSES = 3
@@ -153,7 +158,7 @@ def test_getAlive():
     assert currentPid in pyPids
 
 
-@pytest.mark.usefixtures("dlptKillTestSubprocs")
+@ pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_nonBlockingProcess():
     cmdStr = helpers.getTestProcArgs()
     with pytest.raises(Exception) as err:
@@ -164,14 +169,14 @@ def test_nonBlockingProcess():
     dlpt.proc.kill(procPid)
 
 
-@pytest.mark.usefixtures("dlptKillTestSubprocs")
+@ pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_shellCommand():
     args = ["ping", "www.google.com", "-n 1", "-w 1000"]
     proc = dlpt.proc.spawnSubproc(args)
     assert proc.returncode == 0
 
 
-@pytest.mark.usefixtures("dlptKillTestSubprocs")
+@ pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_timeout():
     args = ["ping", "127.255.255.255"]
     startTime = time.time()
