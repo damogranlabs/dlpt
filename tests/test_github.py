@@ -3,6 +3,16 @@ import os
 import pytest
 
 
+def createFileInFunc(path: str):
+    folder = os.path.dirname(path)
+    assert os.path.exists(folder)
+
+    p4 = os.path.join(folder, "hello4.txt")
+    with open(p4, "w+") as writer:
+        writer.write("CONTENT")
+    assert os.path.exists(p4)
+
+
 def test_create_file(tmp_path):
     CONTENT = "content"
 
@@ -25,5 +35,5 @@ def test_create_file(tmp_path):
         writer.write(CONTENT)
     assert os.path.exists(p3_2)
 
-    assert p.read_text() == CONTENT
-    assert len(list(tmp_path.iterdir())) == 1
+    p4 = os.path.join(p3, "hello4.txt")
+    createFileInFunc(p4)
