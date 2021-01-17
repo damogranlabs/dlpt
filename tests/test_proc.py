@@ -46,12 +46,12 @@ def test_getProcData():
 @ pytest.mark.usefixtures("dlptKillTestSubprocs")
 def test_spawnSetting():
     # spawn a valid subprocess
-    args: dlpt.proc.T_PROC_ARGS = [sys.executable, "-c", "\"import sys; sys.exit(0)\""]
+    args: dlpt.proc.T_PROC_ARGS = ["python", "-c", "\"import sys; sys.exit(0)\""]
     proc = dlpt.proc.spawnSubproc(args)
     assert proc.returncode == 0
 
     # spawn subprocess with non-zero return code, but don't check its return code
-    args = [sys.executable, "-c", "\"import sys; sys.exit(1)\""]
+    args = ["python", "-c", "\"import sys; sys.exit(1)\""]
     proc = dlpt.proc.spawnSubproc(args, checkReturnCode=False)
     assert proc.returncode == 1
 
@@ -61,7 +61,7 @@ def test_spawnSetting():
     assert "Spawned subprocess throw 'subprocess.CalledProcessError'" in str(err.value)
 
     # spawn subprocess with non-zero return code, do not check its return code
-    args = [sys.executable, "-c", "\"invalidCommand = invalid command\""]
+    args = ["python", "-c", "\"invalidCommand = invalid command\""]
     proc = dlpt.proc.spawnSubproc(args, checkReturnCode=False)
     assert proc.returncode == 1
     assert "invalid command" in proc.stderr
@@ -72,7 +72,7 @@ def test_spawnSetting():
         dlpt.proc.spawnSubproc(args)
 
     # what if argument is a list of one string, which already combines all cmd args
-    argsStr = f"{sys.executable} {os.path.join(os.path.dirname(__file__), 'helpers.py')}"
+    argsStr = f"python {os.path.join(os.path.dirname(__file__), 'helpers.py')}"
     with pytest.raises(Exception):
         proc = dlpt.proc.spawnSubproc(argsStr)
     args = [argsStr]
@@ -84,7 +84,7 @@ def test_spawnWithRunArgs():
     """
     Spawn a subprocess with extra key-worded run() args.
     """
-    args = [sys.executable, "-c", "\"import sys; import os; print(list(os.environ)); sys.exit(0)\""]
+    args = ["python", "-c", "\"import sys; import os; print(list(os.environ)); sys.exit(0)\""]
     proc = dlpt.proc.spawnSubprocWithRunArgs(args, stdout=subprocess.PIPE, encoding='utf-8')
     assert proc.returncode == 0
     defaultEnv = proc.stdout
@@ -194,7 +194,7 @@ def test_timeout():
     durationSec = time.time() - startTime
     assert 1.5 < durationSec < 2.5
 
-    args = [sys.executable, "-c", "\"import time; import sys; sys.stderr.write('errDesc'); time.sleep(3)\""]
+    args = ["python", "-c", "\"import time; import sys; sys.stderr.write('errDesc'); time.sleep(3)\""]
     startTime = time.time()
     with pytest.raises(dlpt.proc.SubprocTimeoutError) as err:
         dlpt.proc.spawnSubproc(args, timeoutSec=2)
