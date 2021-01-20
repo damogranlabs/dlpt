@@ -12,6 +12,9 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/damogranlabs/dlpt",
+    project_urls={
+            "Documentation": "https://dlpt.readthedocs.io/en/latest/",
+    },
     packages=["dlpt"],
     classifiers=[
         "Programming Language :: Python :: 3",
