@@ -37,3 +37,5 @@ def test_create_file(tmp_path):
 
     p4 = os.path.join(p3, "hello4.txt")
     createFileInFunc(p4)
+
+    os.removedirs(str(d))
