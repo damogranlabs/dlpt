@@ -28,7 +28,7 @@ class ChangeDir:
 
         Example:
             >>> with dlpt.pth.ChangeDir("C:/somePath"):
-                    answer = 42 # do some stuff with cwd changed to "C:/somePath"
+                    answer = 42 # do stuff with cwd changed to "C:/somePath"
         """
         self.path = resolve(path)
         self.originalWd = os.getcwd()
@@ -38,7 +38,6 @@ class ChangeDir:
         check(self.path)
 
     def __enter__(self):
-        self.originalWd = os.getcwd()
         os.chdir(self.path)
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -98,19 +97,16 @@ def copyFile(srcFilePath: str, dstFolderPath: str, dstFileName: Optional[str] = 
         dstFileName: new destination file name. If None, original file
             name is used.
     """
-    _pathValidationCheck(srcFilePath)
     srcFilePath = check(srcFilePath)
     if not os.path.isfile(srcFilePath):
-        errorMsg = f"'copyFile()' is meant only for files, not folders/links: {srcFilePath}"
+        errorMsg = f"'copyFile()' is designed to copy files, not folders/links: {srcFilePath}"
         raise ValueError(errorMsg)
 
-    dstFolderPath = os.path.normpath(dstFolderPath)
-    if not os.path.exists(dstFolderPath):
-        createFolder(dstFolderPath)
     if dstFileName is None:
         dstFileName = getName(srcFilePath)
-    dstFilePath = os.path.join(dstFolderPath, dstFileName)
+    dstFilePath = os.path.normpath(os.path.join(dstFolderPath, dstFileName))
 
+    createFolder(dstFolderPath)
     removeFile(dstFilePath)
     shutil.copyfile(srcFilePath, dstFilePath)
 
@@ -126,9 +122,10 @@ def copyFolder(srcFolderPath: str, dstFolderPath: str) -> str:
         srcFolderPath: path to a file to be copied.
         dstFolderPath: new destination path.
     """
-    _pathValidationCheck(srcFolderPath)
-    check(srcFolderPath)
-    srcFolderPath = os.path.normpath(srcFolderPath)
+    srcFolderPath = check(srcFolderPath)
+    if not os.path.isdir(srcFolderPath):
+        errorMsg = f"'copyFolder()' is designed to copy folders, not files/links: {srcFolderPath}"
+        raise ValueError(errorMsg)
 
     _pathValidationCheck(dstFolderPath)
     dstFolderPath = os.path.normpath(dstFolderPath)
@@ -153,7 +150,7 @@ def removeFile(filePath: str, forceWritePermissions: bool = True, retry: int = 3
 
     if os.path.exists(filePath):
         if not os.path.isfile(filePath):
-            errorMsg = f"Function 'removeFile()' is designed to remove files only! Path is not a file: {filePath}"
+            errorMsg = f"Function 'removeFile()' is designed to remove files, not folders/links: {filePath}"
             raise ValueError(errorMsg)
 
         take = 0
@@ -173,7 +170,7 @@ def removeFile(filePath: str, forceWritePermissions: bool = True, retry: int = 3
             raise Exception(errorMsg)
 
 
-def _removeFolderErrorHandler(function, path, exception):
+def _removeFolderErrorHandler(function, path, exception):  # pragma: no cover
     """ This is a private function, which is called on shutil.rmtree() exception.
     If exception cause was permission error, write permissions are added,
     otherwise exception is re-raised.
@@ -184,7 +181,8 @@ def _removeFolderErrorHandler(function, path, exception):
         _setWritePermissions(path)
         function(path)
     else:  # pragma: no cover
-        raise  # re-raise exception (this function is exception callback)
+        # re-raise exception (this function is exception callback)
+        raise  # type: ignore
 
 
 def removeFolderTree(folderPath: str, forceWritePermissions: bool = True, retry: int = 3):
@@ -194,7 +192,7 @@ def removeFolderTree(folderPath: str, forceWritePermissions: bool = True, retry:
         folderPath: path of a folder to remove.
         forceWritePermissions: if True, shutil.rmtree() error callback 
             function is used to change permissions and retry.
-        retry: on failure, retry removal specified number of times.
+        retry: on failure, retry removal specified number of times. Must be > 0.
             Sometimes file are locked with other processes, or a race
             condition occurred.
     """
@@ -202,16 +200,8 @@ def removeFolderTree(folderPath: str, forceWritePermissions: bool = True, retry:
 
     if os.path.exists(folderPath):
         if not os.path.isdir(folderPath):
-            errorMsg = f"'removeFolderTree()' should be given folder (not file) path: {folderPath}"
+            errorMsg = f"'removeFolderTree()' is designed to remove folders, not files/links: {folderPath}"
             raise ValueError(errorMsg)
-
-        if retry == 0:
-            # don't retry, just remove
-            retry = 1  # pragma: no cover
-        elif retry > 1:
-            # remove + (retry -1)
-            retry = retry - 1  # pragma: no cover
-        # else: retry == 1
 
         take = 0
         for take in range(retry):
@@ -221,11 +211,12 @@ def removeFolderTree(folderPath: str, forceWritePermissions: bool = True, retry:
                 else:
                     shutil.rmtree(folderPath)
             except Exception as err:
-                time.sleep(FILE_FOLDER_REMOVE_RETRY_DELAY_SEC)
+                if take < (retry - 1):
+                    time.sleep(FILE_FOLDER_REMOVE_RETRY_DELAY_SEC)
             else:
                 break  # on success, escape retrying
         else:
-            errorMsg = f"Unable to 'removeFolderTree()' after {take+1} times: {folderPath}"
+            errorMsg = f"Unable to 'removeFolderTree()' after {take} times: {folderPath}"
             raise Exception(errorMsg)
 
 
@@ -245,13 +236,12 @@ def cleanFolder(folderPath: str, forceWritePermissions: bool = True):
         itemPath = os.path.join(folderPath, item)
         if os.path.isfile(itemPath):
             removeFile(itemPath, forceWritePermissions)
-        elif os.path.isdir(itemPath):
+        else:
             removeFolderTree(itemPath, forceWritePermissions)
 
 
 def createFolder(folderPath: str):
     """ Create folder (or folder tree) on a given specified path.
-    Path existence is checked with :func:`check()` at the end.
 
     Args:
         folderPath: absolute path of a folder to create
@@ -260,9 +250,6 @@ def createFolder(folderPath: str):
 
     folderPath = os.path.normpath(folderPath)
     os.makedirs(folderPath, exist_ok=True)
-    check(folderPath)
-
-    _setWritePermissions(folderPath)
 
 
 def createCleanFolder(folderPath: str):
@@ -286,7 +273,7 @@ def removeOldItems(folderPath: str, days: int) -> List[str]:
 
     Note:
         modification time and current time can be the same when this
-        function is called after creation. For example, in tests. Hence, decimal
+        function is called after creation. Hence, decimal
         part (milliseconds) of current/modification timestamp is discarded.
 
     Args:
@@ -336,7 +323,6 @@ def withDoubleBwSlashes(path: str) -> str:
         path: path to convert
     """
     path = _pathValidationCheck(path)
-    path = os.path.normpath(path)
 
     path = path.replace("\\", "\\\\")
 
@@ -388,12 +374,8 @@ def getFilesInFolder(folderPath: str,
     If ``extensionFilter`` is set, only return files that has the same extension.
 
     Note:
-        Extension should not be present in both, ``includeExt`` and 
-        ``excludeExt`` list. However, if it is, ``excludeExt`` has 
-        'higher priority'.
-
-    Note:
-        Lower case extension strings are compared.
+        Only one of ``includeExt`` or ``excludeExt`` must be set, or exception 
+        is raised. Lower case extension strings are compared.
 
     Args:
         folderPath: path to a folder to scan.
@@ -404,6 +386,10 @@ def getFilesInFolder(folderPath: str,
     _pathValidationCheck(folderPath)
     check(folderPath)
     folderPath = os.path.normpath(folderPath)
+
+    if includeExt and excludeExt:
+        errorMsg = "Set only 'includeExt' or 'excludeExt', not both!"
+        raise Exception(errorMsg)
 
     _includeFilter: List[str] = []
     if includeExt:
@@ -439,6 +425,16 @@ def getFilesInFolderTree(folderTreePath: str,
                          excludeExt: Optional[List[str]] = None) -> List[str]:
     """ Same as :func:`getFilesInFolder()`, but scan through all files in 
     all folders.
+
+    Note:
+        Only one of ``includeExt`` or ``excludeExt`` must be set, or exception 
+        is raised. Lower case extension strings are compared.
+
+    Args:
+        folderTreePath: path to a folder tree to scan.
+        includeExt: if set, only files with given extension(s) are returned.
+        excludeExt: if set, files with given extension(s) are excluded 
+            from return list.
     """
     folderTreePath = check(folderTreePath)
 
@@ -460,7 +456,7 @@ def getFoldersInFolder(folderPath: str,
         nameFilter: if set, folders that contain this string are returned,
             based on compareLowerCase setting.
         compareLowerCase: if True, lower-cased nameFilter string (if set)
-            is checked in folder name.
+            is checked in lower case folder name.
     """
     _pathValidationCheck(folderPath)
     check(folderPath)
@@ -477,8 +473,12 @@ def getFoldersInFolder(folderPath: str,
             if nameFilter is None:
                 folders.append(itemPath)
             else:  # name filtering is in place
-                if nameFilter in item:
-                    folders.append(itemPath)
+                if compareLowerCase:
+                    if nameFilter in item.lower():
+                        folders.append(itemPath)
+                else:
+                    if nameFilter in item:
+                        folders.append(itemPath)
 
     return folders
 
@@ -510,13 +510,7 @@ def openWithDefaultApp(filePath: str):  # pragma: no cover
         os.popen(f"open {filePath}")
 
 
-@overload
-def _pathValidationCheck(path: Optional[str]) -> str: ...
-@overload
-def _pathValidationCheck(path: Optional[pathlib.Path]) -> pathlib.Path: ...
-
-
-def _pathValidationCheck(path: Optional[Union[str, pathlib.Path]]) -> Union[str, pathlib.Path]:
+def _pathValidationCheck(path: Optional[str]) -> str:
     """ Raise exception if given path is not a string or it is an empty string.
 
     Args:
