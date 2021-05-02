@@ -24,20 +24,6 @@ def check(filePath: str) -> bool:
         return False
 
 
-def read(filePath: str) -> Dict[str, Any]:
-    """ Open the given JSON file, strip comments and return dictionary data.
-
-    Args:
-        filePath: path to a file that needs to be parsed.
-    """
-    filePath = dlpt.pth.check(filePath)
-    with open(filePath, 'r') as fHandler:
-        dataStr = removeComments(fHandler.read())
-        data = json.loads(dataStr)
-
-    return data
-
-
 def removeComments(dataStr: str) -> str:
     """ Return given string with removed C/C++ style `comments`_.
 
@@ -59,6 +45,20 @@ def removeComments(dataStr: str) -> str:
     return re.sub(pattern, replacer, dataStr)
 
 
+def read(filePath: str) -> Dict[str, Any]:
+    """ Open the given JSON file, strip comments and return dictionary data.
+
+    Args:
+        filePath: path to a file that needs to be parsed.
+    """
+    filePath = dlpt.pth.check(filePath)
+    with open(filePath, 'r') as fHandler:
+        dataStr = removeComments(fHandler.read())
+        data = json.loads(dataStr)
+
+    return data
+
+
 def write(data: Dict[str, Any], filePath: str, indent: int = 2, sortKeys: bool = True):
     """ Write given data to a file in a JSON format.
 
@@ -72,23 +72,6 @@ def write(data: Dict[str, Any], filePath: str, indent: int = 2, sortKeys: bool =
     """
     with open(filePath, 'w+') as fHandler:
         json.dump(data, fHandler, sort_keys=sortKeys, indent=indent)
-
-
-def writeJsonpickle(data: Any, filePath: str, indent: int = 2):
-    """ Write given data to a file in a JSON format with `jsonpickle`_ module, 
-    which adds data type info for unpickling with readJsonpickle().
-
-    Args:
-        data: serializable object to store to a file in JSON format.
-        filePath: destination file path.
-        indent: number of spaces for line indentation.
-
-    .. _jsonpickle:
-    https://pypi.org/project/jsonpickle/
-    """
-    dataStr = cast(str, jsonpickle.encode(data, indent=indent))
-    with open(filePath, "w+") as fHandler:
-        fHandler.write(dataStr)
 
 
 def readJsonpickle(filePath: str,
@@ -111,3 +94,20 @@ def readJsonpickle(filePath: str,
     data = jsonpickle.decode(dataStr, classes=classes)
 
     return data
+
+
+def writeJsonpickle(data: Any, filePath: str, indent: int = 2):
+    """ Write given data to a file in a JSON format with `jsonpickle`_ module, 
+    which adds data type info for unpickling with readJsonpickle().
+
+    Args:
+        data: serializable object to store to a file in JSON format.
+        filePath: destination file path.
+        indent: number of spaces for line indentation.
+
+    .. _jsonpickle:
+    https://pypi.org/project/jsonpickle/
+    """
+    dataStr = cast(str, jsonpickle.encode(data, indent=indent))
+    with open(filePath, "w+") as fHandler:
+        fHandler.write(dataStr)
