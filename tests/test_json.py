@@ -1,5 +1,6 @@
 import json
 import os
+from unittest import mock
 
 import pytest
 
@@ -9,110 +10,110 @@ import dlpt.log as log
 from dlpt.tfix import *
 
 
-def test_jsonFileValidation(tmp_path):
+def test_check(tmp_path):
     filePath = os.path.join(tmp_path, 'jsonTest.json')
 
-    # JSON file checking
-    # create empty file
+    # empty file
     with open(filePath, 'w+') as fHandler:
         pass
-    dlpt.pth.check(filePath)
     assert dlpt.json.check(filePath) is False
-    with pytest.raises(Exception):
-        dlpt.json.read(filePath)
 
-    # create fake json file with invalid syntax
-    dataStr = "{\n\t\"asd\": \"qwe\",\n\t\"zxc: 123\n}"  # missing "" in zxc
+    # invalid syntax, missing \" in zxc
+    dataStr = '{"asd": "qwe","zxc: 123}'
     with open(filePath, 'w+') as fHandler:
-        fHandler.truncate(0)
-        fHandler.seek(0)
         fHandler.write(dataStr)
     assert dlpt.json.check(filePath) is False
-    with pytest.raises(Exception):
-        dlpt.json.read(filePath)
+
+    # valid syntax
+    dataStr = '{"asd": "qwe","zxc": 123}'
+    with open(filePath, 'w+') as fHandler:
+        fHandler.write(dataStr)
+    assert dlpt.json.check(filePath) is True
 
 
-def test_rwDict(tmp_path):
-    def _check(data: dict, originalData: dict):
-        assert dlpt.utils.areDictKeysEqual(data, originalData)
-        assert dlpt.utils.areDictValuesEqual(data, originalData)
-        assert (data['asd'] == 'qwe') and (data['zxc'] == 123)
+def test_removeComments(tmp_path):
+    DATA_STR = """{"asd": /*inline comment with some special characters: !@/[]()/\\ */ "qwe",
+    // comment in its own line
+    "zxc": 123, // comment at the end of the line
+    /* comment
+    block 
+    in multiple lines */
+    "ert": {
+        "fgh": 456
+        }
+    }"""
+    DATA = {
+        "asd": "qwe",
+        "zxc": 123,
+        "ert": {
+            "fgh": 456
+        }
+    }
+    dataStr = dlpt.json.removeComments(DATA_STR)
+    data = json.loads(dataStr)
 
+    assert data == DATA
+
+
+def test_read(tmp_path):
+    DATA_STR = '{"asd": "qwe","zxc": 123}'
+
+    with mock.patch("builtins.open") as fFunc:
+        fFunc.read = DATA_STR
+
+        with mock.patch("dlpt.json.removeComments") as rmCommentsFunc:
+            rmCommentsFunc.return_value = DATA_STR
+
+            data = dlpt.json.read(tmp_path)
+            assert isinstance(data, dict)
+
+            assert len(data) == 2
+            assert data["asd"] == "qwe"
+            assert data["zxc"] == 123
+
+
+def test_write(tmp_path):
     filePath = os.path.join(tmp_path, 'jsonTest.json')
 
-    # test data
-    testData = {
-        'asd': 'qwe',
-        'zxc': 123
+    DATA = {
+        "asd": "qwe",
+        "zxc": 123,
+        "ert": {
+            "fgh": 456
+        }
     }
 
-    # create valid json file
-    with open(filePath, 'w+') as fHandler:
-        json.dump(testData, fHandler)
-    assert dlpt.json.check(filePath) is True
-    jsonData = dlpt.json.read(filePath)
-    _check(jsonData, testData)
-
-    # write Json file
-    dlpt.pth.removeFile(filePath)
-    dlpt.json.write(testData, filePath)
-    assert dlpt.json.check(filePath) is True
-    jsonData = dlpt.json.read(filePath)
-    _check(jsonData, testData)
-
-    # JSON with comments
-    dataStr = """
-    // comment at the beginning
-    {
-        // single line comment
-        // single line comment with nested // (for example path separator)
-        /* single line comment with * */
-        /* single line comment with // inside */
-        /* multiline
-comment
-        */
-        "asd": "qwe", // comment on the line
-        "zxc": 123 /* comment on the line */
-    }
-    /* end comment*/
-    """
-    with open(filePath, "w+") as fHandler:
-        fHandler.write(dataStr)
-    jsonData = dlpt.json.read(filePath)
-    _check(jsonData, testData)
+    dlpt.json.write(DATA, filePath)
+    data = dlpt.json.read(filePath)
+    assert data == DATA
 
 
-class JsonTestClass():
+class _JsonTestClass():
     def __init__(self):
         self.public = 123
         self._private = '321'
-        self.nested = [JsonTestSubclass()]
+        self.nested = [_JsonTestSubclass()]
 
     def someMethod(self):
         pass
 
 
-class JsonTestSubclass():
+class _JsonTestSubclass():
     def __init__(self):
         self.nestedPublic = 456
         self._nestedPrivate = '654'
 
 
-@pytest.mark.usefixtures("dlptCloseLogHandlers")
-def test_rwJsonpickleClass(tmp_path):
+def test_readWriteJsonpickle(tmp_path):
     filePath = os.path.join(tmp_path, 'jsonTest.json')
 
-    # object from globally available module
-    data = log.LogHandler()
-    dlpt.json.writeJsonpickle(data, filePath)
-    jsonData = dlpt.json.readJsonpickle(filePath)
-    assert isinstance(jsonData, log.LogHandler)
+    wData = _JsonTestClass()
+    dlpt.json.writeJsonpickle(wData, filePath)
 
-    # module from this file
-    data = JsonTestClass()
-    dlpt.json.writeJsonpickle(data, filePath)
-    jsonData: JsonTestClass = dlpt.json.readJsonpickle(filePath, [JsonTestClass, JsonTestSubclass])
-    assert isinstance(jsonData, JsonTestClass)
-    assert isinstance(jsonData.public, int)
-    assert jsonData.public == 123
-    assert isinstance(jsonData.nested[0], JsonTestSubclass)
+    rData = dlpt.json.readJsonpickle(filePath)
+
+    assert isinstance(rData, _JsonTestClass)
+    assert rData.public == 123
+    assert rData._private == '321'
+    assert rData.nested[0].nestedPublic == 456
+    assert rData.nested[0]._nestedPrivate == '654'
