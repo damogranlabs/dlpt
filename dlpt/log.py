@@ -19,8 +19,8 @@ statements received via socket to the rotation log file handler. Useful for
 logging to the same file from multiple processes. 
 
 Note:
-    ``LogSocketServer`` port number must be unique - this means that default 
-    :func:`createSocketServerProc()` can be called only once. Further socket
+    ``LogSocketServer`` port number must be unique - this means that the default 
+    ``createSocketServerProc()`` can be called only once. Further socket
     servers (of any process) must set ports manually.
 """
 import functools
@@ -230,7 +230,7 @@ class LogHandler():
                 ``DEFAULT_LOG_FILE_EXT`` is appended. If ``None``, logger name
                 is used as file name.
             folderPath: path to a folder where logs will be stored. If ``None``,
-                path is fetched with :func:`getDefaultLogFolderPath()`.If log
+                path is fetched with ``getDefaultLogFolderPath()``.If log
                 folder does not exist, it is created.
             formatter: if not None, override default formatter.
             logLevel: set log level for this specific handler. By default,
@@ -274,7 +274,7 @@ class LogHandler():
         log file.
 
         Note:
-            Only single rotation file handler per LogHandler can be added.
+            Only single rotation file handler per ``LogHandler`` can be added.
 
         Note:
             Create custom formatter with:
@@ -285,7 +285,7 @@ class LogHandler():
                 ``DEFAULT_LOG_FILE_EXT`` is appended. If ``None``, default file
                 name is fetched with :func:`getDefaultLogFileName()`.
             folderPath: path to a folder where logs will be stored. If ``None`,
-                path is fetched with :func:`getDefaultLogFolderPath()`. If log
+                path is fetched with ``getDefaultLogFolderPath()``. If log
                 folder does not exist, it is created.
             maxSizeKb: number of KB at which rollover is performed on a 
                 current log file.
@@ -402,7 +402,7 @@ class LogHandler():
 
         Args:
             fileName: if given, this folder pathis used or default folder path
-                is determined with :func:`getDefaultLogFolderPath()`.
+                is determined with ``getDefaultLogFolderPath()``.
 
         Returns:
             Absolute folder path where log file will be created.
@@ -567,7 +567,7 @@ class _SocketRecordDataHandler(socketserver.StreamRequestHandler):
     def handle(self):  # pragma: no cover
         """ Handle multiple requests - each expected to be a 4-byte length, 
         followed by the ``LogRecord`` in pickle format. Calls 
-        :func:`self.handleLogRecord()` for each successfully received data packet.
+        :func:`handleLogRecord()` for each successfully received data packet.
         """
         while True:
             # receive data
@@ -612,7 +612,7 @@ class LogSocketServer(socketserver.ThreadingTCPServer):  # Threading TCPServer s
         messages to file with rotating file handler.
 
         Note:
-            Use :func:`addSocketHandler()` function to add socket handler to any
+            Use :func:`LogHandler.addSocketHandler()` function to add socket handler to any
             ``LogHandler`` instance and logs will be automatically pushed to the
             created ``LogSocketServer`` process. Note that ports must be 
             properly configured for logging to work.
