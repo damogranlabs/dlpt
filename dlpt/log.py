@@ -1,7 +1,7 @@
 """
 Common LogHandler and LogSocketServer interface for general logging.
 
-1. LogHandler if set, instance of such logger can log to:
+1. If set, instance of LogHandler logger can log to:
  - console (terminal)
  - file
  - socket (client)
@@ -33,7 +33,7 @@ import sys
 import socket
 import time
 import traceback
-from typing import Optional
+from typing import List, Optional
 
 import dlpt
 
@@ -52,7 +52,7 @@ DEFAULT_SOCKET_FORMATTER = "%(name)-8s %(asctime)s.%(msecs)03d %(levelname)+8s: 
 DEFAULT_SOCKET_FORMATTER_TIME = DEFAULT_FORMATTER_TIME
 DEFAULT_SOCKET_PORT = logging.handlers.DEFAULT_TCP_LOGGING_PORT
 
-DEFAULT_ROTATING_LOG_FILE_SIZE_MB = 1
+DEFAULT_ROTATING_LOG_FILE_SIZE_KB = 100
 DEFAULT_ROTATING_LOG_FILE_COUNT = 1
 
 # log location format
@@ -63,32 +63,121 @@ LOG_LOCATION_INDENT_STR = "  "  # \t can give a large offset.
 # private, do not modify
 _defaultLogger: Optional["LogHandler"] = None
 _defaultSocketLogger: Optional["LogHandler"] = None
+_allLogHandlers: List["LogHandler"] = []
+
+
+class _LogFileHandlerData():
+    def __init__(self,
+                 fileName: str,
+                 folderPath: str,
+                 formatter: logging.Formatter,
+                 logLevel: int,
+                 mode: str):
+        """ Log file handler settings data container.
+
+        Args:
+            fileName: name of the file, including file extension.
+            folderPath: absolute log folder path.
+            formatter: logging formatter of this handler.
+            logLevel: log handler level.
+            mode: file open mode.
+        """
+        self.fileName = fileName
+        self.folderPath = folderPath
+        self.formatter = formatter
+        self.logLevel = logLevel
+        self.mode = mode
+
+    def getFolderPath(self) -> str:
+        """ Get folder path where log file is placed. 
+
+        Returns:
+            Absolute log folder path.
+
+        """
+        return self.folderPath
+
+    def getFileName(self) -> str:
+        """ Get log file name. 
+
+        Returns:
+            Log file name.
+        """
+        return self.fileName
+
+    def getFilePath(self) -> str:
+        """ Return absolute log file path.
+
+        Returns:
+            Absolute log file path
+        """
+        return os.path.join(self.folderPath, self.fileName)
+
+
+class _LogRotatingFileHandlerData(_LogFileHandlerData):
+    def __init__(self,
+                 fileName: str,
+                 folderPath: str,
+                 formatter: logging.Formatter,
+                 logLevel: int,
+                 maxSizeKb: int,
+                 maxFileCount: int):
+        """ Rotating log file handler settings data container.
+
+        Args:
+            fileName: name of the file.
+            folderPath: absolute log folder path.
+            formatter: logging formatter of this handler.
+            logLevel: log handler level.
+            maxSizeKb: max log file size in KB.
+            maxFileCount: max number of log files.
+        """
+        super().__init__(fileName, folderPath, formatter, logLevel, "a+")
+        self.maxSizeKb = maxSizeKb
+        self.maxFileCount = maxFileCount
 
 
 class LogHandler():
-    def __init__(self, loggerName: str = DEFAULT_NAME, setAsDefault: bool = True):
+    def __init__(self, name: str = DEFAULT_NAME, setAsDefault: bool = True):
         """ This class holds all settings to manage log handler.
 
+        Note:
+            By default, all log handlers set its level to 'DEBUG'.
+
         Args:
-            loggerName: unique logger name.
+            name: unique logger name.
                 If logger with such name already exists, it is overwritten.
-            setAsDefault: if True, created logger is set as default logger.
+                Note:
+                    Keep the name short and without special characters/spaces.
+            setAsDefault: if True, created logger is set as default logger. If
+                default logger is already set, exception is raised.
         """
-        self._name: str = loggerName
-        self._isDefaultLogHandler: bool = setAsDefault
-        self._logFilePath: Optional[str] = None
-        self._logRotatingFilePath: Optional[str] = None
+        global _defaultLogger
+        global _allLogHandlers
+
+        self._name = name
+
+        if setAsDefault:
+            if _defaultLogger is not None:
+                errorMsg = f"Unable to create new default LogHandler instance, default already set: "
+                errorMsg += _defaultLogger.getName()
+                raise Exception(errorMsg)
+        self._isDefaultHandler = setAsDefault
+
+        self._fileHandlerData: Optional[_LogFileHandlerData] = None
+        self._rotFileHandlerData: Optional[_LogRotatingFileHandlerData] = None
+
+        for hdl in _allLogHandlers:
+            if self._name == hdl.getName():
+                errorMsg = f"Unable to create new LogHandler instance, logger with name '{self._name}' already exists."
+                raise Exception(errorMsg)
 
         self.loggers = logging.getLogger(self._name)
-        # NOTE: read logger docs 'setLevel()'. By default, root logger is created with level
-        # WARNING, but here we manually set it to DEBUG.
         self.loggers.setLevel(logging.DEBUG)
 
-        # remove all handlers, if this logger instance already exists
-        self.removeAllHanders()
-
-        if self._isDefaultLogHandler:
-            setDefaultLogger(self)
+        if self._isDefaultHandler:
+            _defaultLogger = self
+        _allLogHandlers.append(self)
 
         # create log function aliases with default parameters as this LogHandler instance
         self.debug = functools.partial(debug, handler=self)
@@ -124,7 +213,7 @@ class LogHandler():
                        folderPath: Optional[str] = None,
                        formatter: Optional[logging.Formatter] = None,
                        logLevel: int = logging.DEBUG,
-                       mode: str = "w+") -> str:
+                       mode: str = "w") -> str:
         """ Add file handler to this logger instance and return a path to a log file.
 
         Note:
@@ -136,48 +225,46 @@ class LogHandler():
 
         Args:
             fileName: name of a log file. If there is no file extension, default
-                ``DEFAULT_LOG_FILE_EXT`` is appended. If ``None``, default 
-                file name is fetched with :func:`getDefaultLogFileName()`.
+                ``DEFAULT_LOG_FILE_EXT`` is appended. If ``None``, llogger name
+                is used as file name.
             folderPath: path to a folder where logs will be stored. If ``None``,
                 path is fetched with :func:`getDefaultLogFolderPath()`.If log
                 folder does not exist, it is created.
             formatter: if not None, override default formatter.
             logLevel: set log level for this specific handler. By default,
                 everything is logged (``DEBUG`` level).
-            mode: file open mode ("w+", "a", ... See logging docs.).
+            mode: file open mode (`"w`", "a", ... See logging docs.).
         """
-        if self._logFilePath is not None:
-            errorMsg = f"Unable to add another log file handler - already configured to log to: {self._logFilePath}"
+        if self._fileHandlerData is not None:
+            errorMsg = f"Unable to add another log file handler - already configured to log to: "
+            errorMsg += self._fileHandlerData.getFilePath()
             raise Exception(errorMsg)
 
-        if fileName is None:
-            fileName = getDefaultLogFileName(self._name)
-        else:
-            _, ext = os.path.splitext(fileName)
-            if ext == '':
-                fileName = fileName + DEFAULT_LOG_FILE_EXT
-        if folderPath is None:
-            folderPath = getDefaultLogFolderPath()
-        else:
-            folderPath = os.path.normpath(folderPath)
-        self._logFilePath = os.path.join(folderPath, fileName)
+        fileName = self._getFileName(fileName)
+        folderPath = self._getFolderPath(folderPath)
         dlpt.pth.createFolder(folderPath)
-
-        fileHandler = logging.FileHandler(self._logFilePath, mode=mode, encoding='utf-8')
-        fileHandler.setLevel(logLevel)
 
         if formatter is None:
             formatter = logging.Formatter(DEFAULT_FORMATTER, datefmt=DEFAULT_FORMATTER_TIME)
+
+        self._fileHandlerData = _LogFileHandlerData(fileName,
+                                                    folderPath,
+                                                    formatter,
+                                                    logLevel,
+                                                    mode)
+
+        fileHandler = logging.FileHandler(self._fileHandlerData.getFilePath(), mode=mode, encoding='utf-8')
+        fileHandler.setLevel(logLevel)
         fileHandler.setFormatter(formatter)
 
         self.loggers.addHandler(fileHandler)
 
-        return self._logFilePath
+        return self._fileHandlerData.getFilePath()
 
     def addRotatingFileHandler(self,
                                fileName: Optional[str] = None,
                                folderPath: Optional[str] = None,
-                               maxSizeMb: float = DEFAULT_ROTATING_LOG_FILE_SIZE_MB,
+                               maxSizeKb: int = DEFAULT_ROTATING_LOG_FILE_SIZE_KB,
                                backupCount: int = DEFAULT_ROTATING_LOG_FILE_COUNT,
                                formatter: Optional[logging.Formatter] = None,
                                logLevel: int = logging.DEBUG) -> str:
@@ -198,46 +285,42 @@ class LogHandler():
             folderPath: path to a folder where logs will be stored. If ``None`,
                 path is fetched with :func:`getDefaultLogFolderPath()`. If log
                 folder does not exist, it is created.
-            maxSizeMb: number of MB at which rollover is performed on a 
+            maxSizeKb: number of KB at which rollover is performed on a 
                 current log file.
             backupCount: number of files to store (if file with given name already exists).
             formatter: if not None, override default formatter.
             logLevel: set log level for this specific handler. By default,
                 everything is logged (``DEBUG`` level).
         """
-        if self._logRotatingFilePath is not None:
-            errorMsg = f"Unable to add another log rotating file handler - already configured to log to: "
-            errorMsg += f"{self._logRotatingFilePath}"
+        if self._rotFileHandlerData is not None:
+            errorMsg = f"Unable to add another rotating log file handler - already configured to log to: "
+            errorMsg += self._rotFileHandlerData.getFilePath()
             raise Exception(errorMsg)
 
-        if fileName is None:
-            fileName = getDefaultLogFileName(self._name)
-        else:
-            _, ext = os.path.splitext(fileName)
-            if ext == '':
-                fileName = fileName + DEFAULT_LOG_FILE_EXT
-        if folderPath is None:
-            folderPath = getDefaultLogFolderPath()
-        else:
-            folderPath = os.path.normpath(folderPath)
-        self._logRotatingFilePath = os.path.join(folderPath, fileName)
-
+        fileName = self._getFileName(fileName)
+        folderPath = self._getFolderPath(folderPath)
         dlpt.pth.createFolder(folderPath)
-
-        sizeMb = int(maxSizeMb * 1e6)
-        rotFileHandler = logging.handlers.RotatingFileHandler(self._logRotatingFilePath,
-                                                              mode='a+',
-                                                              maxBytes=sizeMb,
-                                                              backupCount=backupCount)
-        rotFileHandler.setLevel(logLevel)
 
         if formatter is None:
             formatter = logging.Formatter(DEFAULT_FORMATTER, datefmt=DEFAULT_FORMATTER_TIME)
+
+        self._rotFileHandlerData = _LogRotatingFileHandlerData(fileName,
+                                                               folderPath,
+                                                               formatter,
+                                                               logLevel,
+                                                               maxSizeKb,
+                                                               backupCount)
+
+        sizeBytes = int(maxSizeKb * 1e3)
+        rotFileHandler = logging.handlers.RotatingFileHandler(self._rotFileHandlerData.getFilePath(),
+                                                              maxBytes=sizeBytes,
+                                                              backupCount=backupCount)
+        rotFileHandler.setLevel(logLevel)
         rotFileHandler.setFormatter(formatter)
 
         self.loggers.addHandler(rotFileHandler)
 
-        return self._logRotatingFilePath
+        return self._rotFileHandlerData.getFilePath()
 
     def addSocketHandler(self,
                          port: int = DEFAULT_SOCKET_PORT,
@@ -271,37 +354,70 @@ class LogHandler():
 
         self.loggers.addHandler(socketHandler)
 
-    def removeAllHanders(self):
-        """ Safely remove all enabled (example: console, file, ...) log handlers
-        from this logger logHandler instance.
+    def removeHandlers(self, onlyFileHandlers: bool = False):
+        """ Safely remove enabled (example: console, file, ...) log handlers
+        from this LogHandler instance.
 
         Note:
-            In contrast to :func:`removeFileHandlers()`, this function does not
-            clear internal log file/folder paths variables data.
+            Internal file handlers description objects are removed.
+
+        Args:
+            onlyFileHandlers: if True, only file handlers are removed, while 
+                console/socket handlers are left available.
         """
-        while len(self.loggers.handlers):
-            self.loggers.removeHandler(self.loggers.handlers[0])
+        if onlyFileHandlers:
+            handlersCopy = self.loggers.handlers.copy()
+            for handler in handlersCopy:
+                if isinstance(handler, logging.FileHandler) or \
+                        isinstance(handler, logging.handlers.RotatingFileHandler):
+                    self.loggers.removeHandler(handler)
+        else:
+            while len(self.loggers.handlers):
+                self.loggers.removeHandler(self.loggers.handlers[0])
 
-    def removeFileHandlers(self):
-        """ Safely remove file and rotating file log handlers from this logger
-        instance.
+        self._fileHandlerData = None
+        self._rotFileHandlerData = None
+
+    def _getFileName(self, fileName: Optional[str] = None) -> str:
+        """ Determine log file/rotating file name, based on a current logger 
+        name or user input.
+
+        Args:
+            fileName: if given, this name is checked (for extension) or default
+                file name is created from log handler name.
+
+        Returns:
+            File name with extension.
         """
-        handlersCopy = self.loggers.handlers.copy()
-        for handler in handlersCopy:
-            if isinstance(
-                    handler, logging.FileHandler) or isinstance(
-                    handler, logging.handlers.RotatingFileHandler):
-                self.loggers.removeHandler(handler)
+        if fileName is None:
+            fileName = f"{self._name}{DEFAULT_LOG_FILE_EXT}"
+        else:
+            if dlpt.pth.getExt(fileName) == "":
+                fileName = f"{fileName}{DEFAULT_LOG_FILE_EXT}"
 
-        self._logFilePath = None
+        return fileName
 
-        self._logRotatingFileName = None
-        self._logRotatingFilePath = None
+    def _getFolderPath(self, folderPath: Optional[str] = None) -> str:
+        """ Determine log file/rotating file folder path, based on a current logger 
+        name or user input.
 
-    def isDefaultLogHandler(self) -> bool:
-        """ Returns True if this logger instance is set as default log handler.
+        Args:
+            fileName: if given, this folder pathis used or default folder path
+                is determined with ``getDefaultLogFolderPath()``.
+
+        Returns:
+            Absolute folder path where log file will be created.
         """
-        return self._isDefaultLogHandler
+        if folderPath is None:
+            folderPath = getDefaultLogFolderPath()
+        else:
+            folderPath = os.path.normpath(folderPath)
+
+        return folderPath
+
+    def isDefaultHandler(self) -> bool:
+        """ Returns True if this logger instance is set as default log handler. """
+        return self._isDefaultHandler
 
     def getName(self) -> str:
         """ Return this logger instance name.
@@ -309,93 +425,61 @@ class LogHandler():
         """
         return self._name
 
-    def getLogFilePath(self) -> Optional[str]:
-        """ Return this logger instance log file path (if handler is set).
+    def getLogFilePath(self) -> str:
+        """ Return this logger instance log file path if handler is set,
+            otherwise raise exception.
         """
-        return self._logFilePath
+        if self._fileHandlerData is None:
+            errorMsg = f"File handler not set in this LogHandler instance."
+            raise Exception(errorMsg)
 
-    def getRotatingLogFilePath(self) -> Optional[str]:
-        """ Return this logger instance rotating log file path (if handler is set).
+        return self._fileHandlerData.getFilePath()
+
+    def getRotatingLogFilePath(self) -> str:
+        """ Return this logger instance rotating log file path if handler is
+            set, otherwise raise exception.
         """
-        return self._logRotatingFilePath
+        if self._rotFileHandlerData is None:
+            errorMsg = f"Rotating file handler not set in this LogHandler instance."
+            raise Exception(errorMsg)
+
+        return self._rotFileHandlerData.getFilePath()
 
 
 def _checkDefaultLogger():
-    """ Check if default log handler already exists and raise exception if not.
-    """
+    """ Check if default log handler already exists and raise exception if not. """
     if _defaultLogger is None:
         errorMsg = "No logger instance available."
         raise Exception(errorMsg)
 
 
-def setDefaultLogger(handler: LogHandler):
-    """ Set given handler as a default logger handler.
-
-    Args:
-        handler: new default log handler to set.
-    """
-    global _defaultLogger
-    _defaultLogger = handler
-
-
 def getDefaultLogger() -> Optional[LogHandler]:
-    """ Get default logger handler instance.
-    """
+    """ Get default logger handler instance. """
     return _defaultLogger
 
 
-def closeAllLoggers():
-    """ Close all created loggers and release file handlers, ...
-    This is usually by default called on application exit.
-    """
+def closeLogHandlers():
+    """ Close all created `LogHandler` instances, release file  handlers, ...  """
     global _defaultLogger
+    global _allLogHandlers
 
-    if _defaultLogger is not None:
-        _defaultLogger.removeAllHanders()
-        _defaultLogger = None
-    logging.shutdown()
+    for hdl in _allLogHandlers:
+        hdl.removeHandlers()
+
+    _allLogHandlers.clear()
+    _defaultLogger = None
 
 
-def getDefaultLogFileName(loggerName: Optional[str] = None) -> str:
-    """ Get default log file name: <logerName>_<DATE_TIME_FORMAT_FILE_NAME>.log.
-
-    Args:
-        loggerName: name of a logger. If ``None``, default log file name
-            is datetime string + extension.
+def getDefaultLogFolderPath() -> str:
+    """ Get default log folder path: <cwd>/log folder
     """
-    logFileName = dlpt.time.getCurrentDateTime(dlpt.time.DATE_TIME_FORMAT_FILE_NAME) + DEFAULT_LOG_FILE_EXT
-    if loggerName is not None:
-        logFileName = f"{loggerName}_{logFileName}"
+    folderPath = os.path.join(os.getcwd(), DEFAULT_LOG_FOLDER_NAME)
 
-    return logFileName
-
-
-def getDefaultLogFolderPath(path: Optional[str] = None) -> str:
-    """ Get default log folder path.
-
-    Note:
-        If ``path`` is set, it must exist (to be able to determine if given
-        path is file or folder).
-
-    Args:
-        path: if ``None``, <cwd>/log folder is returned. Otherwise: if path is
-            FILE: <file directory>/log folder is returned. If path is FOLDER:
-            <path>/log folder is returned.
-    """
-    if path is None:
-        path = os.path.join(os.getcwd(), DEFAULT_LOG_FOLDER_NAME)
-    else:
-        dlpt.pth.check(path)
-        if os.path.isdir(path):
-            path = os.path.join(path, DEFAULT_LOG_FOLDER_NAME)
-        else:
-            path = os.path.join(os.path.dirname(path), DEFAULT_LOG_FOLDER_NAME)
-
-    return dlpt.pth.resolve(path)
+    return dlpt.pth.resolve(folderPath)
 
 
 def _formatExceptionLocation(tracebackStr: str) -> str:
-    """Format traceback file/line format to a default editor format:
+    """ Format traceback file/line format to a default editor format:
     * original format: <file>, line <lineNumber>, in <function>
     * new format: <file>:<lineNumber> in <function>
 
@@ -408,7 +492,7 @@ def _formatExceptionLocation(tracebackStr: str) -> str:
 
 
 def getErrorTraceback() -> str:
-    """Get a string of a beautified traceback data.
+    """ Get a string of a beautified traceback data.
 
     Note:
         As it turned out, manually building stack data trace ``inspect.stack()``, 
@@ -477,7 +561,7 @@ class _SocketRecordDataHandler(socketserver.StreamRequestHandler):
             self.handleLogRecord(record)
 
     def handleLogRecord(self, record):  # pragma: no cover
-        """Handle unpickled received data.
+        """ Handle unpickled received data.
 
         Args:
             record: unpickled received data in logging.LogRecord format.
@@ -498,7 +582,7 @@ class LogSocketServer(socketserver.ThreadingTCPServer):  # Threading TCPServer s
     allow_reuse_address = True
 
     def __init__(self, logger: LogHandler, port: int = DEFAULT_SOCKET_PORT):  # pragma: no cover
-        """Init log socket server. By default, this server logs all received
+        """ Init log socket server. By default, this server logs all received
         messages to file, optionally to console.
 
         Note:
@@ -515,8 +599,8 @@ class LogSocketServer(socketserver.ThreadingTCPServer):  # Threading TCPServer s
         super().__init__(('localhost', port), _SocketRecordDataHandler)
 
 
-def _isPortFree(port: int, host: str = 'localhost') -> bool:
-    """Return True if port is free, False otherwise.
+def _isPortFree(port: int, host: str = "localhost") -> bool:
+    """ Return True if port is free, False otherwise.
 
     Note:
         Only TCP IPv4 port is checked.
@@ -541,7 +625,7 @@ def _isPortFree(port: int, host: str = 'localhost') -> bool:
 
 
 def createSocketServerProc(logFilePath: str, port=DEFAULT_SOCKET_PORT) -> int:
-    """Create socket server subprocess that use given ``socketServerLogger`` to
+    """ Create socket server subprocess that use given ``socketServerLogger`` to
     log data to one place with file log handler. Return PID of spawned socket
     server process.
     Exception is raised if default timeout is reached while waiting for a socket
@@ -591,7 +675,7 @@ def _spawnSocketServerProc(logFilePath: str, port: int):  # pragma: no cover
 
 
 def debug(msg: str, handler: Optional[LogHandler] = None):
-    """Log with 'DEBUG' level.
+    """ Log with 'DEBUG' level.
 
     Args:
         msg: message to log.

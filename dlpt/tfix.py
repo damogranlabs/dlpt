@@ -13,7 +13,7 @@ def dlptCloseLogHandlers():
     """ Close all log handlers at the end of test case."""
     yield
 
-    log.closeAllLoggers()
+    log.closeLogHandlers()
 
 
 @pytest.fixture
