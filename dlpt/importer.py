@@ -15,17 +15,20 @@ import dlpt
 class ModuleImporter():
     def __init__(self, filePath: str, baseFolderPath: Optional[str] = None):
         """
-        Dynamically import module from given filePath and return its instance.
+        Dynamically import module from given `filePath` and return its instance.
+
+        Args:
             filePath: abs path to a python module (file) which will be 
                 dynamically imported.
             baseFolderPath: path to a root folder from where module
                 will be imported. Example:
-                    `filePath = C:/root/someFolder/someSubfolder/myModule.py`
-                    `baseFolderPath = C:/root/someFolder/`
-                    -> module will be imported as: `someSubfolder.myModule`
+                ``filePath = C:/root/someFolder/someSubfolder/myModule.py``
+                ``baseFolderPath = C:/root/someFolder/``
+                -> module will be imported as: `someSubfolder.myModule`
 
-        NOTE: baseFolderPath (or filePath root folder, if baseFolderPath
-            is not specified) is added to sys.path. It is NOT removed once
+        Note: 
+            `baseFolderPath` (or `filePath` root folder, if `baseFolderPath`
+            is not specified) is added to `sys.path`. It is NOT removed once
             object is garbage-collected.
         """
         self.filePath = os.path.normpath(filePath)
@@ -33,11 +36,11 @@ class ModuleImporter():
             self.baseFolderPath = os.path.dirname(self.filePath)
         else:
             self.baseFolderPath = os.path.normpath(baseFolderPath)
+            dlpt.pth.check(self.baseFolderPath)
         self._module: Optional[ModuleType] = None
 
         # check
         dlpt.pth.check(self.filePath)
-        dlpt.pth.check(self.baseFolderPath)
         if not os.path.isabs(self.filePath):
             errorMsg = f"Given filePath is not an ABSOLUTE file path: {self.filePath}"
             raise ValueError(errorMsg)
@@ -50,6 +53,9 @@ class ModuleImporter():
     def _import(self) -> ModuleType:
         """
         Import module and return module instance object.
+
+        Returns: 
+            Imported module instance (object).
         """
         relPath = os.path.relpath(self.filePath, self.baseFolderPath)
         if relPath.startswith("."):
@@ -82,6 +88,10 @@ class ModuleImporter():
     def getModule(self) -> ModuleType:
         """
         Return imported module object.
+
+        Returns:
+            Imported module instance (object).
+
         """
         assert self._module is not None
 
@@ -90,10 +100,16 @@ class ModuleImporter():
     def hasObject(self, objectName: str, raiseException: bool = True) -> bool:
         """
         Check if imported module has object with objectName.
+
+        Args:
             objectName: name of the object to check in imported module
             raiseException: if True, exception is raised if object is not
                 found. Otherwise bool is returned (True if object is found,
                 False otherwise).
+
+        Returns:
+            `True` if imported module has object with name `objectName`, `False`
+            otherwise.
         """
         if self._module:
             if hasattr(self._module, objectName):
