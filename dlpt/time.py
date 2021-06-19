@@ -176,11 +176,16 @@ def printExecTime(func: Callable[..., T_EXEC_TIME]) -> Callable[..., T_EXEC_TIME
     """
     Development decorator to get and print (to console) approximate execution time. 
     Additionally, user can get execution time with getLastTimedFunctionDurationSec().
+
+    Args:
         func: function 'pointer' to get execution time.
+
     Usage:
         `@dlpt.time.printExecTime`
         `def myFunction(<parameters>)`
         `...`
+
+
     """
     def _timed(*args, **kwargs) -> Any:
         startTime = time.perf_counter()
