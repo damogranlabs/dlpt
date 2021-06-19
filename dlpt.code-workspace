@@ -13,12 +13,6 @@
         "python.analysis.typeCheckingMode": "basic",
         "python.analysis.diagnosticMode": "openFilesOnly",
         
-        //pylint
-        "python.linting.enabled": true,
-        "python.linting.pylintArgs": [ // linting according to iSystem 'Coding Guidelines for Python'
-            "--rcfile=${workspaceFolder}/rules.pylint"
-        ],
-        
         // autoformat
         "python.formatting.autopep8Args": [ //autoformatting: https://pypi.org/project/autopep8/#more-advanced-usage
             "--max-line-length",
@@ -37,7 +31,7 @@
             "-s",
             "-v",
             "--cov-config=${workspaceFolder}/.coveragerc",
-            "--cov=dlpt",
+            "--cov=dlpt.log",
             // "--cov=dlpt.log",  // when developing single module
             "--cov-report", "term-missing"
         ],
