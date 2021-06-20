@@ -10,10 +10,13 @@ import dlpt
 
 
 def check(filePath: str) -> bool:
-    """ Return True if file is a valid, non-empty JSON file, False otherwise.
+    """ Check if given file is a JSON file.
 
     Args:
         filePath: path to a file to check.
+
+    Returns:
+        True if file is a valid JSON file, False otherwise.
     """
     filePath = dlpt.pth.check(filePath)
     try:
@@ -30,8 +33,11 @@ def removeComments(dataStr: str) -> str:
     Args:
         dataStr: string to remove comments from.
 
+    Returns:
+        Input string without C/C++ style comments.
+
     .. _comments:
-    https://stackoverflow.com/a/241506
+        https://stackoverflow.com/a/241506
     """
     def replacer(match: re.Match) -> str:
         s = match.group(0)
@@ -62,7 +68,6 @@ def read(filePath: str) -> Dict[str, Any]:
 def write(data: Dict[str, Any], filePath: str, indent: int = 2, sortKeys: bool = True):
     """ Write given data to a file in a JSON format.
 
-
     Args:
         data: serializable object to store to a file in JSON format. 
         filePath: destination file path.
@@ -85,8 +90,11 @@ def readJsonpickle(filePath: str,
             objects are from modules which are not globally available, 
             use 'classes' arg to specify them.
 
+    Returns:
+        Python objects of unpickled JSON data.
+
     .. _jsonpickle:
-    https://pypi.org/project/jsonpickle/
+        https://pypi.org/project/jsonpickle/
     """
     dlpt.pth.check(filePath)
     with open(filePath, "r") as fHandler:
@@ -98,7 +106,7 @@ def readJsonpickle(filePath: str,
 
 def writeJsonpickle(data: Any, filePath: str, indent: int = 2):
     """ Write given data to a file in a JSON format with `jsonpickle`_ module, 
-    which adds data type info for unpickling with readJsonpickle().
+    which adds data type info for unpickling with :func:`readJsonpickle()`.
 
     Args:
         data: serializable object to store to a file in JSON format.
@@ -106,7 +114,7 @@ def writeJsonpickle(data: Any, filePath: str, indent: int = 2):
         indent: number of spaces for line indentation.
 
     .. _jsonpickle:
-    https://pypi.org/project/jsonpickle/
+        https://pypi.org/project/jsonpickle/
     """
     dataStr = cast(str, jsonpickle.encode(data, indent=indent))
     with open(filePath, "w+") as fHandler:
