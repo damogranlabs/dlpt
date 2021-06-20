@@ -13,16 +13,21 @@ INDENT_STR = "    "  # \t can give a large offset.
 
 
 def getCallableObjectsStr(filePath: str, includePrivate: bool = False) -> List[str]:
-    """
-    Get a printable list of strings of all callable objects (functions, classes,
-    methods) from a given python file.
+    """ Get a printable list of strings of all callable objects (functions, 
+        classes, methods) from a given python file.
+
     NOTE: file must be syntactically correct - importable, since this function 
         performs a dynamic import.
     NOTE: this function is meant for test/code development, not for actual 
         production usage.
+
+    Args:
         filePath: path to a file to check for object definitions.
         includePrivate: if True, object that starts with '_' are also added. 
             NOTE: '__' objects are always ignored.
+
+    Returns:
+        List of string representation of callable objects from a given file.
     """
     dlpt.pth.check(filePath)
     importer = dlpt.importer.ModuleImporter(filePath)
@@ -79,12 +84,15 @@ def getCallableObjectsStr(filePath: str, includePrivate: bool = False) -> List[s
 
 
 def printCallableObjects(filePath: str, includePrivate: bool):
-    """
-    Print a list of all callable objects (functions/classes) from a given python file.
+    """ Print a list of all callable objects (functions/classes) from a 
+        given python file.
+
     NOTE: file must be syntactically correct - importable, since this function 
         performs a dynamic import.
     NOTE: this function is meant for test/code development, not for actual 
         production usage.
+
+    Args:
         filePath: path to a file to check for object definitions.
         includePrivate: if True, object that starts with '_' are also added. 
             NOTE: '__' objects are always ignored.
