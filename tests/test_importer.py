@@ -41,11 +41,13 @@ def checkModule(importer: "dlpt.importer.ModuleImporter"):
     assert importer.hasObject("qweasdxzc", False) is False
 
     assert VARIABLE_NAME == "variableToChange"
-    assert module.variableToChange == VARIABLE_DEFAULT_VALUE
+    assert module.variableToChange == VARIABLE_DEFAULT_VALUE  # type: ignore
 
 
 def test_basic(tmp_path):
     tmpFilePath = os.path.join(tmp_path, "test_basic.py")
+    with pytest.raises(ValueError):
+        dlpt.importer.ModuleImporter(tmp_path)
 
     createTempPyFile(tmpFilePath)
     importer = dlpt.importer.ModuleImporter(tmpFilePath)

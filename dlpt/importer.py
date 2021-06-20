@@ -32,14 +32,6 @@ class ModuleImporter():
             object is garbage-collected.
         """
         self.filePath = os.path.normpath(filePath)
-        if baseFolderPath is None:
-            self.baseFolderPath = os.path.dirname(self.filePath)
-        else:
-            self.baseFolderPath = os.path.normpath(baseFolderPath)
-            dlpt.pth.check(self.baseFolderPath)
-        self._module: Optional[ModuleType] = None
-
-        # check
         dlpt.pth.check(self.filePath)
         if not os.path.isabs(self.filePath):
             errorMsg = f"Given filePath is not an ABSOLUTE file path: {self.filePath}"
@@ -47,6 +39,19 @@ class ModuleImporter():
         if not os.path.isfile(self.filePath):
             errorMsg = f"Given filePath is not a FILE path: {self.filePath}"
             raise ValueError(errorMsg)
+
+        if baseFolderPath is None:
+            self.baseFolderPath = os.path.dirname(self.filePath)
+        else:
+            self.baseFolderPath = os.path.normpath(baseFolderPath)
+            dlpt.pth.check(self.baseFolderPath)
+
+        if self.baseFolderPath not in self.filePath:
+            errorMsg = f"Given filePath is not inside baseFolderPath:"
+            errorMsg += f"\n\tfilePath: {self.filePath}\n\tbaseFolderPath: {self.baseFolderPath}"
+            raise ValueError(errorMsg)
+
+        self._module: Optional[ModuleType] = None
 
         self._import()
 
@@ -57,11 +62,6 @@ class ModuleImporter():
         Returns: 
             Imported module instance (object).
         """
-        relPath = os.path.relpath(self.filePath, self.baseFolderPath)
-        if relPath.startswith("."):
-            errorMsg = f"Given filePath is not inside baseFolderPath:"
-            errorMsg += f"\n\tfilePath: {self.filePath}\n\tbaseFolderPath: {self.baseFolderPath}"
-            raise ValueError(errorMsg)
 
         # add base folder to sys.path (possible other imports inside module, pickling, ...)
         for path in sys.path:
@@ -72,6 +72,7 @@ class ModuleImporter():
             sys.path.append(self.baseFolderPath)
 
         ext = dlpt.pth.getExt(self.filePath)
+        relPath = os.path.relpath(self.filePath, self.baseFolderPath)
         importName = relPath.replace(ext, "").replace(os.path.sep, ".")
 
         if importName in sys.modules:
