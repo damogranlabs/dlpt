@@ -42,9 +42,10 @@ class SubprocError(subprocess.SubprocessError):
                 errorMsg += f" (signal: {signal.Signals(-self.returncode)})"
             except ValueError:
                 errorMsg += f" (unknown signal: {-self.returncode})"
-
+        # if self.stdout:
         # errorMsg += f"\n\tStdout: {self.stdout.strip()}" # see note above.
-        errorMsg += f"\n\tStderr: {self.stderr.strip()}"
+        if self.stderr:
+            errorMsg += f"\n\tStderr: {self.stderr.strip()}"
 
         return errorMsg
 
@@ -234,7 +235,7 @@ def killTreeMultiple(pids: T_PROC_ARGS, raiseException: bool = True) -> List[int
     return killedProcs
 
 
-def killByName(nameFilter: str) -> List[int]: # pragma: no cover
+def killByName(nameFilter: str) -> List[int]:  # pragma: no cover
     """
     Kill parent process and all child processes. Return a list of killed processes. 
     First child processes are killed, than parent process.
