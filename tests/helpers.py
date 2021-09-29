@@ -55,7 +55,8 @@ def mpChild(sleepTime: float):
 
 def mpParent(childNum: int, sleepTime: float = 3):
     """
-    This function spawns other child processes mpChild() - needed for PID and process control test functions.
+    This function spawns other child processes mpChild() - 
+    needed for PID and process control test functions.
     """
     childs = []
     # spawn child processes

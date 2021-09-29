@@ -14,16 +14,3 @@ def dlptCloseLogHandlers():
     yield
 
     log.closeLogHandlers()
-
-
-@pytest.fixture
-def dlptKillTestSubprocs():
-    """ Kill only test-spawned child processes. """
-    processesBeforeTest = dlpt.proc.getChilds(os.getpid())
-
-    yield
-
-    # since socket server process might lock this files, kill any of test subprocess
-    processesAfterTest = dlpt.proc.getChilds(os.getpid())
-    pidsToKill = dlpt.utils.getListDifference(processesBeforeTest, processesAfterTest)
-    dlpt.proc.killTreeMultiple(pidsToKill)
