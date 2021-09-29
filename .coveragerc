@@ -2,7 +2,6 @@
 [run]
 omit=
     dlpt/tfix.py
-    dlpt/emails.py
     dlpt/printFileCallables.py
 
 

@@ -6,7 +6,7 @@
 	],
 
     "settings": {
-        "python.pythonPath": "env\\Scripts\\python.exe",
+        "python.defaultInterpreterPath": "env\\Scripts\\python.exe",
         
         // language server
         "python.languageServer": "Pylance",
@@ -24,14 +24,14 @@
 
         // pytest
         "python.testing.unittestEnabled": false,
-        "python.testing.nosetestsEnabled": false,
         "python.testing.pytestEnabled": true,
         "python.testing.pytestArgs": [
             "--ignore=temp",
             "-s",
             "-v",
+            "--durations=5",
             "--cov-config=${workspaceFolder}/.coveragerc",
-            "--cov=dlpt.log",
+            "--cov=dlpt.proc",
             // "--cov=dlpt.log",  // when developing single module
             "--cov-report", "term-missing"
         ],
@@ -47,14 +47,23 @@
         },
         "search.useIgnoreFiles": false,
 
+        "restructuredtext.linter.disabled": true,
+        "restructuredtext.languageServer.disabled": true,
+        "autoDocstring.customTemplatePath": "docstring.mustache",
+        
         // spell checker settings
         "cSpell.enabledLanguageIds": [
             "python"
         ],
-        "restructuredtext.linter.disabled": true,
-        "restructuredtext.languageServer.disabled": true,
-        "autoDocstring.customTemplatePath": "docstring.mustache"
-
+        "cSpell.dictionaries": [
+            "dlpt"
+        ],
+        "cSpell.customDictionaries": {
+            "dlpt": {
+                "name": "dlpt",
+                "path": "/.vscode/cspell.json"
+            }
+        }
     },
     "extensions": {
         "recommendations": [
