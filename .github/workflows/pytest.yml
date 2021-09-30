@@ -30,22 +30,25 @@ jobs:
   
   pytest:
     runs-on: ubuntu-latest
-    
-    - name: Test with pytest
-      run: |
-        pytest --html=report.html --self-contained-html
+
+    steps:
+      
+      - name: Test with pytest
+        run: |
+          pytest --html=report.html --self-contained-html
 
   report:
     runs-on: ubuntu-latest
 
-    - name: Archive pytest HTML report
-      uses: actions/upload-artifact@v2
-      with:
-        name: dist-without-markdown
-        path: |
-          report.html
+    steps:
+      - name: Archive pytest HTML report
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist-without-markdown
+          path: |
+            report.html
 
-    - name: codecov
-      uses: codecov/codecov-action@v1
-      with:
-        fail_ci_if_error: true
+      - name: codecov
+        uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true
