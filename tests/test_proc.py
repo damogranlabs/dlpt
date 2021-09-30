@@ -229,7 +229,7 @@ def test_spawnSubprocWithRunArgs_cusomArgs():
 
 
 def test_spawnSubprocWithRunArgs_shellCommand():
-    args = ["ping", "www.google.com", "-n 1", "-w 1000"]
+    args = ["ping", "google.com", "-n 1", "-w 1000"]
     proc = dlpt.proc.spawnSubproc(args)
     assert proc.returncode == 0
 
