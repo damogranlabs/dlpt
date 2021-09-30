@@ -33,6 +33,7 @@ jobs:
           pytest --html=report.html --self-contained-html
 
       - name: Archive pytest HTML report
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: Pytest HTML report
