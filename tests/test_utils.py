@@ -142,26 +142,6 @@ def test_mapDictToClass():
     assert c.two == dInstance.two
 
 
-def test_ping():
-    PING_OK = "google.com"
-    PING_FAIL = "127.255.255.255"  # should not be taken, but not 100%
-
-    assert dlpt.utils.pingAddress(PING_OK) is True
-    assert dlpt.utils.pingAddress(PING_OK, 0.1) is True
-
-    assert dlpt.utils.pingAddress(PING_FAIL, 0.1) is False
-
-    # check times
-    pingTime = dlpt.time.funcStopwatch(dlpt.utils.pingAddress)
-    pingTime(PING_FAIL, 0.2)
-    durationSec = round(dlpt.time.getLastTimedFunctionDurationSec(), 3)
-    assert 0.1 < durationSec < 0.4
-
-    pingTime(PING_FAIL, 1.5)
-    durationSec = round(dlpt.time.getLastTimedFunctionDurationSec(), 3)
-    assert (1.1 < durationSec) and (durationSec < 1.8)
-
-
 def test_getObjectVariables():
     cInstance = helpers.TestDictClass(1, 2, 3)
     publicVars = dlpt.utils.getObjPublicVars(cInstance)

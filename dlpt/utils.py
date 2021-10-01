@@ -9,7 +9,7 @@ Various utility functions that simplify everyday code. Example:
 import inspect
 import subprocess
 import sys
-from typing import Optional, Callable, Dict, Any, List
+from typing import Optional, Callable, Dict, Any, List, Union
 from types import ModuleType
 
 import dlpt
@@ -361,51 +361,3 @@ def getCallerLocation(depth: int = 2) -> str:
             break  # pragma: no cover
 
     return locationStr
-
-
-def pingAddress(ip: str, timeoutSec: float = 1) -> bool:
-    """ Ping given IP address with specified timeout and return True on success,
-    False otherwise.
-
-    Note:
-        Due win10 ``ping`` timeout issues (can yield unpredictable times when 
-        timeout parameter is set), there is no ``count`` parameter. Therefore,
-        to wait for a specific ping state with this function, user must 
-        implement a custom ``for...loop`` with ``pingAddress()`` for a 
-        desirable ``count`` times.
-
-    Args:
-        ip: IP address to ping.
-        timeoutSec: max time that response from ping command is waited.
-    """
-    args = ["ping", ip, "-n", 1]
-
-    # win10 ping timeout issues
-    args.append("-w")
-    # increase timeout by 1 second, which somehow guarantee that `ping` command
-    # will not be interrupted by OS, but kill py subprocess with `timeoutSec`.
-    # As we are only interested in ping command status (True/False), timeout
-    # (killed py subprocess) is considered as ping fail.
-    args.append(int((timeoutSec + 1) * 1000))  # -w accepts msec
-
-    try:
-        proc = dlpt.proc.spawnSubprocWithRunArgs(args,
-                                                 timeout=timeoutSec,
-                                                 check=False,
-                                                 stdout=subprocess.DEVNULL,
-                                                 stderr=subprocess.DEVNULL,
-                                                 shell=True)
-    except dlpt.proc.SubprocTimeoutError as err:
-        return False
-
-    return not bool(proc.returncode)
-
-
-def isDbgSession() -> bool:  # pragma: no cover
-    """ Return True if current process is executed in a debug/coverage/trace 
-    session, False otherwise.
-    """
-    if sys.gettrace() is None:
-        return False
-    else:
-        return True
