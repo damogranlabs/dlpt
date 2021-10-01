@@ -368,20 +368,24 @@ def pingAddress(ip: str, timeoutSec: float = 1) -> bool:
     False otherwise.
 
     Note:
-        There is no ``count`` parameter. This is due win10 ``ping`` timeout issues, 
-        which can yield unpredictable times when using timeouts. Therefore, to
-        wait for a specific state with ``pingAddress()``, implement custom  
-        ``for...loop``. Ping timeout (``-w``) is always set to a larger value 
-        than needed, while subprocess is killed after given ``timeoutSec``.
+        Due win10 ``ping`` timeout issues (can yield unpredictable times when 
+        timeout parameter is set), there is no ``count`` parameter. Therefore,
+        to wait for a specific ping state with this function, user must 
+        implement a custom ``for...loop`` with ``pingAddress()`` for a 
+        desirable ``count`` times.
 
     Args:
-        ip: ip address to ping.
+        ip: IP address to ping.
         timeoutSec: max time that response from ping command is waited.
     """
     args = ["ping", ip, "-n", 1]
 
-    # ping timeout issues, see comment note
+    # win10 ping timeout issues
     args.append("-w")
+    # increase timeout by 1 second, which somehow guarantee that `ping` command
+    # will not be interrupted by OS, but kill py subprocess with `timeoutSec`.
+    # As we are only interested in ping command status (True/False), timeout
+    # (killed py subprocess) is considered as ping fail.
     args.append(int((timeoutSec + 1) * 1000))  # -w accepts msec
 
     try:
