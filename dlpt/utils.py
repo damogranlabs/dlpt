@@ -7,6 +7,7 @@ Various utility functions that simplify everyday code. Example:
 - ...
 """
 import inspect
+import subprocess
 import sys
 from typing import Optional, Callable, Dict, Any, List
 from types import ModuleType
@@ -384,7 +385,12 @@ def pingAddress(ip: str, timeoutSec: float = 1) -> bool:
     args.append(int((timeoutSec + 1) * 1000))  # -w accepts msec
 
     try:
-        proc = dlpt.proc.spawnSubproc(args, timeoutSec=timeoutSec, checkReturnCode=False)
+        proc = dlpt.proc.spawnSubprocWithRunArgs(args,
+                                                 timeout=timeoutSec,
+                                                 check=False,
+                                                 stdout=subprocess.DEVNULL,
+                                                 stderr=subprocess.DEVNULL,
+                                                 shell=True)
     except dlpt.proc.SubprocTimeoutError as err:
         return False
 

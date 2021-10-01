@@ -1,6 +1,5 @@
 import copy
 import os
-import sys
 
 import pytest
 
@@ -144,7 +143,7 @@ def test_mapDictToClass():
 
 
 def test_ping():
-    PING_OK = "www.google.com"
+    PING_OK = "google.com"
     PING_FAIL = "127.255.255.255"  # should not be taken, but not 100%
 
     assert dlpt.utils.pingAddress(PING_OK) is True
@@ -154,12 +153,11 @@ def test_ping():
 
     # check times
     pingTime = dlpt.time.funcStopwatch(dlpt.utils.pingAddress)
-
     pingTime(PING_FAIL, 0.2)
     durationSec = round(dlpt.time.getLastTimedFunctionDurationSec(), 3)
     assert 0.1 < durationSec < 0.4
 
-    print(pingTime(PING_FAIL, 1.5))
+    pingTime(PING_FAIL, 1.5)
     durationSec = round(dlpt.time.getLastTimedFunctionDurationSec(), 3)
     assert (1.1 < durationSec) and (durationSec < 1.8)
 
