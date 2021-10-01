@@ -228,10 +228,23 @@ def test_spawnSubprocWithRunArgs_cusomArgs():
     assert "TEST_SPAWNWITHRUNARGS" in newEnv
 
 
-def test_spawnSubprocWithRunArgs_shellCommand():
-    args = ["ping", "google.com", "-n 1", "-w 1000"]
-    proc = dlpt.proc.spawnSubproc(args)
+def test_spawnShellCmd():
+    args = ["dir"]
+    proc = dlpt.proc.spawnShellCmd(args,
+                                   timeoutSec=0.5,
+                                   cwd=os.path.dirname(__file__))
     assert proc.returncode == 0
+    assert proc.stdout != ""
+    assert proc.stderr == ""
+
+    args = ["asdqwezxc"]
+    proc = dlpt.proc.spawnShellCmd(args, timeoutSec=0.5, checkReturnCode=False)
+    assert proc.returncode != 0
+    assert proc.stdout == ""
+    assert proc.stderr != ""
+
+    with pytest.raises(dlpt.proc.SubprocError):
+        dlpt.proc.spawnShellCmd(args, timeoutSec=0.5)
 
 
 def test_checkIfArgIsList():

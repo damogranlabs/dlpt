@@ -407,6 +407,58 @@ def spawnSubproc(args: T_PROC_ARGS,
     return proc
 
 
+def spawnShellCmd(args: T_PROC_ARGS,
+                  cwd: Optional[str] = None,
+                  timeoutSec: Optional[float] = None,
+                  checkReturnCode: bool = True) -> subprocess.CompletedProcess:
+    """
+    Spawn shell command as a subprocess and return CompletedProcess or 
+    raise exception. By default, raise exception on timeout (if given) or if 
+    return code is not zero.
+
+    NOTE: 'stdin' is set to subprocess.PIPE, which should raise exception if
+        spawned subprocess require user input. STDOUT and STDERR are only 
+        routed to the returned `subprocess.CompletedProcess` object.
+
+    NOTE: if spawned subprocess throw:
+        "OSError: [WinError 740] The requested operation requires elevation" 
+        user does not have permission for executing them. Try to re-run script
+        with admin permissions.
+
+    Args:
+        args: shell command line arguments with which process will be spawned. 
+            NOTE: all commandline arguments (specifically paths) must be
+            properly encoded. For example, path containing tilde will throw 
+            error.
+        cwd: root directory from where subprocess will be executed.
+        timeoutSec: timeout in seconds. If None, no timeout is implemented. 
+            Else, if timeout is reached, process is killed and TimeoutExpired 
+            exception re-raised.
+        checkReturnCode: if True, return code is checked by run() function.
+            In case it is not zero, SubprocessReturncodeError() is raised. 
+            If False, CompletedProcess is returned.
+
+    Example:
+        >>> args = ['dir']
+        >>> dlpt.proc.spawnShellCmd(args)
+        proc.py, pth.py, # ...
+
+    Return: 
+        ``CompleteProcess`` object once process execution has finished or was 
+        terminated.
+    """
+    proc = spawnSubprocWithRunArgs(args,
+                                   stdin=subprocess.PIPE,
+                                   capture_output=True,
+                                   encoding='utf-8',
+                                   cwd=cwd,
+                                   timeout=timeoutSec,
+                                   check=checkReturnCode,
+                                   shell=True)
+
+    return proc
+
+
 def spawnSubprocWithRunArgs(args: T_PROC_ARGS,
                             **runArgs) -> subprocess.CompletedProcess:
     """
