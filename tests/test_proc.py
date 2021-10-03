@@ -1,7 +1,8 @@
 from unittest import mock
+import multiprocessing
 import os
 import subprocess
-import multiprocessing
+import sys
 import time
 from typing import List
 
@@ -75,16 +76,13 @@ def test_getChilds():
 
 def test_kill():
     TIMEOUT_SEC = 3
-    proc = multiprocessing.Process(target=helpers.sleep,
-                                   args=(TIMEOUT_SEC, ))
+    proc = multiprocessing.Process(target=helpers.sleep, args=(TIMEOUT_SEC, ))
     proc.start()
     assert proc.pid is not None
     assert dlpt.proc.kill(proc.pid) is True
-    assert proc.is_alive() is False
+    assert dlpt.proc.exist(proc.pid) is False
 
-    with mock.patch("dlpt.proc.exist") as existFunc:
-        existFunc.return_value = False
-        assert dlpt.proc.kill(123) is True
+    assert dlpt.proc.kill(123) is True
 
 
 def test_killChilds():
@@ -135,103 +133,93 @@ def test_getAlive():
     assert thisPid in pyPids
 
 
-def test_spawnNonBlockingSubproc():
-    # invalid args, subprocess throws exception
-    with pytest.raises(Exception) as err:
-        dlpt.proc.spawnNonBlockingSubproc(["qweasdzxc"])
+def test_spawnSubproc_stdouterr():
+    actionStr = "import time; import sys; "
+    actionStr += "sys.stdout.write('std output'); sys.stdout.flush(); "
+    actionStr += "sys.stderr.write('std error'); sys.stderr.flush(); "
+    args = [sys.executable, "-c", actionStr]
 
-    cmdStr = helpers.getTestProcArgs()
-    procPid = dlpt.proc.spawnNonBlockingSubproc([cmdStr])
-    assert dlpt.proc.exist(procPid) is True
-    dlpt.proc.kill(procPid)
+    proc = dlpt.proc.spawnSubproc(args)
+    assert proc.returncode == 0
+    assert proc.stdout == "std output"
+    assert proc.stderr == "std error"
+
+    actionStr += "sys.exit(1)"
+    args = [sys.executable, "-c", actionStr]
+    with pytest.raises(dlpt.proc.SubprocError) as err:
+        dlpt.proc.spawnSubproc(args)
+        assert "std output" in str(err.value)
+        assert "std error" in str(err.value)
 
 
-def test_spawnSubproc():
-    with mock.patch("dlpt.proc.spawnSubprocWithRunArgs") as spawnFunc:
-        dlpt.proc.spawnSubproc(["asd"])
-        spawnFunc.assert_called_once()
-        spawnFunc.call_args[0][0] == ["asd"]
-
-
-def test_spawnSubprocWithRunArgs():
-    # spawn a valid subprocess
-    args = ["python", "-c", "\"import sys; sys.exit(0)\""]
+def test_spawnSubproc_exitCode():
+    # spawn subprocess with zero return code,  and check its return code
+    args = [sys.executable, "-c", "import sys; sys.exit(0)"]
     proc = dlpt.proc.spawnSubproc(args)
     assert proc.returncode == 0
 
-    # spawn subprocess with non-zero return code,
-    # but don't check its return code
-    args = ["python", "-c", "\"import sys; sys.exit(1)\""]
+    # spawn subprocess with non-zero return code, ...
+    args = [sys.executable, "-c", "import sys; sys.exit(1)"]
+
+    # ... but don't check its return code
     proc = dlpt.proc.spawnSubproc(args, checkReturnCode=False)
     assert proc.returncode == 1
 
-    # spawn subprocess with non-zero return code,
-    # check its return code and string representation
+
+def test_spawnSubproc_exception():
+    args = [sys.executable, "-c", "throw exception"]
+
     with pytest.raises(dlpt.proc.SubprocError) as err:
         dlpt.proc.spawnSubproc(args)
     assert "throw 'subprocess.CalledProcessError'" in str(err.value)
-
-    # spawn subprocess with non-zero return code, do not check its return code
-    args = ["python", "-c", "\"invalidCommand = invalid command\""]
-    proc = dlpt.proc.spawnSubproc(args, checkReturnCode=False)
-    assert proc.returncode == 1
-    assert "invalid command" in proc.stderr
-
-    # spawn a subprocess with invalid command
-    args = ["whateva"]
-    with pytest.raises(Exception):
-        dlpt.proc.spawnSubproc(args)
+    assert "throw exception" in str(err.value)
 
 
-def test_spawnSubprocWithRunArgs_timeout():
-    actionStr = "\"import time; import sys; "
-    actionStr += "sys.stderr.write('errDesc'); "
-    actionStr += "time.sleep(3)\""
-    args = ["python", "-c", actionStr]
+def test_spawnSubproc_timeout():
+    timeoutSec = 2
+
+    actionStr = "import time; import sys; "
+    actionStr += "sys.stderr.write('errDesc'); sys.stderr.flush(); "
+    actionStr += "time.sleep(5)"
+    args = [sys.executable, "-c", actionStr]
 
     startTime = time.time()
     with pytest.raises(dlpt.proc.SubprocTimeoutError) as err:
-        dlpt.proc.spawnSubproc(args, timeoutSec=0.3)
+        dlpt.proc.spawnSubproc(args, timeoutSec=timeoutSec)
     durationSec = time.time() - startTime
-    assert 0.25 < durationSec < 0.35
+    assert (timeoutSec - 0.2) < durationSec < (timeoutSec + 0.2)
     assert "throw 'subprocess.TimeoutExpired'" in str(err.value)
     assert "Stderr: errDesc" in str(err.value)
 
 
-def test_spawnSubprocWithRunArgs_cusomArgs():
+def test_spawnSubproc_customArgs():
     """
     Spawn a subprocess with extra key-worded run() args.
     """
-    args = ["python",
-            "-c",
-            "\"import os; import sys; print(list(os.environ));\""]
+    actionStr = "import os; import sys; "
+    actionStr += "sys.stdout.write(str(list(os.environ))); sys.stdout.flush();"
+    args = ["python", "-c", actionStr]
 
     # get default env vars
-    proc = dlpt.proc.spawnSubprocWithRunArgs(args,
-                                             stdout=subprocess.PIPE,
-                                             encoding='utf-8')
+    proc = dlpt.proc.spawnSubproc(args)
     assert proc.returncode == 0
     defaultEnv = proc.stdout
 
     # get subproc env vars
-    envVars = {**os.environ, 'TEST_SPAWNWITHRUNARGS': 'keyworded_proc_args'}
-    proc = dlpt.proc.spawnSubprocWithRunArgs(args,
-                                             stdout=subprocess.PIPE,
-                                             encoding='utf-8',
-                                             env=envVars)
+    envVars = {**os.environ, '_CUSTOM_ENV_VAR_': 'keyworded_proc_args'}
+    proc = dlpt.proc.spawnSubproc(args, env=envVars)
     assert proc.returncode == 0
     newEnv = proc.stdout
 
     # compare
     assert newEnv != defaultEnv
-    assert "TEST_SPAWNWITHRUNARGS" not in defaultEnv
-    assert "TEST_SPAWNWITHRUNARGS" in newEnv
+    assert "_CUSTOM_ENV_VAR_" not in defaultEnv
+    assert "_CUSTOM_ENV_VAR_" in newEnv
 
 
 def test_spawnShellCmd():
     args = ["dir"]
     proc = dlpt.proc.spawnShellCmd(args,
-                                   timeoutSec=0.5,
                                    cwd=os.path.dirname(__file__))
     assert proc.returncode == 0
     assert proc.stdout != ""
@@ -247,12 +235,22 @@ def test_spawnShellCmd():
         dlpt.proc.spawnShellCmd(args, timeoutSec=0.5)
 
 
-def test_checkIfArgIsList():
+def test_spawnNonBlockingSubproc():
+    # invalid args, subprocess throws exception
+    with pytest.raises(Exception) as err:
+        dlpt.proc.spawnNonBlockingSubproc(["qweasdzxc"])
+
+    args = helpers.getTestProcArgs()
+    procPid = dlpt.proc.spawnNonBlockingSubproc(args)
+    assert dlpt.proc.exist(procPid) is True
+    dlpt.proc.kill(procPid)
+
+
+def test_formatArgs():
     ARGS_LIST = ["a", "s", "d", 1, 2, 3]
-    ARGS_STR = "a s d 1 2 3"
+    ARGS_STR_LIST = ["a", "s", "d", "1", "2", "3"]
 
-    dlpt.proc._checkIfArgIsList(ARGS_LIST)
+    argsList = dlpt.proc._formatArgs(ARGS_LIST)
+    assert argsList == ARGS_STR_LIST
     with pytest.raises(Exception):
-        dlpt.proc._checkIfArgIsList(ARGS_STR)
-
-    assert dlpt.proc.getCmdString(ARGS_LIST) == ARGS_STR
+        dlpt.proc._formatArgs("asd")
