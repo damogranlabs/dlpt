@@ -82,8 +82,6 @@ def test_kill():
     assert dlpt.proc.kill(proc.pid) is True
     assert dlpt.proc.exist(proc.pid) is False
 
-    assert dlpt.proc.kill(123) is True
-
 
 def test_killChilds():
     NUM_OF_CHILD_PROCS = 3
@@ -174,6 +172,12 @@ def test_spawnSubproc_exception():
     assert "throw 'subprocess.CalledProcessError'" in str(err.value)
     assert "throw exception" in str(err.value)
 
+    # invalid arg, spawn Exception
+    with pytest.raises(Exception) as err:
+        dlpt.proc.spawnSubproc(args, invalidArg=None)
+    assert "Unexpected exception while spawning subprocess" in str(err.value)
+    assert "got an unexpected keyword argument 'invalidArg'" in str(err.value)
+
 
 def test_spawnSubproc_timeout():
     timeoutSec = 2
@@ -254,3 +258,9 @@ def test_formatArgs():
     assert argsList == ARGS_STR_LIST
     with pytest.raises(Exception):
         dlpt.proc._formatArgs("asd")
+
+
+def test_decode():
+    assert dlpt.proc._decode(None, "utf-8") is None
+    assert dlpt.proc._decode("asd", "utf-8") == "asd"
+    assert dlpt.proc._decode(b"asd", "utf-8") == "asd"

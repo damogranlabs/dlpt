@@ -210,7 +210,7 @@ def kill(pid: T_STR_INT,
                 except psutil.TimeoutExpired as err:
                     proc.kill()
 
-            if exist(pid):
+            if exist(pid):  # pragma: no cover
                 if raiseException:
                     errorMsg = f"Unable to kill process with PID {pid} "
                     errorMsg += f"(alive even after {timeoutSec} sec)."
@@ -228,7 +228,7 @@ def kill(pid: T_STR_INT,
             else:
                 return False
     else:
-        return True
+        return True  # pragma: no cover
 
 
 def killChilds(pid: T_STR_INT, raiseException: bool = True) -> List[int]:
