@@ -531,14 +531,14 @@ def _formatArgs(args: T_PROC_ARGS) -> List[str]:
 
 def _decode(data: Union[None, str, bytes], encoding: str) -> Optional[str]:
     """
-    Encode given `data` with `encoding` format, or return string.
+    Encode given `data` with `encoding` format or return string|None.
 
     Args: 
         data: data to encode.
         encoding: selected encoding of the given `data`.
 
     Return:
-        String representation of the given `data`.
+        String representation of the given `data` or None.
     """
     if data is None:
         return None
