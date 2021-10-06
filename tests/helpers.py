@@ -28,7 +28,6 @@ class TestDictClass():
 
 
 def sleep(sleepTime: float):
-    sleepTime = float(sleepTime)
     time.sleep(sleepTime)
 
 
@@ -94,3 +93,5 @@ if __name__ == "__main__":
     else:
         sleepTime = 10
     sleep(sleepTime)
+
+    sys.exit(0)
