@@ -81,19 +81,27 @@ def test_basic(tmp_path):
         dlpt.importer.ModuleImporter(tmpFilePath)
 
 
-def test_customBaseFolder(tmp_path):
-    inRootFolder = os.path.join(tmp_path, MODULE_NAME)
-    createTempPyFile(inRootFolder)
-    importer = dlpt.importer.ModuleImporter(inRootFolder, tmp_path)
+def test_customBaseFolder_sameFolder(tmp_path):
+    filePath = os.path.join(tmp_path, MODULE_NAME)
+    createTempPyFile(filePath)
+
+    importer = dlpt.importer.ModuleImporter(filePath, tmp_path)
     checkModule(importer)
 
+
+def test_customBaseFolder_subFolder(tmp_path):
     folderPath = os.path.join(tmp_path, "root", "package", "subFolder")
     dlpt.pth.createFolder(folderPath)
     filePath = os.path.join(folderPath, MODULE_NAME)
     createTempPyFile(filePath)
+
     importer = dlpt.importer.ModuleImporter(filePath, tmp_path)
     checkModule(importer)
 
-    # file not inside base folder
+
+def test_customBaseFolder_invalidFolder(tmp_path):
+    filePath = os.path.join(tmp_path, MODULE_NAME)
+    createTempPyFile(filePath)
+
     with pytest.raises(ValueError):
         dlpt.importer.ModuleImporter(filePath, os.getcwd())

@@ -15,7 +15,7 @@ import dlpt
 class ModuleImporter():
     def __init__(self, filePath: str, baseFolderPath: Optional[str] = None):
         """
-        Dynamically import module from given `filePath` and return its instance.
+        Dynamically import module from given `filePath`.
 
         Args:
             filePath: abs path to a python module (file) which will be 
@@ -26,7 +26,7 @@ class ModuleImporter():
                 ``baseFolderPath = C:/root/someFolder/``
                 -> module will be imported as: `someSubfolder.myModule`
 
-        Note: 
+        NOTE: 
             `baseFolderPath` (or `filePath` root folder, if `baseFolderPath`
             is not specified) is added to `sys.path`. It is NOT removed once
             object is garbage-collected.
@@ -34,10 +34,11 @@ class ModuleImporter():
         self.filePath = os.path.normpath(filePath)
         dlpt.pth.check(self.filePath)
         if not os.path.isabs(self.filePath):
-            errorMsg = f"Given filePath is not an ABSOLUTE file path: {self.filePath}"
+            errorMsg = f"Given `filePath` is not an ABSOLUTE file path: "
+            errorMsg += self.filePath
             raise ValueError(errorMsg)
         if not os.path.isfile(self.filePath):
-            errorMsg = f"Given filePath is not a FILE path: {self.filePath}"
+            errorMsg = f"Given `filePath` is not a FILE path: {self.filePath}"
             raise ValueError(errorMsg)
 
         if baseFolderPath is None:
@@ -47,8 +48,9 @@ class ModuleImporter():
             dlpt.pth.check(self.baseFolderPath)
 
         if self.baseFolderPath not in self.filePath:
-            errorMsg = f"Given filePath is not inside baseFolderPath:"
-            errorMsg += f"\n\tfilePath: {self.filePath}\n\tbaseFolderPath: {self.baseFolderPath}"
+            errorMsg = f"Given `filePath` is not inside `baseFolderPath`:"
+            errorMsg += f"\n\tfilePath: {self.filePath}"
+            errorMsg += f"\n\tbaseFolderPath: {self.baseFolderPath}"
             raise ValueError(errorMsg)
 
         self._module: Optional[ModuleType] = None
@@ -63,10 +65,10 @@ class ModuleImporter():
             Imported module instance (object).
         """
 
-        # add base folder to sys.path (possible other imports inside module, pickling, ...)
+        # add base folder to sys.path because of
+        # possible other imports inside module, pickling, ...
         for path in sys.path:
             if os.path.normpath(path).lower() == self.baseFolderPath.lower():
-                self._baseFolderInSysPath = True
                 break
         else:
             sys.path.append(self.baseFolderPath)
@@ -76,12 +78,14 @@ class ModuleImporter():
         importName = relPath.replace(ext, "").replace(os.path.sep, ".")
 
         if importName in sys.modules:
-            # module already imported. Let's just reload it and return its instance
+            # module already imported.
+            # Let's just reload it and return its instance
             self._module = importlib.reload(sys.modules[importName])
         else:
             self._module = importlib.import_module(importName)
         if self._module is None:  # pragma: no cover
-            errorMsg = f"Unable to import module from: {self.filePath}\n\tInvalid syntax?"
+            errorMsg = f"Unable to import module from: {self.filePath}"
+            errorMsg += f"\n\tInvalid syntax, invalid imports, ...?"
             raise Exception(errorMsg)
 
         return self._module
@@ -92,32 +96,31 @@ class ModuleImporter():
 
         Returns:
             Imported module instance (object).
-
         """
         assert self._module is not None
 
         return self._module
 
-    def hasObject(self, objectName: str, raiseException: bool = True) -> bool:
+    def hasObject(self, name: str, raiseException: bool = True) -> bool:
         """
         Check if imported module has object with objectName.
 
         Args:
-            objectName: name of the object to check in imported module
+            name: name of the object to check in imported module
             raiseException: if True, exception is raised if object is not
                 found. Otherwise bool is returned (True if object is found,
                 False otherwise).
 
         Returns:
-            `True` if imported module has object with name `objectName`, `False`
+            True if imported module has object with name `objectName`, False
             otherwise.
         """
         if self._module:
-            if hasattr(self._module, objectName):
+            if hasattr(self._module, name):
                 return True
 
         if raiseException:
-            errorMsg = f"Imported module has no object with name '{objectName}'."
+            errorMsg = f"Imported module has no object with name '{name}'."
             raise Exception(errorMsg)
         else:
             return False
