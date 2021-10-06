@@ -139,24 +139,26 @@ def getCmdArgs(pid: T_STR_INT) -> List[str]:
     return cmdline
 
 
-def exist(pid: Optional[T_STR_INT]) -> bool:
+def alive(pid: Optional[T_STR_INT]) -> bool:
     """
-    Return True if PID exists, False otherwise.
-
-    NOTE: Raise exception if given PID is None.
+    Return True if PID exists and process is running, False otherwise.
+    Raise exception if given PID is None.
 
     Args:
         pid: PID number, string or integer.
 
     Return:
-        True if given PID exists (is alive), False otherwise.
+        True if given PID exists and is running, False otherwise.
     """
     if pid is None:
         errorMsg = f"Unable to check PID - given 'pid' argument is None "
         errorMsg += f" (expecting string or int)."
         raise ValueError(errorMsg)
 
-    return psutil.pid_exists(int(pid))
+    try:
+        return psutil.Process(int(pid)).is_running()
+    except Exception as err:
+        return False
 
 
 def getChilds(pid: T_STR_INT) -> List[int]:
@@ -177,15 +179,14 @@ def getChilds(pid: T_STR_INT) -> List[int]:
     currentProcess = psutil.Process(int(pid))
     childProcs = currentProcess.children(recursive=True)
     for childProc in childProcs:
-        childPid = childProc.pid
-        childProcesses.append(childPid)
+        childProcesses.append(childProc.pid)
 
     return childProcesses
 
 
 def kill(pid: T_STR_INT,
          raiseException: bool = True,
-         timeoutSec: int = 3) -> bool:
+         timeoutSec: Optional[int] = 3) -> bool:
     """
     Kill process with a given PID.
 
@@ -194,41 +195,26 @@ def kill(pid: T_STR_INT,
         raiseException: if True, exception is raised if process wasn't
             successfully killed. Otherwise return False.
         timeoutSec: wait for specified number of seconds for
-            a process to be killed. If 0, return immediately.
+            a process to be killed. If None, return immediately.
 
     Return:
         True on successfully terminated process, False otherwise (or exception,
         based on ``raiseException`` input argument).
     """
-    if exist(pid):
+    try:
         proc = psutil.Process(int(pid))
-        try:
-            proc.terminate()
-            if timeoutSec > 0:  # pragma: no cover
-                try:
-                    proc.wait(timeoutSec)
-                except psutil.TimeoutExpired as err:
-                    proc.kill()
+        proc.kill()
+        proc.wait(timeoutSec)
 
-            if exist(pid):  # pragma: no cover
-                if raiseException:
-                    errorMsg = f"Unable to kill process with PID {pid} "
-                    errorMsg += f"(alive even after {timeoutSec} sec)."
-                    raise Exception(errorMsg)
-                else:
-                    return False
-            else:
-                return True
+        return True
 
-        except Exception as err:  # pragma: no cover
-            if raiseException:
-                errorMsg = f"Unable to kill process with PID: {pid}. "
-                errorMsg += f"Error:\n{err}"
-                raise Exception(errorMsg)
-            else:
-                return False
-    else:
-        return True  # pragma: no cover
+    except Exception as err:  # pragma: no cover
+        if raiseException:
+            errorMsg = "Unexpected exception while killing process with PID: "
+            errorMsg += f"{pid}:\n{err}"
+            raise Exception(errorMsg) from err
+        else:
+            return False
 
 
 def killChilds(pid: T_STR_INT, raiseException: bool = True) -> List[int]:
@@ -245,10 +231,10 @@ def killChilds(pid: T_STR_INT, raiseException: bool = True) -> List[int]:
     """
     killedProcs: List[int] = []
 
-    childProcs = getChilds(pid)
-    for childProcPid in childProcs:
-        kill(childProcPid, raiseException)
-        killedProcs.append(childProcPid)
+    childPids = getChilds(pid)
+    for childPid in childPids:
+        kill(childPid, raiseException)
+        killedProcs.append(childPid)
 
     return killedProcs
 

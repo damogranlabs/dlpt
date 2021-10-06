@@ -45,12 +45,17 @@ def test_getCmdArgs():
     assert len(args) > 1
 
 
-def test_exist():
-    assert dlpt.proc.exist(thisPid) is True
-    assert dlpt.proc.exist(123456) is False
-
+def test_alive():
     with pytest.raises(ValueError):
-        dlpt.proc.exist(None)
+        dlpt.proc.alive(None)
+
+    assert dlpt.proc.alive(123) is False
+
+    proc = multiprocessing.Process(target=helpers.sleep, args=(1, ))
+    proc.start()
+    assert dlpt.proc.alive(proc.pid) is True
+    proc.join(3)
+    assert dlpt.proc.alive(proc.pid) is False
 
 
 def test_getChilds():
@@ -80,7 +85,7 @@ def test_kill():
     proc.start()
     assert proc.pid is not None
     assert dlpt.proc.kill(proc.pid) is True
-    assert dlpt.proc.exist(proc.pid) is False
+    assert dlpt.proc.alive(proc.pid) is False
 
 
 def test_killChilds():
@@ -117,7 +122,7 @@ def test_killTree():
 
 def test_killTreeMultiple():
     with mock.patch("dlpt.proc.killTree") as killTreeFunc:
-        killedPids = dlpt.proc.killTreeMultiple([1, 2, 3, 4])
+        dlpt.proc.killTreeMultiple([1, 2, 3, 4])
         assert killTreeFunc.call_args_list == [
             mock.call(1, True),
             mock.call(2, True),
@@ -245,9 +250,9 @@ def test_spawnNonBlockingSubproc():
         dlpt.proc.spawnNonBlockingSubproc(["qweasdzxc"])
 
     args = helpers.getTestProcArgs()
-    procPid = dlpt.proc.spawnNonBlockingSubproc(args)
-    assert dlpt.proc.exist(procPid) is True
-    dlpt.proc.kill(procPid)
+    pid = dlpt.proc.spawnNonBlockingSubproc(args)
+    assert dlpt.proc.alive(pid) is True
+    dlpt.proc.kill(pid)
 
 
 def test_formatArgs():
