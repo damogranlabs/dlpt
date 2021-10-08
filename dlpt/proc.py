@@ -229,12 +229,21 @@ def killChilds(pid: T_STR_INT, raiseException: bool = True) -> List[int]:
     """
     killedProcs: List[int] = []
 
-    childPids = getChilds(pid)
-    for childPid in childPids:
-        kill(childPid, raiseException)
-        killedProcs.append(childPid)
+    try:
+        childPids = getChilds(pid)
+    except Exception as err:  # pragma: no cover
+        if raiseException:
+            errorMsg = "Unexpected exception while getting process with PID: "
+            errorMsg += f"{pid} childs:\n{err}"
+            raise Exception(errorMsg) from err
+        else:
+            return []
+    else:
+        for childPid in childPids:
+            kill(childPid, raiseException)
+            killedProcs.append(childPid)
 
-    return killedProcs
+        return killedProcs
 
 
 def killTree(pid: T_STR_INT, raiseException: bool = True) -> List[int]:
