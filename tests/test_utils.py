@@ -6,8 +6,6 @@ import pytest
 
 import dlpt
 
-from dlpt.tfix import *
-
 THIS_MODULE = sys.modules[__name__]
 
 TEST_VAR_PUBLIC = "aka public"
