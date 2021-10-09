@@ -4,29 +4,6 @@ import time
 from typing import List, Optional
 
 
-class TestDictClass():
-    def __init__(self, one, two, three):
-        self.one = one
-        self.two = two
-        self.three = three
-
-        self._private = "asd"
-        self.__superPrivate = "qwe"
-
-    def normal(self):
-        return "normalVal"
-
-    @staticmethod
-    def static():
-        return "staticVal"
-
-    def _hidden(self):
-        pass
-
-    def __veryHidden(self):
-        pass
-
-
 def sleep(sleepTime: float):
     time.sleep(sleepTime)
 

@@ -1,13 +1,33 @@
 import copy
 import os
+import sys
 
 import pytest
 
 import dlpt
-import dlpt.log as log
 
-import tests.helpers as helpers
 from dlpt.tfix import *
+
+THIS_MODULE = sys.modules[__name__]
+
+TEST_VAR_PUBLIC = "aka public"
+_TEST_VAR_PRIVATE = "aka private"
+
+
+def publicFunc():
+    pass
+
+
+def _privateFunc():
+    pass
+
+
+class PublicClass():
+    pass
+
+
+class _PrivateClass():
+    pass
 
 
 @pytest.mark.parametrize("value,digits,expected", [
@@ -123,27 +143,27 @@ def test_dictOperations():
     assert dlpt.utils.areDictValuesEqual(dictOne, dictTwo) is False
 
     # try with dicst that hold classes
-    dictOne = {"1": helpers.TestDictClass(1, 2, 3), 3: helpers.TestDictClass(4, 5, 6)}
-    dictTwo = {"100": helpers.TestDictClass(1, 2, 3), 300: helpers.TestDictClass(4, 5, 6)}
+    dictOne = {"1": TestDictClass(1, 2, 3), 3: TestDictClass(4, 5, 6)}
+    dictTwo = {"100": TestDictClass(1, 2, 3), 300: TestDictClass(4, 5, 6)}
     assert dlpt.utils.areDictValuesEqual(dictOne, dictOne) is True
     assert dlpt.utils.areDictValuesEqual(dictOne, dictTwo) is False
 
 
 def test_mapDictToClass():
-    dInstance = helpers.TestDictClass(1, 2, 3)
+    dInstance = TestDictClass(1, 2, 3)
     d = dInstance.__dict__.copy()
 
-    cInstance = helpers.TestDictClass(4, 5, 6)
+    cInstance = TestDictClass(4, 5, 6)
     c = dlpt.utils.mapDictToClass(cInstance, d)
 
-    assert isinstance(c, helpers.TestDictClass)
-    assert isinstance(cInstance, helpers.TestDictClass)
+    assert isinstance(c, TestDictClass)
+    assert isinstance(cInstance, TestDictClass)
 
     assert c.two == dInstance.two
 
 
 def test_getObjectVariables():
-    cInstance = helpers.TestDictClass(1, 2, 3)
+    cInstance = TestDictClass(1, 2, 3)
     publicVars = dlpt.utils.getObjPublicVars(cInstance)
     assert len(publicVars.keys()) == 3
 
@@ -157,7 +177,7 @@ def test_getObjectVariables():
 
 def test_getObjectMethods():
     # check class methods when instance is given
-    cInstance = helpers.TestDictClass(1, 2, 3)
+    cInstance = TestDictClass(1, 2, 3)
     methods = dlpt.utils.getObjPublicMethods(cInstance)
     assert ("one" not in methods) and ("_private" not in methods) and ("_superPrivate" not in methods)
 
@@ -169,32 +189,45 @@ def test_getObjectMethods():
 
 
 def test_getCallableObjectsFromModule():
-    callableObjects = dlpt.utils.getCallablesFromModule(log)
-    assert "LogHandler" in callableObjects
-    assert id(log.LogHandler) == id(callableObjects["LogHandler"])
-    assert "getDefaultLogger" in callableObjects
-    assert id(log.getDefaultLogger) == id(callableObjects["getDefaultLogger"])
-    assert "DEFAULT_NAME" not in callableObjects
-    assert "_checkDefaultLogHandler" not in callableObjects
+    callableObj = dlpt.utils.getCallablesFromModule(THIS_MODULE)
+
+    assert publicFunc.__name__ in callableObj
+    assert id(publicFunc) == id(callableObj[publicFunc.__name__])
+    assert PublicClass.__name__ in callableObj
+    assert id(PublicClass) == id(callableObj[PublicClass.__name__])
+
+    # variables, private funcs/classes
+    assert TEST_VAR_PUBLIC not in callableObj
+    assert _TEST_VAR_PRIVATE not in callableObj
+    assert _privateFunc.__name__ not in callableObj
+    assert _PrivateClass.__name__ not in callableObj
 
 
 def test_getPublicClassesFromModule():
-    classes = dlpt.utils.getPublicClassesFromModule(log)
-    assert ("LogHandler" in classes) and ("LogSocketServer" in classes)
-    assert "_SocketHandler" not in classes
-    assert id(log.LogHandler) == id(classes["LogHandler"])
+    classes = dlpt.utils.getPublicClassesFromModule(THIS_MODULE)
 
-    assert "DEFAULT_NAME" not in classes
-    assert "_checkDefaultLogHandler" not in classes
+    assert PublicClass.__name__ in classes
+    assert id(PublicClass) == id(classes[PublicClass.__name__])
+
+    # variables, private funcs/classes
+    assert TEST_VAR_PUBLIC not in classes
+    assert _TEST_VAR_PRIVATE not in classes
+    assert _privateFunc.__name__ not in classes
+    assert _PrivateClass.__name__ not in classes
 
 
 def test_getPublicFunctionsFromModule():
-    functions = dlpt.utils.getPublicFunctionsFromModule(log)
-    assert "getDefaultLogger" in functions
-    assert id(log.getDefaultLogger) == id(functions["getDefaultLogger"])
-    assert "LogHandler" not in functions
-    assert "DEFAULT_NAME" not in functions
-    assert "_checkDefaultLogHandler" not in functions
+    functions = dlpt.utils.getPublicFunctionsFromModule(THIS_MODULE)
+
+    assert publicFunc.__name__ in functions
+    assert id(publicFunc) == id(functions[publicFunc.__name__])
+
+    # variables, private funcs/classes
+    assert TEST_VAR_PUBLIC not in functions
+    assert _TEST_VAR_PRIVATE not in functions
+    assert _privateFunc.__name__ not in functions
+    assert PublicClass.__name__ not in functions
+    assert _PrivateClass.__name__ not in functions
 
 
 def test_callerLocation():
@@ -220,3 +253,26 @@ def test_callerLocation():
     assert "unable to display" in dlpt.utils.getCallerLocation(100)
 
     assert "unable to display" in dlpt.utils.getCallerLocation(100)
+
+
+class TestDictClass():
+    def __init__(self, one, two, three):
+        self.one = one
+        self.two = two
+        self.three = three
+
+        self._private = "asd"
+        self.__superPrivate = "qwe"
+
+    def normal(self):
+        return "normalVal"
+
+    @staticmethod
+    def static():
+        return "staticVal"
+
+    def _hidden(self):
+        pass
+
+    def __veryHidden(self):
+        pass
