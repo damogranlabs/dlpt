@@ -1,8 +1,10 @@
 # .coveragerc to control coverage.py
 [run]
+source = dlpt
 omit=
     dlpt/tfix.py
     dlpt/printFileCallables.py
+    tests/
 
 
 [report]

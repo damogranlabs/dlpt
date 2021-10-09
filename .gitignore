@@ -2,6 +2,7 @@ dlpt_playground.py
 dlpt.*.rst
 dlpt.rst
 .coverage
+!.coveragerc
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
