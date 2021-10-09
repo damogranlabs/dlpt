@@ -49,8 +49,6 @@ def test_alive():
     with pytest.raises(ValueError):
         dlpt.proc.alive(None)
 
-    assert dlpt.proc.alive(123) is False
-
     proc = multiprocessing.Process(target=helpers.sleep, args=(1, ))
     proc.start()
     assert dlpt.proc.alive(proc.pid) is True
