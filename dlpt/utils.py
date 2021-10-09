@@ -7,9 +7,7 @@ Various utility functions that simplify everyday code. Example:
 - ...
 """
 import inspect
-import subprocess
-import sys
-from typing import Optional, Callable, Dict, Any, List, Union
+from typing import Optional, Callable, Dict, Any, List
 from types import ModuleType
 
 import dlpt
