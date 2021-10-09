@@ -27,10 +27,11 @@ jobs:
           pip install -r requirements.txt
           pip install -U pytest-github-actions-annotate-failures
           pip install -U pytest-html
+          pip install -U pytest-cov
     
       - name: Test with pytest
         run: |
-          pytest --html=report.html --self-contained-html
+          pytest --html=report.html --self-contained-html --cov=dlpt --cov-report=xml
 
       - name: Archive pytest HTML report
         if: always()
