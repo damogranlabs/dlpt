@@ -141,27 +141,27 @@ def test_dictOperations():
     assert dlpt.utils.areDictValuesEqual(dictOne, dictTwo) is False
 
     # try with dicst that hold classes
-    dictOne = {"1": TestDictClass(1, 2, 3), 3: TestDictClass(4, 5, 6)}
-    dictTwo = {"100": TestDictClass(1, 2, 3), 300: TestDictClass(4, 5, 6)}
+    dictOne = {"1": SomeTestClass(1, 2, 3), 3: SomeTestClass(4, 5, 6)}
+    dictTwo = {"100": SomeTestClass(1, 2, 3), 300: SomeTestClass(4, 5, 6)}
     assert dlpt.utils.areDictValuesEqual(dictOne, dictOne) is True
     assert dlpt.utils.areDictValuesEqual(dictOne, dictTwo) is False
 
 
 def test_mapDictToClass():
-    dInstance = TestDictClass(1, 2, 3)
+    dInstance = SomeTestClass(1, 2, 3)
     d = dInstance.__dict__.copy()
 
-    cInstance = TestDictClass(4, 5, 6)
+    cInstance = SomeTestClass(4, 5, 6)
     c = dlpt.utils.mapDictToClass(cInstance, d)
 
-    assert isinstance(c, TestDictClass)
-    assert isinstance(cInstance, TestDictClass)
+    assert isinstance(c, SomeTestClass)
+    assert isinstance(cInstance, SomeTestClass)
 
     assert c.two == dInstance.two
 
 
 def test_getObjectVariables():
-    cInstance = TestDictClass(1, 2, 3)
+    cInstance = SomeTestClass(1, 2, 3)
     publicVars = dlpt.utils.getObjPublicVars(cInstance)
     assert len(publicVars.keys()) == 3
 
@@ -175,7 +175,7 @@ def test_getObjectVariables():
 
 def test_getObjectMethods():
     # check class methods when instance is given
-    cInstance = TestDictClass(1, 2, 3)
+    cInstance = SomeTestClass(1, 2, 3)
     methods = dlpt.utils.getObjPublicMethods(cInstance)
     assert ("one" not in methods) and ("_private" not in methods) and ("_superPrivate" not in methods)
 
@@ -253,7 +253,7 @@ def test_callerLocation():
     assert "unable to display" in dlpt.utils.getCallerLocation(100)
 
 
-class TestDictClass():
+class SomeTestClass():
     def __init__(self, one, two, three):
         self.one = one
         self.two = two
