@@ -8,7 +8,7 @@ builtin 'logging' module.
         created logger. It is therefore possible to initialize logger in one 
         place and use it in all other project files just by importing `dlpt.log`
         and use the default logger.
-2. Use `add*()` functions to add common handlers to created logger:
+2. Use `add*()` functions to add common handlers to created logger instance:
     console (terminal) handler, file handler, rotating file handler, server 
     socket handler (for logs when multiple processes are used).
 
@@ -70,7 +70,7 @@ def createLogger(name: Optional[str] = None,
         name: Optional name of the new logger instance or root by default.
         setAsDefault: If True, created logger instance will be set as a
             default logger whenewer `dlpt.log.*` log functions are invoked..
-        logLevel: set log level for this specific handler.
+        logLevel: set log level for this specific logger.
             By default, everything is logged (``DEBUG`` level).
         logLevel: set log level for this specific logger. If None, do not
             change log level. By default, everything is logged (``DEBUG`` level).
@@ -92,6 +92,28 @@ def createLogger(name: Optional[str] = None,
     return logger
 
 
+def _getLogger(logger: Union[logging.Logger, str]) -> logging.Logger:
+    """ Allow user to specify logger by passing exact instance or logger name.
+    Private function.
+
+    Args:
+        logger: logger instance or logger name.
+
+    Returns:
+        Logger instance object.
+    """
+    if isinstance(logger, str):
+        if logger in logging.Logger.manager.loggerDict:
+            return logging.getLogger(logger)
+        else:
+            errorMsg = f"Logger with name '{logger}' does not exist. Use "
+            errorMsg += "`dlpt.log.createLogger()` or manually create new "
+            errorMsg += "logging.Logger instance."
+            raise ValueError(errorMsg)
+    else:
+        return logger
+
+
 def addConsoleHandler(logger: Union[logging.Logger, str],
                       fmt: Optional[logging.Formatter] = None,
                       level: int = logging.DEBUG) -> logging.StreamHandler:
@@ -111,10 +133,9 @@ def addConsoleHandler(logger: Union[logging.Logger, str],
     Returns:
         Created console (stream) handler object.
     """
-    if isinstance(logger, str):
-        logger = logging.getLogger(logger)
+    logger = _getLogger(logger)
 
-    if fmt is None:
+    if fmt is None:  # pragma: no cover
         fmt = logging.Formatter(DEFAULT_FMT,
                                 datefmt=DEFAULT_FMT_TIME)
 
@@ -141,7 +162,7 @@ def addFileHandler(logger: Union[logging.Logger, str],
             ``DEFAULT_LOG_FILE_EXT`` is appended. If ``None``, logger name
             is used as a file name.
         dirPath: path to a folder where logs will be stored. If ``None``,
-            path is fetched with :func:`getDefaultLogFolderPath()`.If log
+            path is fetched with :func:`getDefaultLogDirPath()`.If log
             folder does not exist, it is created.
         fmt: Optional custom formatter for created handler. By default,
             DEFAULT_FORMATTER and DEFAULT_FORMATTER_TIME is used.
@@ -152,18 +173,17 @@ def addFileHandler(logger: Union[logging.Logger, str],
     Returns:
         A tuple: (created file handler, file path).
     """
-    if isinstance(logger, str):
-        logger = logging.getLogger(logger)
+    logger = _getLogger(logger)
 
     fName = getFileName(logger, fName)
     if dirPath is None:
-        dirPath = getDefaultLogFolderPath()
+        dirPath = getDefaultLogDirPath()  # pragma: no cover
     else:
         dirPath = os.path.normpath(dirPath)
     dlpt.pth.createFolder(dirPath)
     fPath = os.path.join(dirPath, fName)
 
-    if fmt is None:
+    if fmt is None:  # pragma: no cover
         fmt = logging.Formatter(DEFAULT_FMT,
                                 datefmt=DEFAULT_FMT_TIME)
 
@@ -187,7 +207,7 @@ def addRotatingFileHandler(logger: Union[logging.Logger, str],
                            backupCount: int = DEFAULT_ROT_LOG_FILE_COUNT) -> Tuple[
                                logging.handlers.RotatingFileHandler,
                                str]:
-    """ Add rotating file handler to logger instance
+    """ Add rotating file handler to logger instance.
 
     Args:
         logger: logger instance or logger name.
@@ -195,7 +215,7 @@ def addRotatingFileHandler(logger: Union[logging.Logger, str],
             ``DEFAULT_LOG_FILE_EXT`` is appended. If ``None``, logger name
             is used as a file name.
         dirPath: path to a folder where logs will be stored. If ``None``,
-            path is fetched with :func:`getDefaultLogFolderPath()`. If log
+            path is fetched with :func:`getDefaultLogDirPath()`. If log
             folder does not exist, it is created.
         maxSizeKb: number of KB at which rollover is performed on a
             current log file.
@@ -209,18 +229,17 @@ def addRotatingFileHandler(logger: Union[logging.Logger, str],
     Returns:
         A tuple: (created rotating file handler, file path).
     """
-    if isinstance(logger, str):
-        logger = logging.getLogger(logger)
+    logger = _getLogger(logger)
 
     fName = getFileName(logger, fName)
     if dirPath is None:
-        dirPath = getDefaultLogFolderPath()
+        dirPath = getDefaultLogDirPath()  # pragma: no cover
     else:
         dirPath = os.path.normpath(dirPath)
     dlpt.pth.createFolder(dirPath)
     fPath = os.path.join(dirPath, fName)
 
-    if fmt is None:
+    if fmt is None:  # pragma: no cover
         fmt = logging.Formatter(DEFAULT_FMT,
                                 datefmt=DEFAULT_FMT_TIME)
 
@@ -251,10 +270,9 @@ def addLoggingServerHandler(logger: Union[logging.Logger, str],
         level: Log level for this specific handler. By default,
             everything is logged (``DEBUG`` level).
     """
-    if isinstance(logger, str):
-        logger = logging.getLogger(logger)
+    logger = _getLogger(logger)
 
-    if fmt is None:
+    if fmt is None:  # pragma: no cover
         fmt = logging.Formatter(DEFAULT_SERVER_FMT,
                                 datefmt=DEFAULT_FMT_TIME)
 
@@ -268,7 +286,7 @@ def addLoggingServerHandler(logger: Union[logging.Logger, str],
 
 
 def getLogFilePaths(logger: Union[logging.Logger, str]) -> List[str]:
-    """ Return log file paths of FileHandler(s) of given logger instance.
+    """ Return log file paths of `FileHandler(s)` of a given logger instance.
 
     Args:
         logger: logger instance or logger name.
@@ -276,8 +294,7 @@ def getLogFilePaths(logger: Union[logging.Logger, str]) -> List[str]:
     Returns:
         List of loggers file handlers file paths.
     """
-    if isinstance(logger, str):
-        logger = logging.getLogger(logger)
+    logger = _getLogger(logger)
 
     fPaths = []
     for hdlr in logger.handlers:
@@ -288,7 +305,7 @@ def getLogFilePaths(logger: Union[logging.Logger, str]) -> List[str]:
 
 
 def getRotatingLogFilePaths(logger: Union[logging.Logger, str]) -> List[str]:
-    """ Return log file paths of RotatingFileHandler(s) of given logger
+    """ Return log file paths of `RotatingFileHandler(s)` of a given logger
     instance.
 
     Args:
@@ -297,8 +314,7 @@ def getRotatingLogFilePaths(logger: Union[logging.Logger, str]) -> List[str]:
     Returns:
         List of loggers rotating file handlers file paths.
     """
-    if isinstance(logger, str):
-        logger = logging.getLogger(logger)
+    logger = _getLogger(logger)
 
     fPaths = []
     for hdlr in logger.handlers:
@@ -309,13 +325,26 @@ def getRotatingLogFilePaths(logger: Union[logging.Logger, str]) -> List[str]:
 
 
 def getDefaultLogger() -> Optional[logging.Logger]:
-    """ Get default logger handler instance.
+    """ Get default logger instance object (if set).
 
     Returns:
-        Current logger handler instance when `dlpt.log.*` log functions are
+        Current logger instance when `dlpt.log.*` log functions are
         invoked.
     """
     return _defaultLogger
+
+
+def setDefaultLogger(logger: logging.Logger):
+    """ Set default logger instance.
+
+    Args:
+        Logger 
+    Returns:
+        Current logger instance object.
+    """
+    global _defaultLogger
+
+    _defaultLogger = logger
 
 
 def getFileName(logger: Union[logging.Logger, str],
@@ -326,13 +355,12 @@ def getFileName(logger: Union[logging.Logger, str],
     Args:
         logger: logger instance or logger name.
         fName: if given, this name is checked (for extension) or default
-            file name is created from log handler name.
+            file name is created from logger name.
 
     Returns:
         File name with extension.
     """
-    if isinstance(logger, str):
-        logger = logging.getLogger(logger)
+    logger = _getLogger(logger)
 
     if fName is None:
         fName = f"{logger.name}{DEFAULT_LOG_FILE_EXT}"
@@ -343,26 +371,29 @@ def getFileName(logger: Union[logging.Logger, str],
     return fName
 
 
+def getDefaultLogDirPath() -> str:
+    """ Get default log folder path: <cwd>/log folder.
+
+    Returns:
+        Path to a folder where logs are usually created.
+    """
+    dirPath = os.path.join(os.getcwd(), DEFAULT_LOG_DIR_NAME)
+
+    return dlpt.pth.resolve(dirPath)
+
+
 def _checkDefaultLogger() -> logging.Logger:
-    """ Check if default log handler already exists and raise exception
+    """ Check if default logger already exists and raise exception
     if not.
+
+    Returns:
+        Logger instance object.
     """
     if _defaultLogger is None:
         errorMsg = "No default logger instance available."
         raise Exception(errorMsg)
     else:
         return _defaultLogger
-
-
-def getDefaultLogFolderPath() -> str:
-    """ Get default log folder path: <cwd>/log folder.
-
-    Returns:
-        Path to a default log handler folder.
-    """
-    dirPath = os.path.join(os.getcwd(), DEFAULT_LOG_DIR_NAME)
-
-    return dlpt.pth.resolve(dirPath)
 
 
 class ReleaseFileLock():
@@ -381,9 +412,7 @@ class ReleaseFileLock():
             >>> with dlpt.log.ReleaseFileLock(logger, fPath):
             >>>     shutil.move(fPath, tmp_path)
         """
-        if isinstance(logger, str):
-            logger = logging.getLogger(logger)
-        self.logger = logger
+        self.logger = _getLogger(logger)
         self.fPath = dlpt.pth.resolve(fPath)
 
         self.hdlrs: List[logging.FileHandler] = []
@@ -510,7 +539,7 @@ class LoggingServer(socketserver.ThreadingTCPServer):
             self.shutdown()
             return
         else:
-            self.handle_error(request, client_address)
+            self.handle_error(request, client_address)  # pragma: no cover
 
 
 def createLoggingServerProc(fPath: str,
@@ -618,8 +647,7 @@ def loggingServerShutdownRequest(logger: Union[logging.Logger, str],
         True if server was succesfully stopped (PID not alive anymore), False 
         otherwise.
     """
-    if isinstance(logger, str):
-        logger = logging.getLogger(logger)
+    logger = _getLogger(logger)
 
     for hdlr in logger.handlers:
         if isinstance(hdlr, _SocketHandler):
@@ -632,7 +660,7 @@ def loggingServerShutdownRequest(logger: Union[logging.Logger, str],
                 proc = psutil.Process(pid)
                 proc.wait(timeoutSec)
                 return True
-            except psutil.TimeoutExpired:
+            except psutil.TimeoutExpired:  # pragma: no cover
                 return False
     else:
         errorMsg = "Given logger does not have 'logging server handler' added, "
@@ -640,81 +668,100 @@ def loggingServerShutdownRequest(logger: Union[logging.Logger, str],
         raise Exception(errorMsg)
 
 
-def debug(msg: str, logger: Union[logging.Logger, str] = None):
-    """ Log with 'DEBUG' level.
+def _determineLogger(logger: Union[None,
+                                   logging.Logger,
+                                   str] = None) -> logging.Logger:
+    """ Determine logger instance when `dlpt.log.debug/info/...` functions are 
+    used. If `logger` is None, try to use the default logger else try to fetch 
+    existing logger instance based on a given name. Raise exception if logger 
+    instance can't be determined.
+
+    Args:
+        logger: logger instance or logger name. If not set, default logger
+            is used (as set by :func:`createLogger()`) if exists, or exception 
+            is raised.
+
+    Returns:
+        Logger instance object.
+    """
+    if logger is None:
+        logger = _checkDefaultLogger()
+    else:
+        logger = _getLogger(logger)
+
+    return logger
+
+
+def debug(msg: str,
+          logger: Union[logging.Logger, str] = None,
+          *args, **kwargs):
+    """ Log to a given or default logger (if available) with 'DEBUG' level.
 
     Args:
         msg: message to log.
         logger: logger instance or logger name. If not set, default logger
             is used (as set by :func:`createLogger()`).
     """
-    if logger is None:
-        logger = _checkDefaultLogger()
-    elif isinstance(logger, str):
-        logger = logging.getLogger(logger)
+    logger = _determineLogger()
 
-    logger.debug(msg)
+    logger.debug(msg, *args, **kwargs)
 
 
-def info(msg: str, logger: Union[logging.Logger, str] = None):
-    """ Log with 'INFO' level.
-
-    Args:
-        msg: message to log.
-        logger: logger instance or logger name. If not set, default logger
-            is used (as set by :func:`createLogger()`).
-    """
-    if logger is None:
-        logger = _checkDefaultLogger()
-    elif isinstance(logger, str):
-        logger = logging.getLogger(logger)
-
-    logger.info(msg)
-
-
-def warning(msg: str, logger: Union[logging.Logger, str] = None):
-    """ Log with 'WARNING' level.
+def info(msg: str,
+         logger: Union[logging.Logger, str] = None,
+         *args, **kwargs):
+    """ Log to a given or default logger (if available) with 'INFO' level.
 
     Args:
         msg: message to log.
         logger: logger instance or logger name. If not set, default logger
             is used (as set by :func:`createLogger()`).
     """
-    if logger is None:
-        logger = _checkDefaultLogger()
-    elif isinstance(logger, str):
-        logger = logging.getLogger(logger)
+    logger = _determineLogger()
 
-    logger.warning(msg)
+    logger.info(msg, *args, **kwargs)
 
 
-def error(msg: str, logger: Union[logging.Logger, str] = None):
-    """ Log with 'ERROR' level.
-
-    Args:
-        msg: message to log.
-        logger: logger instance or logger name. If not set, default logger
-            is used (as set by :func:`createLogger()`).
-    """
-    if logger is None:
-        logger = _checkDefaultLogger()
-    elif isinstance(logger, str):
-        logger = logging.getLogger(logger)
-
-    logger.error(msg)
-
-
-def critical(msg: str, logger: Union[logging.Logger, str] = None):
-    """ Log with 'CRITICAL' level.
+def warning(msg: str,
+            logger: Union[logging.Logger, str] = None,
+            *args, **kwargs):
+    """ Log to a given or default logger (if available) with 'WARNING' level.
 
     Args:
         msg: message to log.
         logger: logger instance or logger name. If not set, default logger
             is used (as set by :func:`createLogger()`).
     """
-    if logger is None:
-        logger = _checkDefaultLogger()
-    elif isinstance(logger, str):
-        logger = logging.getLogger(logger)
+    logger = _determineLogger()
 
-    logger.critical(msg)
+    logger.warning(msg, *args, **kwargs)
+
+
+def error(msg: str,
+          logger: Union[logging.Logger, str] = None,
+          *args, **kwargs):
+    """ Log to a given or default logger (if available) with 'ERROR' level.
+
+    Args:
+        msg: message to log.
+        logger: logger instance or logger name. If not set, default logger
+            is used (as set by :func:`createLogger()`).
+    """
+    logger = _determineLogger()
+
+    logger.error(msg, *args, **kwargs)
+
+
+def critical(msg: str,
+             logger: Union[logging.Logger, str] = None,
+             *args, **kwargs):
+    """ Log to a given or default logger (if available) with 'CRITICAL' level.
+
+    Args:
+        msg: message to log.
+        logger: logger instance or logger name. If not set, default logger
+            is used (as set by :func:`createLogger()`).
+    """
+    logger = _determineLogger()
+
+    logger.critical(msg, *args, **kwargs)

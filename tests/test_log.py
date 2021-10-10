@@ -54,6 +54,27 @@ def test_createLogger():
         log._defaultLogger = None
 
 
+def test_getDetermineLogger(myLogger: logging.Logger):
+    assert log._getLogger(myLogger) == myLogger
+    assert log._getLogger(myLogger.name) == myLogger
+    with pytest.raises(Exception):
+        # non-existing default logger
+        log._getLogger("qweasdzxcv")
+
+    assert log._determineLogger() == myLogger
+    assert log._determineLogger(myLogger) == myLogger
+    assert log._determineLogger(myLogger.name) == myLogger
+
+    # set/get default logger
+    assert log.getDefaultLogger() == myLogger
+    log.setDefaultLogger(logging.root)
+    assert log.getDefaultLogger() == logging.root
+    log._defaultLogger = None
+    with pytest.raises(Exception):
+        # no default logger
+        log._determineLogger()
+
+
 def test_addConsoleHandler(myLogger: logging.Logger):
     assert len(myLogger.handlers) == 0
     hdlr = log.addConsoleHandler(myLogger, CUSTOM_FMT, logging.WARNING)
@@ -189,6 +210,10 @@ def test_loggingServerProc(myLogger: logging.Logger, tmp_path):
     pid = log.createLoggingServerProc(fPath)
     assert dlpt.proc.alive(pid)
 
+    with pytest.raises(Exception):
+        # does not have logging server handler
+        log.loggingServerShutdownRequest(myLogger, pid)
+
     try:
         endTime = time.time() + TIMEOUT_SEC
         while time.time() < endTime:
@@ -242,7 +267,7 @@ def test_getFileName(myLogger: logging.Logger):
 
 
 def test_getDefaultLogFolderPath():
-    assert log.getDefaultLogFolderPath().lower().startswith(os.getcwd().lower())
+    assert log.getDefaultLogDirPath().lower().startswith(os.getcwd().lower())
 
 
 def test_defaultLogFunctions():
