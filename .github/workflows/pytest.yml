@@ -35,7 +35,7 @@ jobs:
     
       - name: Test with pytest
         run: |
-          pytest --html=report.html --self-contained-html --cov=dlpt --cov-report=xml --cov-report term-missing
+          pytest --html=${{ matrix.os }}.html --self-contained-html --cov=dlpt --cov-report=xml --cov-report term-missing
 
       - name: Archive pytest HTML report
         if: always()
@@ -43,7 +43,7 @@ jobs:
         with:
           name: Pytest HTML report
           path: |
-            report.html
+            ${{ matrix.os }}.html
 
       - name: codecov
         uses: codecov/codecov-action@v1
