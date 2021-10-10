@@ -4,7 +4,7 @@
         {
             "label": "Get callable objects from current file",
             "type": "process",
-            "command": "${config:python.pythonPath}",
+            "command": "${config:python.defaultInterpreterPath}",
             "args": [
                 "${workspaceFolder}\\dlpt\\printFileCallables.py",
                 "${file}"
@@ -20,7 +20,7 @@
         {
             "label": "Build distribution",
             "type": "process",
-            "command": "${config:python.pythonPath}",
+            "command": "${config:python.defaultInterpreterPath}",
             "args": [
                 "setup.py",
                 "sdist",
@@ -37,7 +37,7 @@
         {
             "label": "Upload distribution",
             "type": "process",
-            "command": "${config:python.pythonPath}",
+            "command": "${config:python.defaultInterpreterPath}",
             "args": [
                 "-m",
                 "twine",
