@@ -31,7 +31,7 @@ jobs:
     
       - name: Test with pytest
         run: |
-          pytest --html=report.html --self-contained-html --cov=dlpt --cov-report=xml
+          pytest --html=report.html --self-contained-html --cov=dlpt --cov-report=xml --cov-report term-missing
 
       - name: Archive pytest HTML report
         if: always()
