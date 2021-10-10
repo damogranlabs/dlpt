@@ -10,7 +10,7 @@ import dlpt
 
 
 def check(fPath: str) -> bool:
-    """ Check if given file is a JSON file.
+    """ Check if given file is a valid JSON file.
 
     Args:
         fPath: path to a file to check.
@@ -46,7 +46,9 @@ def removeComments(dataStr: str) -> str:
         else:
             return s
 
-    pattern = re.compile(r'//.*?$|/\*.*?\*/|\'(?:\\.|[^\\\'])*\'|"(?:\\.|[^\\"])*"', re.DOTALL | re.MULTILINE)
+    pattern = re.compile(
+        r'//.*?$|/\*.*?\*/|\'(?:\\.|[^\\\'])*\'|"(?:\\.|[^\\"])*"',
+        re.DOTALL | re.MULTILINE)
 
     return re.sub(pattern, replacer, dataStr)
 
@@ -56,6 +58,9 @@ def read(fPath: str) -> Dict[str, Any]:
 
     Args:
         fPath: path to a file that needs to be parsed.
+
+    Returns:
+        Data (dictionary) of a given JSON file.
     """
     fPath = dlpt.pth.check(fPath)
     with open(fPath, 'r') as fHandler:
@@ -65,7 +70,11 @@ def read(fPath: str) -> Dict[str, Any]:
     return data
 
 
-def write(data: Dict[str, Any], fPath: str, indent: int = 2, sortKeys: bool = True):
+def write(data: Dict[str, Any],
+          fPath: str,
+          indent: int = 2,
+          sortKeys: bool = True,
+          *args):
     """ Write given data to a file in a JSON format.
 
     Args:
@@ -74,6 +83,7 @@ def write(data: Dict[str, Any], fPath: str, indent: int = 2, sortKeys: bool = Tr
         indent: number of spaces to use while building file line indentation.
         sortKeys: if True, data keys are sorted alphabetically, else 
             left unchanged.
+        *args: `json.dump()` additional arguments.
     """
     with open(fPath, 'w+') as fHandler:
         json.dump(data, fHandler, sort_keys=sortKeys, indent=indent)
@@ -82,16 +92,16 @@ def write(data: Dict[str, Any], fPath: str, indent: int = 2, sortKeys: bool = Tr
 def readJsonpickle(fPath: str,
                    classes: Optional[Union[object, List[object]]] = None) -> Any:
     """Read given file and return unpicklable data - python objects with
-        `jsonpickle`_ module.
+    `jsonpickle`_ module.
 
     Args:
-        fPath: path to a file that needs to be read and returned.
-        classes: see `jsonpickle`_ decode() docstring. TLDR: if un-picklable
+        fPath: path to a file that needs to be read.
+        classes: see `jsonpickle`_ `decode()` docstring. TLDR: if un-picklable
             objects are from modules which are not globally available, 
-            use 'classes' arg to specify them.
+            use ``classes`` arg to specify them.
 
     Returns:
-        Python objects of unpickled JSON data.
+        Python object(s) of unpickled JSON data.
 
     .. _jsonpickle:
         https://pypi.org/project/jsonpickle/
