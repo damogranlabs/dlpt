@@ -13,43 +13,43 @@ import dlpt
 
 
 class ModuleImporter():
-    def __init__(self, filePath: str, baseFolderPath: Optional[str] = None):
+    def __init__(self, fPath: str, baseFolderPath: Optional[str] = None):
         """
-        Dynamically import module from given `filePath`.
+        Dynamically import module from given `fPath`.
 
         Args:
-            filePath: abs path to a python module (file) which will be 
+            fPath: abs path to a python module (file) which will be 
                 dynamically imported.
             baseFolderPath: path to a root folder from where module
                 will be imported. Example:
-                ``filePath = C:/root/someFolder/someSubfolder/myModule.py``
+                ``fPath = C:/root/someFolder/someSubfolder/myModule.py``
                 ``baseFolderPath = C:/root/someFolder/``
                 -> module will be imported as: `someSubfolder.myModule`
 
         NOTE: 
-            `baseFolderPath` (or `filePath` root folder, if `baseFolderPath`
+            `baseFolderPath` (or `fPath` root folder, if `baseFolderPath`
             is not specified) is added to `sys.path`. It is NOT removed once
             object is garbage-collected.
         """
-        self.filePath = os.path.normpath(filePath)
-        dlpt.pth.check(self.filePath)
-        if not os.path.isabs(self.filePath):
-            errorMsg = f"Given `filePath` is not an ABSOLUTE file path: "
-            errorMsg += self.filePath
+        self.fPath = os.path.normpath(fPath)
+        dlpt.pth.check(self.fPath)
+        if not os.path.isabs(self.fPath):
+            errorMsg = f"Given `fPath` is not an ABSOLUTE file path: "
+            errorMsg += self.fPath
             raise ValueError(errorMsg)
-        if not os.path.isfile(self.filePath):
-            errorMsg = f"Given `filePath` is not a FILE path: {self.filePath}"
+        if not os.path.isfile(self.fPath):
+            errorMsg = f"Given `fPath` is not a FILE path: {self.fPath}"
             raise ValueError(errorMsg)
 
         if baseFolderPath is None:
-            self.baseFolderPath = os.path.dirname(self.filePath)
+            self.baseFolderPath = os.path.dirname(self.fPath)
         else:
             self.baseFolderPath = os.path.normpath(baseFolderPath)
             dlpt.pth.check(self.baseFolderPath)
 
-        if self.baseFolderPath not in self.filePath:
-            errorMsg = f"Given `filePath` is not inside `baseFolderPath`:"
-            errorMsg += f"\n\tfilePath: {self.filePath}"
+        if self.baseFolderPath not in self.fPath:
+            errorMsg = f"Given `fPath` is not inside `baseFolderPath`:"
+            errorMsg += f"\n\tfilePath: {self.fPath}"
             errorMsg += f"\n\tbaseFolderPath: {self.baseFolderPath}"
             raise ValueError(errorMsg)
 
@@ -73,8 +73,8 @@ class ModuleImporter():
         else:
             sys.path.append(self.baseFolderPath)
 
-        ext = dlpt.pth.getExt(self.filePath)
-        relPath = os.path.relpath(self.filePath, self.baseFolderPath)
+        ext = dlpt.pth.getExt(self.fPath)
+        relPath = os.path.relpath(self.fPath, self.baseFolderPath)
         importName = relPath.replace(ext, "").replace(os.path.sep, ".")
 
         if importName in sys.modules:
@@ -84,7 +84,7 @@ class ModuleImporter():
         else:
             self._module = importlib.import_module(importName)
         if self._module is None:  # pragma: no cover
-            errorMsg = f"Unable to import module from: {self.filePath}"
+            errorMsg = f"Unable to import module from: {self.fPath}"
             errorMsg += f"\n\tInvalid syntax, invalid imports, ...?"
             raise Exception(errorMsg)
 

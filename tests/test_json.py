@@ -5,34 +5,33 @@ from unittest import mock
 import pytest
 
 import dlpt
-import dlpt.log as log
 
 from dlpt.tfix import *
 
 
 def test_check(tmp_path):
-    filePath = os.path.join(tmp_path, 'jsonTest.json')
+    fPath = os.path.join(tmp_path, 'jsonTest.json')
 
     # empty file
-    with open(filePath, 'w+') as fHandler:
+    with open(fPath, 'w+') as fHandler:
         pass
-    assert dlpt.json.check(filePath) is False
+    assert dlpt.json.check(fPath) is False
 
     # invalid syntax, missing \" in zxc
     dataStr = '{"asd": "qwe","zxc: 123}'
-    with open(filePath, 'w+') as fHandler:
+    with open(fPath, 'w+') as fHandler:
         fHandler.write(dataStr)
-    assert dlpt.json.check(filePath) is False
+    assert dlpt.json.check(fPath) is False
 
     # valid syntax
     dataStr = '{"asd": "qwe","zxc": 123}'
-    with open(filePath, 'w+') as fHandler:
+    with open(fPath, 'w+') as fHandler:
         fHandler.write(dataStr)
-    assert dlpt.json.check(filePath) is True
+    assert dlpt.json.check(fPath) is True
 
 
 def test_removeComments(tmp_path):
-    DATA_STR = """{"asd": /*inline comment with some special characters: !@/[]()/\\ */ "qwe",
+    DATA_STR = """{"asd": /*inline with special characters: !@/[]()/\\ */ "qwe",
     // comment in its own line
     "zxc": 123, // comment at the end of the line
     /* comment
@@ -73,7 +72,7 @@ def test_read(tmp_path):
 
 
 def test_write(tmp_path):
-    filePath = os.path.join(tmp_path, 'jsonTest.json')
+    fPath = os.path.join(tmp_path, 'jsonTest.json')
 
     DATA = {
         "asd": "qwe",
@@ -83,8 +82,8 @@ def test_write(tmp_path):
         }
     }
 
-    dlpt.json.write(DATA, filePath)
-    data = dlpt.json.read(filePath)
+    dlpt.json.write(DATA, fPath)
+    data = dlpt.json.read(fPath)
     assert data == DATA
 
 
@@ -105,12 +104,12 @@ class _JsonTestSubclass():
 
 
 def test_readWriteJsonpickle(tmp_path):
-    filePath = os.path.join(tmp_path, 'jsonTest.json')
+    fPath = os.path.join(tmp_path, 'jsonTest.json')
 
     wData = _JsonTestClass()
-    dlpt.json.writeJsonpickle(wData, filePath)
+    dlpt.json.writeJsonpickle(wData, fPath)
 
-    rData = dlpt.json.readJsonpickle(filePath)
+    rData = dlpt.json.readJsonpickle(fPath)
 
     assert isinstance(rData, _JsonTestClass)
     assert rData.public == 123

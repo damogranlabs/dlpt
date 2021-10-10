@@ -15,7 +15,7 @@ FUNCTION_NAME = "testFunc"
 FUNCTION_RET_VAL = "retVal"
 
 
-def createTempPyFile(filePath):
+def createTempPyFile(fPath):
     lines = []
     lines.append("import sys")
     lines.append(f"\n")
@@ -25,7 +25,7 @@ def createTempPyFile(filePath):
     lines.append(f"def {FUNCTION_NAME}():\n")
     lines.append(f"     return \"{FUNCTION_RET_VAL}\"\n")
 
-    with open(filePath, 'w+') as fHandler:
+    with open(fPath, 'w+') as fHandler:
         fHandler.writelines(lines)
 
 
@@ -82,26 +82,26 @@ def test_basic(tmp_path):
 
 
 def test_customBaseFolder_sameFolder(tmp_path):
-    filePath = os.path.join(tmp_path, MODULE_NAME)
-    createTempPyFile(filePath)
+    fPath = os.path.join(tmp_path, MODULE_NAME)
+    createTempPyFile(fPath)
 
-    importer = dlpt.importer.ModuleImporter(filePath, tmp_path)
+    importer = dlpt.importer.ModuleImporter(fPath, tmp_path)
     checkModule(importer)
 
 
 def test_customBaseFolder_subFolder(tmp_path):
-    folderPath = os.path.join(tmp_path, "root", "package", "subFolder")
-    dlpt.pth.createFolder(folderPath)
-    filePath = os.path.join(folderPath, MODULE_NAME)
-    createTempPyFile(filePath)
+    dirPath = os.path.join(tmp_path, "root", "package", "subFolder")
+    dlpt.pth.createFolder(dirPath)
+    fPath = os.path.join(dirPath, MODULE_NAME)
+    createTempPyFile(fPath)
 
-    importer = dlpt.importer.ModuleImporter(filePath, tmp_path)
+    importer = dlpt.importer.ModuleImporter(fPath, tmp_path)
     checkModule(importer)
 
 
 def test_customBaseFolder_invalidFolder(tmp_path):
-    filePath = os.path.join(tmp_path, MODULE_NAME)
-    createTempPyFile(filePath)
+    fPath = os.path.join(tmp_path, MODULE_NAME)
+    createTempPyFile(fPath)
 
     with pytest.raises(ValueError):
-        dlpt.importer.ModuleImporter(filePath, os.getcwd())
+        dlpt.importer.ModuleImporter(fPath, os.getcwd())

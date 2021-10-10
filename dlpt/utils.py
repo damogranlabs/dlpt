@@ -347,10 +347,10 @@ def getCallerLocation(depth: int = 2) -> str:
     frame = inspect.currentframe()
     while frame:
         if currentDepth == depth:
-            filePath = frame.f_code.co_filename
+            fPath = frame.f_code.co_filename
             lineNum = frame.f_lineno
             funcName = frame.f_code.co_name
-            locationStr = f"{funcName}() @ {filePath}:{lineNum}"
+            locationStr = f"{funcName}() @ {fPath}:{lineNum}"
             break
         elif frame.f_back:
             frame = frame.f_back

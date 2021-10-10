@@ -82,25 +82,25 @@ def test_resolve():
 
 @pytest.mark.parametrize("succes", [False, True])
 def test_setWritePermissions(tmp_path, succes):
-    filePath = os.path.join(tmp_path, 'testFile.txt')
+    fPath = os.path.join(tmp_path, 'testFile.txt')
 
     with mock.patch("os.chmod") as modFunc:
         with mock.patch("os.access") as accessFunc:
             if succes:
                 accessFunc.return_value = True
-                dlpt.pth._setWritePermissions(filePath)
+                dlpt.pth._setWritePermissions(fPath)
             else:
                 accessFunc.return_value = False
 
                 with pytest.raises(Exception):
-                    dlpt.pth._setWritePermissions(filePath)
+                    dlpt.pth._setWritePermissions(fPath)
 
             assert modFunc.call_count == 1
-            assert modFunc.call_args[0][0] == filePath
+            assert modFunc.call_args[0][0] == fPath
             assert modFunc.call_args[0][1] == stat.S_IWRITE
 
             assert accessFunc.call_count == 1
-            assert accessFunc.call_args[0][0] == filePath
+            assert accessFunc.call_args[0][0] == fPath
             assert accessFunc.call_args[0][1] == os.W_OK
 
 

@@ -12,7 +12,7 @@ import dlpt
 INDENT_STR = "    "  # \t can give a large offset.
 
 
-def getCallableObjectsStr(filePath: str, includePrivate: bool = False) -> List[str]:
+def getCallableObjectsStr(fPath: str, includePrivate: bool = False) -> List[str]:
     """ Get a printable list of strings of all callable objects (functions, 
         classes, methods) from a given python file.
 
@@ -22,15 +22,15 @@ def getCallableObjectsStr(filePath: str, includePrivate: bool = False) -> List[s
         production usage.
 
     Args:
-        filePath: path to a file to check for object definitions.
+        fPath: path to a file to check for object definitions.
         includePrivate: if True, object that starts with '_' are also added. 
             NOTE: '__' objects are always ignored.
 
     Returns:
         List of string representation of callable objects from a given file.
     """
-    dlpt.pth.check(filePath)
-    importer = dlpt.importer.ModuleImporter(filePath)
+    dlpt.pth.check(fPath)
+    importer = dlpt.importer.ModuleImporter(fPath)
     module = importer.getModule()
 
     lines: List[str] = []
@@ -78,12 +78,12 @@ def getCallableObjectsStr(filePath: str, includePrivate: bool = False) -> List[s
             if isClass:
                 _getMembers(lines, ref, modulePath, indent + INDENT_STR)
 
-    _getMembers(lines, module, filePath)
+    _getMembers(lines, module, fPath)
 
     return lines
 
 
-def printCallableObjects(filePath: str, includePrivate: bool):
+def printCallableObjects(fPath: str, includePrivate: bool):
     """ Print a list of all callable objects (functions/classes) from a 
         given python file.
 
@@ -93,11 +93,11 @@ def printCallableObjects(filePath: str, includePrivate: bool):
         production usage.
 
     Args:
-        filePath: path to a file to check for object definitions.
+        fPath: path to a file to check for object definitions.
         includePrivate: if True, object that starts with '_' are also added. 
             NOTE: '__' objects are always ignored.
     """
-    lines = getCallableObjectsStr(filePath, includePrivate)
+    lines = getCallableObjectsStr(fPath, includePrivate)
     for line in lines:
         print(line)
 
