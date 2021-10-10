@@ -1,7 +1,6 @@
 from unittest import mock
 import multiprocessing
 import os
-import subprocess
 import sys
 import time
 from typing import List
@@ -10,7 +9,6 @@ import pytest
 
 import dlpt
 
-from dlpt.tfix import *
 from tests import helpers
 
 thisPid = os.getpid()

@@ -6,8 +6,6 @@ import pytest
 
 import dlpt
 
-from dlpt.tfix import *
-
 
 def test_check(tmp_path):
     fPath = os.path.join(tmp_path, 'jsonTest.json')

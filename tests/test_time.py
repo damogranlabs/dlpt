@@ -5,8 +5,6 @@ import pytest
 
 import dlpt
 
-from dlpt.tfix import *
-
 CUSTOM_DATE_TIME_FORMAT = "%d.%m.%Y, %H:%M:%S"
 
 

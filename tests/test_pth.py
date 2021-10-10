@@ -1,6 +1,5 @@
 import os
 import pathlib
-import shutil
 import stat
 import time
 from unittest import mock
@@ -9,8 +8,6 @@ from unittest.mock import call
 import pytest
 
 import dlpt
-
-from dlpt.tfix import *
 
 thisFile = str(pathlib.Path(__file__).resolve())
 thisFolder = os.path.dirname(thisFile)

@@ -28,7 +28,7 @@ class ChangeDir:
 
         Example:
             >>> with dlpt.pth.ChangeDir("C:/somePath"):
-                    answer = 42 # do stuff with cwd changed to "C:/somePath"
+                    func("that does something in CWD")
         """
         self.path = resolve(path)
         self.originalWd = os.getcwd()
@@ -45,14 +45,16 @@ class ChangeDir:
 
 
 def check(path: Optional[str]) -> str:
-    """ Check if given path exists and return normalized path. Return normalized
-    path (if valid) or raise exception.
+    """ Check if given path exists and return normalized path. 
 
     Note:
         Use standard ``os.path.exists()`` if you don't want to raise exception.
 
     Args:
         path: path to check
+
+    Returns:
+        Normalized path (if valid) or raise exception.
     """
     path = _pathValidationCheck(path)
 
@@ -66,10 +68,13 @@ def check(path: Optional[str]) -> str:
 
 def resolve(path: str) -> str:
     """ Resolve path with pathlib module. This will (for existing files) fix any 
-    case mismatch, for example, drive letter. Return resolved path.
+    case mismatch, for example, drive letter.
 
     Args:
         path: abs path to resolve
+
+    Returns:
+        Resolved path according to the OS.
     """
     return str(pathlib.Path(path).resolve())
 
@@ -86,54 +91,62 @@ def _setWritePermissions(path: str):
         raise Exception(errorMsg)
 
 
-def copyFile(srcFilePath: str, dstFolderPath: str, dstFileName: Optional[str] = None) -> str:
+def copyFile(srcFilePath: str,
+             dstDirPath: str,
+             dstFileName: Optional[str] = None) -> str:
     """ Copy given file to a new location, while dstFile is removed prior 
-    copying. Any intermediate folders are created automatically. Return path to 
-    a copied file.
+    copying. Any intermediate folders are created automatically.
 
     Args:
         srcFilePath: path to a file to be copied.
-        dstFolderPath: absolute destination folder path.
+        dstDirPath: absolute destination folder path.
         dstFileName: new destination file name. If None, original file
             name is used.
+
+    Returns:
+        A path to a copied file.
     """
     srcFilePath = check(srcFilePath)
     if not os.path.isfile(srcFilePath):
-        errorMsg = f"'copyFile()' is designed to copy files, not folders/links: {srcFilePath}"
+        errorMsg = f"'copyFile()' is designed to copy files, "
+        errorMsg += f"not folders/links: {srcFilePath}"
         raise ValueError(errorMsg)
 
     if dstFileName is None:
         dstFileName = getName(srcFilePath)
-    dstFilePath = os.path.normpath(os.path.join(dstFolderPath, dstFileName))
+    dstFilePath = os.path.normpath(os.path.join(dstDirPath, dstFileName))
 
-    createFolder(dstFolderPath)
+    createFolder(dstDirPath)
     removeFile(dstFilePath)
     shutil.copyfile(srcFilePath, dstFilePath)
 
     return dstFilePath
 
 
-def copyFolder(srcFolderPath: str, dstFolderPath: str) -> str:
+def copyFolder(srcDirPath: str, dstDirPath: str) -> str:
     """ Copy given folder to a new location, while dstFolder is removed prior 
-    copying. Any intermediate folders are created automatically. Return a path
-    to a copied folder.
+    copying. Any intermediate folders are created automatically. 
 
     Args:
-        srcFolderPath: path to a file to be copied.
-        dstFolderPath: new destination path.
+        srcDirPath: path to a file to be copied.
+        dstDirPath: new destination path.
+
+    Returns:
+        A path to a copied folder.
     """
-    srcFolderPath = check(srcFolderPath)
-    if not os.path.isdir(srcFolderPath):
-        errorMsg = f"'copyFolder()' is designed to copy folders, not files/links: {srcFolderPath}"
+    srcDirPath = check(srcDirPath)
+    if not os.path.isdir(srcDirPath):
+        errorMsg = "'copyFolder()' is designed to copy folders, "
+        errorMsg += f"not files/links: {srcDirPath}"
         raise ValueError(errorMsg)
 
-    _pathValidationCheck(dstFolderPath)
-    dstFolderPath = os.path.normpath(dstFolderPath)
-    removeFolderTree(dstFolderPath)
+    _pathValidationCheck(dstDirPath)
+    dstDirPath = os.path.normpath(dstDirPath)
+    removeFolderTree(dstDirPath)
 
-    shutil.copytree(srcFolderPath, dstFolderPath)
+    shutil.copytree(srcDirPath, dstDirPath)
 
-    return dstFolderPath
+    return dstDirPath
 
 
 def removeFile(fPath: str, forceWritePermissions: bool = True, retry: int = 3):
@@ -150,7 +163,8 @@ def removeFile(fPath: str, forceWritePermissions: bool = True, retry: int = 3):
 
     if os.path.exists(fPath):
         if not os.path.isfile(fPath):
-            errorMsg = f"Function 'removeFile()' is designed to remove files, not folders/links: {fPath}"
+            errorMsg = "Function 'removeFile()' is designed to remove files, "
+            errorMsg += f"not folders/links: {fPath}"
             raise ValueError(errorMsg)
 
         take = 0
@@ -158,8 +172,8 @@ def removeFile(fPath: str, forceWritePermissions: bool = True, retry: int = 3):
             try:
                 if forceWritePermissions:
                     _setWritePermissions(fPath)
-                # else: don't force it, see what will happen - don't care about the
-                # consequences. Might raise an exception.
+                # else: don't force it, see what will happen - don't care
+                # about the consequences. Might raise an exception.
                 os.unlink(fPath)
             except Exception as err:
                 time.sleep(FILE_FOLDER_REMOVE_RETRY_DELAY_SEC)
@@ -269,7 +283,7 @@ def createCleanFolder(dirPath: str):
 
 def removeOldItems(dirPath: str, days: int) -> List[str]:
     """ Remove items (files, folders) inside the given folder that were modified 
-    more than specified number of days ago. Return a list of removed items.
+    more than specified number of days ago. 
 
     Note:
         modification time and current time can be the same when this
@@ -280,6 +294,9 @@ def removeOldItems(dirPath: str, days: int) -> List[str]:
         dirPath: path to a folder with files/folders to remove.
         days: number of days file/folder must be old to be 
             removed (last modification time).
+
+    Returns:
+        A list of removed items.
     """
     dirPath = check(dirPath)
 
@@ -308,6 +325,9 @@ def withFwSlashes(path: str) -> str:
 
     Args:
         path: path to convert
+
+    Returns:
+        A path with converted back slashes to forward slashes.
     """
     _pathValidationCheck(path)
 
@@ -321,6 +341,9 @@ def withDoubleBwSlashes(path: str) -> str:
 
     Args:
         path: path to convert
+
+    Returns:
+        A converted path with double back slashes.
     """
     path = _pathValidationCheck(path)
 
@@ -339,6 +362,8 @@ def getName(fPath: str, withExt: bool = True) -> str:
         fPath: file path where file name will be fetched from
         withExt: if False, extension is striped from file name
 
+    Returns:
+        A file name with/without extension.
     """
     _pathValidationCheck(fPath)
 
@@ -359,6 +384,9 @@ def getExt(fPath: str) -> str:
 
     Args:
         fPath: file path where file name will be fetched from
+
+    Returns:
+        A file extension.
     """
     _pathValidationCheck(fPath)
 
@@ -382,6 +410,9 @@ def getFilesInFolder(dirPath: str,
         includeExt: if set, only files with given extension(s) are returned.
         excludeExt: if set, files with given extension(s) are excluded 
             from return list.
+
+    Returns:
+        List of matching files from `dirPath``.
     """
     _pathValidationCheck(dirPath)
     check(dirPath)
@@ -435,6 +466,9 @@ def getFilesInFolderTree(folderTreePath: str,
         includeExt: if set, only files with given extension(s) are returned.
         excludeExt: if set, files with given extension(s) are excluded 
             from return list.
+
+    Returns:
+        List of matching files from `dirPath`` and all its subfolders.
     """
     folderTreePath = check(folderTreePath)
 
@@ -457,6 +491,9 @@ def getFoldersInFolder(dirPath: str,
             based on compareLowerCase setting.
         compareLowerCase: if True, lower-cased nameFilter string (if set)
             is checked in lower case folder name.
+
+    Returns:
+        List of matching folders from `dirPath``.
     """
     _pathValidationCheck(dirPath)
     check(dirPath)
@@ -515,6 +552,9 @@ def _pathValidationCheck(path: Optional[str]) -> str:
 
     Args:
         path: path to check.
+
+    Returns:
+        Given path.
     """
     if isinstance(path, str):
         if path.strip() != '':

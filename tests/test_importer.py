@@ -4,8 +4,6 @@ import pytest
 
 import dlpt
 
-from dlpt.tfix import *
-
 MODULE_NAME = "myModule.py"
 
 VARIABLE_DEFAULT_VALUE = 6
