@@ -644,7 +644,7 @@ def loggingServerShutdownRequest(logger: Union[logging.Logger, str],
             In case of 0, function return value is not relevant.
 
     Returns:
-        True if server was succesfully stopped (PID not alive anymore), False 
+        True if server was successfully stopped (PID not alive anymore), False 
         otherwise.
     """
     logger = _getLogger(logger)
