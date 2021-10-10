@@ -360,7 +360,7 @@ def spawnSubproc(args: T_PROC_ARGS,
                  **runArgs) -> subprocess.CompletedProcess:
     """ Spawn subprocess and return CompletedProcess or raise exception. 
     By default, raise exception on timeout (if given) or if return code is not
-    zero. With `**runArgs`, allow setting all :func:`subprocess.run()_` 
+    zero. With `**runArgs`, allow setting all `subprocess.run()`_ 
     arguments.
 
     Note: 
@@ -375,8 +375,8 @@ def spawnSubproc(args: T_PROC_ARGS,
             (specifically paths) must be properly encoded. For example, path
             containing tilde will throw error.
         checkReturnCode: if True, return code is checked by run() function.
-            In case it is not zero, SubprocessReturncodeError() is raised.
-            If False, CompletedProcess is returned.
+            In case it is not zero, `SubprocessReturncodeError()` is raised.
+            If False, `CompletedProcess` is returned.
         stdout: STDOUT routing specifier.
         stderr: STDERR routing specifier.
         stdin: STDIN routing specifier. Note: By default, 'stdin' is set to 
@@ -386,9 +386,9 @@ def spawnSubproc(args: T_PROC_ARGS,
         timeoutSec: timeout in seconds. If None, no timeout is implemented.
             Else, if timeout is reached, process is killed and TimeoutExpired
             exception re-raised.
-        runArgs: optional key-worded subprocess.run() arguments, that
-            are added to `run()`_ call. Note: for the common, basic
-            :func:`subprocess.run()` args, see :func:`spawnSubprocess()`
+        runArgs: optional key-worded `subprocess.run()`_ arguments. Note: for the
+            common basic `subprocess.run()` args, 
+            see :func:`spawnSubprocess()`.
 
     Example:
         >>> args = ['python.exe', 'proc.py']
@@ -465,14 +465,14 @@ def spawnShellCmd(args: T_PROC_ARGS,
             (specifically paths) must be properly encoded. For example, path
             containing tilde will throw error.
         checkReturnCode: if True, return code is checked by run() function.
-            In case it is not zero, SubprocessReturncodeError() is raised.
-            If False, CompletedProcess is returned.
+            In case it is not zero, `SubprocessReturncodeError()` is raised.
+            If False, `CompletedProcess` is returned.
         encoding: STDOUT/ERR string encoding
         timeoutSec: timeout in seconds. If None, no timeout is implemented.
             Else, if timeout is reached, process is killed and TimeoutExpired
             exception re-raised.
         runArgs: optional key-worded subprocess.run() arguments, that
-            are added to `run()`_ call. Note: for the common, basic
+            are added to `run()` call. Note: for the common, basic
             :func:`subprocess.run()` args, see :func:`spawnSubprocess()`
 
     Example:

@@ -23,7 +23,7 @@ def _checkDateTimeStringFormat(dtStr):
 
 
 def test_getCurrentDateTime():
-    dateTime = dlpt.time.getCurrentDateTime(CUSTOM_DATE_TIME_FORMAT)
+    dateTime = dlpt.time.getCurrentDateTimeStr(CUSTOM_DATE_TIME_FORMAT)
     _checkDateTimeStringFormat(dateTime)
 
 
@@ -32,16 +32,16 @@ def test_convertSequence():
     currentTime = time.time()
     dt = dlpt.time.timestampToDatetime(currentTime)
 
-    dtStr = dlpt.time.datetimeToString(dt, CUSTOM_DATE_TIME_FORMAT)
+    dtStr = dlpt.time.datetimeToStr(dt, CUSTOM_DATE_TIME_FORMAT)
     _checkDateTimeStringFormat(dtStr)
 
     # milisecond formatters
-    dtStr = dlpt.time.timestampToString(currentTime, "%S", 1)
+    dtStr = dlpt.time.timestampToStr(currentTime, "%S", 1)
     assert ("." in dtStr) and (int(dtStr.split(".")[1]))
     with pytest.raises(Exception):
-        dlpt.time.timestampToString(currentTime, "%M", 2)  # msec formatter without %S
+        dlpt.time.timestampToStr(currentTime, "%M", 2)  # msec formatter without %S
 
-    dtStr = dlpt.time.timestampToString(currentTime, CUSTOM_DATE_TIME_FORMAT)
+    dtStr = dlpt.time.timestampToStr(currentTime, CUSTOM_DATE_TIME_FORMAT)
     _checkDateTimeStringFormat(dtStr)
 
     # seconds representation of a time
@@ -55,7 +55,7 @@ def test_convertSequence():
     # timedelta
     time.sleep(0.2)
     endTime = datetime.datetime.now()
-    hmsStr = dlpt.time.timedeltaToString(endTime - startTime)
+    hmsStr = dlpt.time.timedeltaToStr(endTime - startTime)
     assert (
         "0 min " in hmsStr) and (
         " 0." in hmsStr) and (
@@ -64,36 +64,36 @@ def test_convertSequence():
 
 def test_secondsToString():
     durationSec = 30
-    secStr = dlpt.time.secondsToString(durationSec, "%S")
+    secStr = dlpt.time.secToStr(durationSec, "%S")
     assert secStr == "30.00"
 
     # formatters, hideZeroes
     durationSec = 70
-    hmsStr = dlpt.time.secondsToString(durationSec)
+    hmsStr = dlpt.time.secToStr(durationSec)
     assert hmsStr == "1 min 10.00 sec"
-    hourhmsStr = dlpt.time.secondsToString(durationSec, hideZeroes=False)
+    hourhmsStr = dlpt.time.secToStr(durationSec, hideZeroes=False)
     assert hourhmsStr == "0 h 1 min 10.00 sec"
 
-    hmsStr = dlpt.time.secondsToString(durationSec, "%H:%M:%S")
+    hmsStr = dlpt.time.secToStr(durationSec, "%H:%M:%S")
     assert hmsStr == "1:10.00"
-    hmsStr = dlpt.time.secondsToString(durationSec, "%H:%M:%S", False)
+    hmsStr = dlpt.time.secToStr(durationSec, "%H:%M:%S", False)
     assert hmsStr == "0:1:10.00"
 
-    secStr = dlpt.time.secondsToString(durationSec, "%S")
+    secStr = dlpt.time.secToStr(durationSec, "%S")
     assert secStr == "10.00"
-    secStr = dlpt.time.secondsToString(durationSec, "%S", False)
+    secStr = dlpt.time.secToStr(durationSec, "%S", False)
     assert secStr == "10.00"
 
     # 2 days, 4 hours, 6 mins, 12 sec
     durationSec = 2 * 24 * 60 * 60 + 4 * 60 * 60 + 6 * 60 + 12
-    hmsStr = dlpt.time.secondsToString(durationSec, dlpt.time.TIME_FORMAT_HMS_STRING)
+    hmsStr = dlpt.time.secToStr(durationSec, dlpt.time.TIME_FORMAT_HMS_STRING)
     assert hmsStr == "52 h 6 min 12.00 sec"
 
     # same time with additional milliseconds
     durationSec = durationSec + 0.33
-    hmsStr = dlpt.time.secondsToString(durationSec, dlpt.time.TIME_FORMAT_HMS_STRING)
+    hmsStr = dlpt.time.secToStr(durationSec, dlpt.time.TIME_FORMAT_HMS_STRING)
     assert hmsStr == "52 h 6 min 12.33 sec"
-    hmsStr = dlpt.time.secondsToString(
+    hmsStr = dlpt.time.secToStr(
         durationSec, dlpt.time.TIME_FORMAT_HMS_STRING, False)
     assert hmsStr == "52 h 6 min 12.33 sec"
 
