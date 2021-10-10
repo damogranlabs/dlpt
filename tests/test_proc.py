@@ -223,7 +223,10 @@ def test_spawnSubproc_customArgs():
 
 
 def test_spawnShellCmd():
-    args = ["dir"]
+    if sys.platform == "win32":
+        args = ["dir"]
+    else:
+        args = ["ls"]
     proc = dlpt.proc.spawnShellCmd(args,
                                    cwd=os.path.dirname(__file__))
     assert proc.returncode == 0
