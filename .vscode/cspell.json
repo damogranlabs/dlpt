@@ -4,7 +4,9 @@
     "dictionaryDefinitions": [],
     "dictionaries": [],
     "words": [
-        "psutil"],
+        "dlpt",
+        "psutil"
+    ],
     "ignoreWords": [],
     "import": []
 }
