@@ -1,6 +1,7 @@
 ![PyPI - License](https://img.shields.io/pypi/l/dlpt)
 ![PyPI](https://img.shields.io/pypi/v/dlpt)
 ![Read the Docs](https://img.shields.io/readthedocs/dlpt)
+[![codecov](https://codecov.io/gh/damogranlabs/dlpt/branch/main/graph/badge.svg?token=9RXXPWZHRF)](https://codecov.io/gh/damogranlabs/dlpt)
 
 # "dlpt" is currently UNDER REWRITE. 
 
