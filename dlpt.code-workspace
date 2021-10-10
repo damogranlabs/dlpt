@@ -26,14 +26,15 @@
         "python.testing.unittestEnabled": false,
         "python.testing.pytestEnabled": true,
         "python.testing.pytestArgs": [
+            "tests",
             "--ignore=temp",
             "-s",
             "-v",
             "--durations=5",
             "--cov-config=${workspaceFolder}/.coveragerc",
-            "--cov=dlpt.proc",
-            // "--cov=dlpt.log",  // when developing single module
-            "--cov-report", "term-missing"
+            "--cov-report", "term-missing",
+            "--cov=dlpt",
+            // "--cov=dlpt.log"  // when developing single module
         ],
 
         // editor settings
