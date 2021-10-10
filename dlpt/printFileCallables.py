@@ -5,26 +5,27 @@ See usage with "--help" argument.
 import argparse
 import inspect
 import os
-from typing import Any, List, Optional
+from typing import Any, List
 
 import dlpt
 
 INDENT_STR = "    "  # \t can give a large offset.
 
 
-def getCallableObjectsStr(fPath: str, includePrivate: bool = False) -> List[str]:
+def getCallableObjectsStr(fPath: str,
+                          includePrivate: bool = False) -> List[str]:
     """ Get a printable list of strings of all callable objects (functions, 
         classes, methods) from a given python file.
 
-    NOTE: file must be syntactically correct - importable, since this function 
+    Note: file must be syntactically correct - importable, since this function 
         performs a dynamic import.
-    NOTE: this function is meant for test/code development, not for actual 
+    Note: this function is meant for test/code development, not for actual 
         production usage.
 
     Args:
         fPath: path to a file to check for object definitions.
         includePrivate: if True, object that starts with '_' are also added. 
-            NOTE: '__' objects are always ignored.
+            Note: '__' objects are always ignored.
 
     Returns:
         List of string representation of callable objects from a given file.
@@ -35,7 +36,10 @@ def getCallableObjectsStr(fPath: str, includePrivate: bool = False) -> List[str]
 
     lines: List[str] = []
 
-    def _getMembers(lines: List[str], reference: Any, modulePath: str, indent: Optional[str] = ""):
+    def _getMembers(lines: List[str],
+                    reference: Any,
+                    modulePath: str,
+                    indent: str = ""):
         for member in inspect.getmembers(reference):
             name, ref = member
 
@@ -62,9 +66,11 @@ def getCallableObjectsStr(fPath: str, includePrivate: bool = False) -> List[str]
             try:
                 refFilePath = inspect.getfile(ref)
                 if not os.path.samefile(modulePath, refFilePath):
-                    continue  # not a function from this file (might be from * import)
+                    # not a function from this file (might be from * import)
+                    continue
             except Exception as err:
-                continue  # might fail for built-in types or type-stub items
+                # might fail for built-in types or type-stub items
+                continue
 
             params = inspect.signature(ref)
             refStr = f"{name}{params}"
@@ -87,15 +93,16 @@ def printCallableObjects(fPath: str, includePrivate: bool):
     """ Print a list of all callable objects (functions/classes) from a 
         given python file.
 
-    NOTE: file must be syntactically correct - importable, since this function 
+    Note: file must be syntactically correct - importable, since this function 
         performs a dynamic import.
-    NOTE: this function is meant for test/code development, not for actual 
+
+    Note: this function is meant for test/code development, not for actual 
         production usage.
 
     Args:
         fPath: path to a file to check for object definitions.
         includePrivate: if True, object that starts with '_' are also added. 
-            NOTE: '__' objects are always ignored.
+            Note: '__' objects are always ignored.
     """
     lines = getCallableObjectsStr(fPath, includePrivate)
     for line in lines:
@@ -103,9 +110,13 @@ def printCallableObjects(fPath: str, includePrivate: bool):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(__file__, description="Development utility for file callable objects inspection")
+    parser = argparse.ArgumentParser(
+        __file__,
+        description="Development utility for file callable objects inspection")
     parser.add_argument("file", help="Path to Python file to analyse.")
-    parser.add_argument("-p", "--includePrivate", required=False, help="Include private functions in output report.")
+    parser.add_argument("-p", "--includePrivate",
+                        required=False,
+                        help="Include private functions in output report.")
     args = parser.parse_args()
 
     printCallableObjects(args.file, args.includePrivate)
