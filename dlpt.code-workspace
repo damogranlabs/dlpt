@@ -11,6 +11,7 @@
         "python.analysis.typeCheckingMode": "basic",
         "python.analysis.diagnosticMode": "openFilesOnly",
         // autoformat
+        "python.formatting.provider": "black",
         "python.formatting.blackArgs": [
             "--line-length=120",
         ],
