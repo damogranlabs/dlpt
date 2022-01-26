@@ -1,18 +1,15 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
     "settings": {
         "python.defaultInterpreterPath": "env\\Scripts\\python.exe",
-        
         // language server
         "python.languageServer": "Pylance",
         "python.analysis.typeCheckingMode": "basic",
         "python.analysis.diagnosticMode": "openFilesOnly",
-        
         // autoformat
         "python.formatting.autopep8Args": [ //autoformatting: https://pypi.org/project/autopep8/#more-advanced-usage
             "--max-line-length",
@@ -21,7 +18,6 @@
             "--ignore",
             "E402,W690" // do not sort imports, do not fix various deprecated code
         ],
-
         // pytest
         "python.testing.unittestEnabled": false,
         "python.testing.pytestEnabled": true,
@@ -32,11 +28,11 @@
             "-v",
             "--durations=5",
             "--cov-config=${workspaceFolder}/.coveragerc",
-            "--cov-report", "term-missing",
+            "--cov-report",
+            "term-missing",
             "--cov=dlpt",
             // "--cov=dlpt.log"  // when developing single module
         ],
-
         // editor settings
         "editor.wordWrap": "on",
         "[python]": { // python specific editor settings
@@ -47,11 +43,9 @@
             ],
         },
         "search.useIgnoreFiles": false,
-
         "restructuredtext.linter.disabled": true,
         "restructuredtext.languageServer.disabled": true,
         "autoDocstring.customTemplatePath": "docstring.mustache",
-        
         // spell checker settings
         "cSpell.enabledLanguageIds": [
             "python"
@@ -71,8 +65,7 @@
             "ms-python.python",
             "ms-python.vscode-pylance",
             "visualstudioexptteam.vscodeintellicode",
-            "streetsidesoftware.code-spell-checker",
-            "coenraads.bracket-pair-colorizer-2"
+            "streetsidesoftware.code-spell-checker"
         ]
     },
 }
