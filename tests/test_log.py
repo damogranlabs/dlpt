@@ -23,8 +23,8 @@ FILE_NAME = "logFile.log"
 
 
 @pytest.fixture
-def myLogger(request) -> Iterator[logging.Logger]:
-    logger = log.createLogger(request.node.name)
+def my_logger(request) -> Iterator[logging.Logger]:
+    logger = log.create_logger(request.node.name)
 
     yield logger
 
@@ -35,11 +35,11 @@ def myLogger(request) -> Iterator[logging.Logger]:
     log._defaultLogger = None
 
 
-def test_createLogger():
-    logger = log.createLogger(setAsDefault=False)
+def test_create_logger():
+    logger = log.create_logger(setAsDefault=False)
     assert logger.name == "root"
 
-    logger = log.createLogger()  # set as default
+    logger = log.create_logger()  # set as default
     try:
         assert logger.name == "root"
         assert log._defaultLogger is not None
@@ -47,92 +47,88 @@ def test_createLogger():
 
         with pytest.raises(Exception):
             # can't set two loggers as a default
-            log.createLogger()
+            log.create_logger()
     except Exception as err:
         raise
     finally:
         log._defaultLogger = None
 
 
-def test_getDetermineLogger(myLogger: logging.Logger):
-    assert log._getLogger(myLogger) == myLogger
-    assert log._getLogger(myLogger.name) == myLogger
+def test_determine_logger(my_logger: logging.Logger):
+    assert log._get_logger(my_logger) == my_logger
+    assert log._get_logger(my_logger.name) == my_logger
     with pytest.raises(Exception):
         # non-existing default logger
-        log._getLogger("qweasdzxcv")
+        log._get_logger("qweasdzxcv")
 
-    assert log._determineLogger() == myLogger
-    assert log._determineLogger(myLogger) == myLogger
-    assert log._determineLogger(myLogger.name) == myLogger
+    assert log._determine_logger() == my_logger
+    assert log._determine_logger(my_logger) == my_logger
+    assert log._determine_logger(my_logger.name) == my_logger
 
     # set/get default logger
-    assert log.getDefaultLogger() == myLogger
-    log.setDefaultLogger(logging.root)
-    assert log.getDefaultLogger() == logging.root
+    assert log.get_default_logger() == my_logger
+    log.set_default_logger(logging.root)
+    assert log.get_default_logger() == logging.root
     log._defaultLogger = None
     with pytest.raises(Exception):
         # no default logger
-        log._determineLogger()
+        log._determine_logger()
 
 
-def test_addConsoleHandler(myLogger: logging.Logger):
-    assert len(myLogger.handlers) == 0
-    hdlr = log.addConsoleHandler(myLogger, CUSTOM_FMT, logging.WARNING)
-    assert len(myLogger.handlers) == 1
+def test_add_console_hdlr(my_logger: logging.Logger):
+    assert len(my_logger.handlers) == 0
+    hdlr = log.add_console_hdlr(my_logger, CUSTOM_FMT, logging.WARNING)
+    assert len(my_logger.handlers) == 1
     assert isinstance(hdlr, logging.StreamHandler)
 
     with mock.patch.object(hdlr.stream, "write") as func:
-        myLogger.info(LOG_MSG_NOT_LOGGED)
+        my_logger.info(LOG_MSG_NOT_LOGGED)
         func.assert_not_called()
 
-        myLogger.warning(LOG_MSG_OK)
+        my_logger.warning(LOG_MSG_OK)
         func.assert_called_once()
-        _checkFormat(func.call_args[0][0])
+        _check_format(func.call_args[0][0])
 
 
-def test_addFileHandler(myLogger: logging.Logger, tmp_path):
-    assert len(myLogger.handlers) == 0
-    hdlr, fPath = log.addFileHandler(myLogger,
-                                     FILE_NAME, tmp_path,
-                                     CUSTOM_FMT,
-                                     logging.WARNING)
+def test_add_file_hdlr(my_logger: logging.Logger, tmp_path):
+    assert len(my_logger.handlers) == 0
+    hdlr, fPath = log.add_file_hdlr(my_logger, FILE_NAME, tmp_path, CUSTOM_FMT, logging.WARNING)
     assert os.path.join(tmp_path, FILE_NAME) == fPath
-    assert len(myLogger.handlers) == 1
+    assert len(my_logger.handlers) == 1
     assert isinstance(hdlr, logging.FileHandler)
     assert os.path.exists(fPath)  # log file path is not delayed
 
-    myLogger.info(LOG_MSG_NOT_LOGGED)
+    my_logger.info(LOG_MSG_NOT_LOGGED)
     with open(fPath, "r") as f:
         assert len(f.readlines()) == 0
 
-    myLogger.warning(LOG_MSG_OK)
+    my_logger.warning(LOG_MSG_OK)
     with open(fPath, "r") as f:
         lines = f.readlines()
         assert len(lines) == 1
-        _checkFormat(lines[0])
+        _check_format(lines[0])
 
-    fPaths = log.getLogFilePaths(myLogger)
+    fPaths = log.get_log_file_paths(my_logger)
     assert len(fPaths) == 1
     assert fPaths[0] == fPath
 
 
-def test_fileHandlerLogFile(myLogger: logging.Logger, tmp_path):
-    hdlr, fPath = log.addFileHandler(myLogger,
-                                     FILE_NAME, tmp_path)
-    myLogger.warning("original line")
+def test_add_file_hdlr_log_file(my_logger: logging.Logger, tmp_path):
+    hdlr, fPath = log.add_file_hdlr(my_logger, FILE_NAME, tmp_path)
+    my_logger.warning("original line")
     assert os.path.exists(fPath)
 
     # try to move log file, should fail
     newDir = os.path.join(tmp_path, "newDir")
-    dlpt.pth.createFolder(newDir)
+    dlpt.pth.create_dir(newDir)
 
-    with log.ReleaseFileLock(myLogger, fPath):
+    with log.ReleaseFileLock(my_logger, fPath):
         # test move and copy operations
-        dlpt.pth.copyFile(fPath, newDir, "newFileName.txt")
+        dlpt.pth.copy_file(fPath, newDir, "newFileName.txt")
         newPath = shutil.move(fPath, newDir)
     assert os.path.exists(newPath)
 
-    myLogger.warning("new line after copy")
+    my_logger.warning("new line after copy")
     assert os.path.exists(fPath)
 
     with open(fPath, "r") as f:
@@ -147,32 +143,29 @@ def test_fileHandlerLogFile(myLogger: logging.Logger, tmp_path):
         assert "original line" in lines[0]
 
 
-def test_addRotatingFileHandler(myLogger: logging.Logger, tmp_path):
+def test_add_rotating_file_hdlr(my_logger: logging.Logger, tmp_path):
     ROT_LOG_FILE_SIZE_KB = 50
     ROT_LOG_FILES_COUNT = 2.5  # should create 3 log files
     ROT_LOG_MSG = "write write write, writety write write write"
 
-    assert len(myLogger.handlers) == 0
-    hdlr, fPath = log.addRotatingFileHandler(myLogger,
-                                             FILE_NAME, tmp_path,
-                                             CUSTOM_FMT,
-                                             logging.WARNING,
-                                             ROT_LOG_FILE_SIZE_KB,
-                                             3)
+    assert len(my_logger.handlers) == 0
+    hdlr, fPath = log.add_rotating_file_hdlr(
+        my_logger, FILE_NAME, tmp_path, CUSTOM_FMT, logging.WARNING, ROT_LOG_FILE_SIZE_KB, 3
+    )
     assert os.path.join(tmp_path, FILE_NAME) == fPath
-    assert len(myLogger.handlers) == 1
+    assert len(my_logger.handlers) == 1
     assert isinstance(hdlr, logging.handlers.RotatingFileHandler)
     assert os.path.exists(fPath)  # log file path is not delayed
 
-    myLogger.info(LOG_MSG_NOT_LOGGED)
+    my_logger.info(LOG_MSG_NOT_LOGGED)
     with open(fPath, "r") as f:
         assert len(f.readlines()) == 0
 
-    myLogger.warning(LOG_MSG_OK)
+    my_logger.warning(LOG_MSG_OK)
     with open(fPath, "r") as f:
         lines = f.readlines()
         assert len(lines) == 1
-        _checkFormat(lines[0])
+        _check_format(lines[0])
 
     # check maz size and backup file creation
     sizeBytes = int(ROT_LOG_FILE_SIZE_KB * 1e3)
@@ -180,9 +173,9 @@ def test_addRotatingFileHandler(myLogger: logging.Logger, tmp_path):
     # primary and two old log files should be present
     numOfWrites = int(sizeBytes / logStringSize * ROT_LOG_FILES_COUNT)
     for _ in range(numOfWrites):
-        myLogger.warning(ROT_LOG_MSG)
+        my_logger.warning(ROT_LOG_MSG)
 
-    logFiles = dlpt.pth.getFilesInFolder(tmp_path)
+    logFiles = dlpt.pth.get_files_in_dir(tmp_path)
     assert len(logFiles) == 3
 
     assert fPath in logFiles
@@ -195,24 +188,24 @@ def test_addRotatingFileHandler(myLogger: logging.Logger, tmp_path):
         assert size > ((ROT_LOG_FILE_SIZE_KB - 1) * 1e3)
         assert size < ((ROT_LOG_FILE_SIZE_KB + 1) * 1e3)
 
-    fPaths = log.getRotatingLogFilePaths(myLogger)
+    fPaths = log.get_rotating_log_file_paths(my_logger)
     assert len(fPaths) == 1
     assert fPaths[0] == fPath
 
 
-def test_loggingServerProc(myLogger: logging.Logger, tmp_path):
+def test_log_server_proc(my_logger: logging.Logger, tmp_path):
     TIMEOUT_SEC = 3
 
-    myLogger2 = log.createLogger("myLogger2", False)
-    myLogger3 = log.createLogger("myLogger3", False)
+    my_logger2 = log.create_logger("my_logger2", False)
+    my_logger3 = log.create_logger("my_logger3", False)
 
     fPath = os.path.join(tmp_path, FILE_NAME)
-    pid = log.createLoggingServerProc(fPath)
-    assert dlpt.proc.alive(pid)
+    pid = log.create_log_server_proc(fPath)
+    assert dlpt.proc.is_alive(pid)
 
     with pytest.raises(Exception):
         # does not have logging server handler
-        log.loggingServerShutdownRequest(myLogger, pid)
+        log.log_server_shutdown_request(my_logger, pid)
 
     try:
         endTime = time.time() + TIMEOUT_SEC
@@ -220,64 +213,59 @@ def test_loggingServerProc(myLogger: logging.Logger, tmp_path):
             if os.path.exists(fPath):
                 break
         else:
-            assert False, f"Logger server did not create a file " \
-                f"in {TIMEOUT_SEC} sec."
+            assert False, f"Logger server did not create a file " f"in {TIMEOUT_SEC} sec."
 
-        assert len(myLogger.handlers) == 0
-        hdlr = log.addLoggingServerHandler(myLogger,
-                                           fmt=CUSTOM_FMT,
-                                           level=logging.WARNING)
-        assert len(myLogger.handlers) == 1
+        assert len(my_logger.handlers) == 0
+        hdlr = log.add_logging_server_hdlr(my_logger, fmt=CUSTOM_FMT, level=logging.WARNING)
+        assert len(my_logger.handlers) == 1
         assert isinstance(hdlr, log._SocketHandler)
-        hdlr2 = log.addLoggingServerHandler(myLogger2,
-                                            fmt=CUSTOM_FMT,
-                                            level=logging.WARNING)
-        assert len(myLogger2.handlers) == 1
+        hdlr2 = log.add_logging_server_hdlr(my_logger2, fmt=CUSTOM_FMT, level=logging.WARNING)
+        assert len(my_logger2.handlers) == 1
         assert isinstance(hdlr2, log._SocketHandler)
-        # myLogger3 does not have server logger handler
+        # my_logger3 does is_aliveave server logger handler
 
-        myLogger.info(LOG_MSG_NOT_LOGGED)
-        myLogger.warning(LOG_MSG_OK)
-        myLogger2.info(LOG_MSG_NOT_LOGGED)
-        myLogger2.warning(LOG_MSG_OK)
-        myLogger3.info(LOG_MSG_NOT_LOGGED)
-        myLogger3.warning(LOG_MSG_OK)
+        my_logger.info(LOG_MSG_NOT_LOGGED)
+        my_logger.warning(LOG_MSG_OK)
+        my_logger2.info(LOG_MSG_NOT_LOGGED)
+        my_logger2.warning(LOG_MSG_OK)
+        my_logger3.info(LOG_MSG_NOT_LOGGED)
+        my_logger3.warning(LOG_MSG_OK)
 
         time.sleep(1)
 
-        assert log.loggingServerShutdownRequest(myLogger, pid, 12) is True
-        assert dlpt.proc.alive(pid) is False
+        assert log.log_server_shutdown_request(my_logger, pid, 12) is True
+        assert dlpt.proc.is_alive(pid) is False
         with open(fPath, "r") as f:
             lines = f.readlines()
             assert len(lines) == 3, lines  # 2 msg + shutdown msg
-            _checkServerFormat(lines[0], myLogger.name)
-            _checkServerFormat(lines[1], myLogger2.name)
+            _check_server_format(lines[0], my_logger.name)
+            _check_server_format(lines[1], my_logger2.name)
             assert "shutdown" in lines[2]
     except Exception as err:
         raise
     finally:
-        dlpt.proc.killTree(pid, raiseException=False)
+        dlpt.proc.kill_tree(pid, raiseException=False)
 
 
-def test_getFileName(myLogger: logging.Logger):
-    assert log.getFileName(myLogger) == "test_getFileName.log"
-    assert log.getFileName(myLogger.name) == "test_getFileName.log"
-    assert log.getFileName(myLogger, "asd") == "asd.log"
-    assert log.getFileName(myLogger, "asd.txt") == "asd.txt"
+def test_get_file_name(my_logger: logging.Logger):
+    assert log.get_file_name(my_logger) == "test_get_file_name.log"
+    assert log.get_file_name(my_logger.name) == "test_get_file_name.log"
+    assert log.get_file_name(my_logger, "asd") == "asd.log"
+    assert log.get_file_name(my_logger, "asd.txt") == "asd.txt"
 
 
-def test_getDefaultLogFolderPath():
-    assert log.getDefaultLogDirPath().lower().startswith(os.getcwd().lower())
+def get_default_log_dir():
+    assert log.get_default_log_dir().lower().startswith(os.getcwd().lower())
 
 
-def test_defaultLogFunctions():
+def test_default_log_functions():
     with pytest.raises(Exception):
         log.debug("debug")  # no default logger set
 
-    nonDefaultLogger = log.createLogger("nonDefaultLogger", False)
-    nonDefaultHdlr = log.addConsoleHandler(nonDefaultLogger)
-    logger = log.createLogger("test_defaultLogFunctions")
-    hdlr = log.addConsoleHandler(logger)
+    nonDefaultLogger = log.create_logger("nonDefaultLogger", False)
+    nonDefaultHdlr = log.add_console_hdlr(nonDefaultLogger)
+    logger = log.create_logger("test_default_log_functions")
+    hdlr = log.add_console_hdlr(logger)
 
     try:
         with mock.patch.object(logger, "_log") as func:
@@ -296,7 +284,7 @@ def test_defaultLogFunctions():
         logging.Logger.manager.loggerDict.pop(logger.name)
 
 
-def _checkFormat(logMsg: str):
+def _check_format(logMsg: str):
     # example: '2021-10-07 19:57:21,438.00438 WARNING: level-OK\n'
     dateStr, timeStr, level, msg = logMsg.strip().split(" ")
     # example: 2021-10-07
@@ -320,13 +308,13 @@ def _checkFormat(logMsg: str):
     assert msg == LOG_MSG_OK
 
 
-def _checkServerFormat(logMsg: str, loggerName: str):
-    # example: 'test_loggingServerProc 21:34:59.151  WARNING: level-OK\n'
+def _check_server_format(logMsg: str, loggerName: str):
+    # example: 'test_log_server_proc 21:34:59.151  WARNING: level-OK\n'
     src, timeStr, _, level, msg = logMsg.strip().split(" ")
     # example: WARNING:
     assert level == "WARNING:"
 
-    # example: test_loggingServerProc
+    # example: test_log_server_proc
     assert src == loggerName
 
     # example: 21:34:59.151

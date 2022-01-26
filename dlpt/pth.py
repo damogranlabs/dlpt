@@ -18,7 +18,7 @@ FILE_FOLDER_REMOVE_RETRY_DELAY_SEC = 0.5
 
 class ChangeDir:
     def __init__(self, path: str):
-        """ Temporary change working directory of a block of code and revert to 
+        """Temporary change working directory of a block of code and revert to
         an original on exit.
 
         Args:
@@ -45,7 +45,7 @@ class ChangeDir:
 
 
 def check(path: Optional[str]) -> str:
-    """ Check if given path exists and return normalized path. 
+    """Check if given path exists and return normalized path.
 
     Note:
         Use standard ``os.path.exists()`` if you don't want to raise exception.
@@ -56,18 +56,18 @@ def check(path: Optional[str]) -> str:
     Returns:
         Normalized path (if valid) or raise exception.
     """
-    path = _pathValidationCheck(path)
+    path = _validate_path(path)
 
     if os.path.exists(path):
         return os.path.normpath(path)
 
-    callerLocation = dlpt.utils.getCallerLocation()
+    callerLocation = dlpt.utils.get_caller_location()
     errorMsg = f"Path does not exist: {path}\n\t{callerLocation}"
     raise FileNotFoundError(errorMsg)
 
 
 def resolve(path: str) -> str:
-    """ Resolve path with pathlib module. This will (for existing files) fix any 
+    """Resolve path with pathlib module. This will (for existing files) fix any
     case mismatch, for example, drive letter.
 
     Args:
@@ -79,8 +79,8 @@ def resolve(path: str) -> str:
     return str(pathlib.Path(path).resolve())
 
 
-def _setWritePermissions(path: str):
-    """ Set file/folder write permmissions.
+def _set_w_permissions(path: str):
+    """Set file/folder write permmissions.
 
     Args:
         path: absolute path to a file/folder to modify permissions.
@@ -91,10 +91,8 @@ def _setWritePermissions(path: str):
         raise Exception(errorMsg)
 
 
-def copyFile(srcFilePath: str,
-             dstDirPath: str,
-             dstFileName: Optional[str] = None) -> str:
-    """ Copy given file to a new location, while dstFile is removed prior 
+def copy_file(srcFilePath: str, dstDirPath: str, dstFileName: Optional[str] = None) -> str:
+    """Copy given file to a new location, while dstFile is removed prior
     copying. Any intermediate folders are created automatically.
 
     Args:
@@ -108,24 +106,24 @@ def copyFile(srcFilePath: str,
     """
     srcFilePath = check(srcFilePath)
     if not os.path.isfile(srcFilePath):
-        errorMsg = f"'copyFile()' is designed to copy files, "
+        errorMsg = f"'copy_file()' is designed to copy files, "
         errorMsg += f"not folders/links: {srcFilePath}"
         raise ValueError(errorMsg)
 
     if dstFileName is None:
-        dstFileName = getName(srcFilePath)
+        dstFileName = get_name(srcFilePath)
     dstFilePath = os.path.normpath(os.path.join(dstDirPath, dstFileName))
 
-    createFolder(dstDirPath)
-    removeFile(dstFilePath)
+    create_dir(dstDirPath)
+    remove_file(dstFilePath)
     shutil.copyfile(srcFilePath, dstFilePath)
 
     return dstFilePath
 
 
-def copyFolder(srcDirPath: str, dstDirPath: str) -> str:
-    """ Copy given folder to a new location, while dstFolder is removed prior 
-    copying. Any intermediate folders are created automatically. 
+def copy_dir(srcDirPath: str, dstDirPath: str) -> str:
+    """Copy given folder to a new location, while dstFolder is removed prior
+    copying. Any intermediate folders are created automatically.
 
     Args:
         srcDirPath: path to a file to be copied.
@@ -136,21 +134,21 @@ def copyFolder(srcDirPath: str, dstDirPath: str) -> str:
     """
     srcDirPath = check(srcDirPath)
     if not os.path.isdir(srcDirPath):
-        errorMsg = "'copyFolder()' is designed to copy folders, "
+        errorMsg = "'copy_dir()' is designed to copy folders, "
         errorMsg += f"not files/links: {srcDirPath}"
         raise ValueError(errorMsg)
 
-    _pathValidationCheck(dstDirPath)
+    _validate_path(dstDirPath)
     dstDirPath = os.path.normpath(dstDirPath)
-    removeFolderTree(dstDirPath)
+    remove_dir_tree(dstDirPath)
 
     shutil.copytree(srcDirPath, dstDirPath)
 
     return dstDirPath
 
 
-def removeFile(fPath: str, forceWritePermissions: bool = True, retry: int = 3):
-    """ This function tries to remove file (FILE, not FOLDER) on a given path. 
+def remove_file(fPath: str, forceWritePermissions: bool = True, retry: int = 3):
+    """This function tries to remove file (FILE, not FOLDER) on a given path.
     Optionally, write permissions are set to a file.
 
     Args:
@@ -159,11 +157,11 @@ def removeFile(fPath: str, forceWritePermissions: bool = True, retry: int = 3):
             a file so it can be removed.
         retry: on failure, retry removal specified number of times.
     """
-    _pathValidationCheck(fPath)
+    _validate_path(fPath)
 
     if os.path.exists(fPath):
         if not os.path.isfile(fPath):
-            errorMsg = "Function 'removeFile()' is designed to remove files, "
+            errorMsg = "Function 'remove_file()' is designed to remove files, "
             errorMsg += f"not folders/links: {fPath}"
             raise ValueError(errorMsg)
 
@@ -171,7 +169,7 @@ def removeFile(fPath: str, forceWritePermissions: bool = True, retry: int = 3):
         for take in range(retry):
             try:
                 if forceWritePermissions:
-                    _setWritePermissions(fPath)
+                    _set_w_permissions(fPath)
                 # else: don't force it, see what will happen - don't care
                 # about the consequences. Might raise an exception.
                 os.unlink(fPath)
@@ -180,48 +178,48 @@ def removeFile(fPath: str, forceWritePermissions: bool = True, retry: int = 3):
             else:
                 break  # on success, escape retrying
         else:
-            errorMsg = f"Unable to 'removeFile()' after {take+1} times: {fPath}"
+            errorMsg = f"Unable to 'remove_file()' after {take+1} times: {fPath}"
             raise Exception(errorMsg)
 
 
-def _removeFolderErrorHandler(function, path, exception):  # pragma: no cover
-    """ This is a private function, which is called on shutil.rmtree() exception.
+def _on_remove_dir_err(function, path, exception):  # pragma: no cover
+    """This is a private function, which is called on shutil.rmtree() exception.
     If exception cause was permission error, write permissions are added,
     otherwise exception is re-raised.
     For arguments, see ``shutil.rmtree()`` docs.
     """
     excvalue = exception[1]
     if excvalue.errno == errno.EACCES:
-        _setWritePermissions(path)
+        _set_w_permissions(path)
         function(path)
     else:  # pragma: no cover
         # re-raise exception (this function is exception callback)
         raise  # type: ignore
 
 
-def removeFolderTree(dirPath: str, forceWritePermissions: bool = True, retry: int = 3):
-    """ Remove folder (FOLDER, not FILE) and all its content on a given path.
+def remove_dir_tree(dirPath: str, forceWritePermissions: bool = True, retry: int = 3):
+    """Remove folder (FOLDER, not FILE) and all its content on a given path.
 
     Args:
         dirPath: path of a folder to remove.
-        forceWritePermissions: if True, shutil.rmtree() error callback 
+        forceWritePermissions: if True, shutil.rmtree() error callback
             function is used to change permissions and retry.
         retry: on failure, retry removal specified number of times. Must be > 0.
             Sometimes file are locked with other processes, or a race
             condition occurred.
     """
-    _pathValidationCheck(dirPath)
+    _validate_path(dirPath)
 
     if os.path.exists(dirPath):
         if not os.path.isdir(dirPath):
-            errorMsg = f"'removeFolderTree()' is designed to remove folders, not files/links: {dirPath}"
+            errorMsg = f"'remove_dir_tree()' is designed to remove folders, not files/links: {dirPath}"
             raise ValueError(errorMsg)
 
         take = 0
         for take in range(retry):
             try:
                 if forceWritePermissions:
-                    shutil.rmtree(dirPath, ignore_errors=False, onerror=_removeFolderErrorHandler)
+                    shutil.rmtree(dirPath, ignore_errors=False, onerror=_on_remove_dir_err)
                 else:
                     shutil.rmtree(dirPath)
             except Exception as err:
@@ -230,12 +228,12 @@ def removeFolderTree(dirPath: str, forceWritePermissions: bool = True, retry: in
             else:
                 break  # on success, escape retrying
         else:
-            errorMsg = f"Unable to 'removeFolderTree()' after {take} times: {dirPath}"
+            errorMsg = f"Unable to 'remove_dir_tree()' after {take} times: {dirPath}"
             raise Exception(errorMsg)
 
 
-def cleanFolder(dirPath: str, forceWritePermissions: bool = True):
-    """ Delete all folder content (files, sub-folders) in a given folder, but 
+def clean_dir(dirPath: str, forceWritePermissions: bool = True):
+    """Delete all folder content (files, sub-folders) in a given folder, but
     not the root folder.
 
     Args:
@@ -243,47 +241,47 @@ def cleanFolder(dirPath: str, forceWritePermissions: bool = True):
         forceWritePermissions: if True, write permissions are set to be
             able to delete files.
     """
-    _pathValidationCheck(dirPath)
+    _validate_path(dirPath)
 
     allItems = os.listdir(dirPath)
     for item in allItems:
         itemPath = os.path.join(dirPath, item)
         if os.path.isfile(itemPath):
-            removeFile(itemPath, forceWritePermissions)
+            remove_file(itemPath, forceWritePermissions)
         else:
-            removeFolderTree(itemPath, forceWritePermissions)
+            remove_dir_tree(itemPath, forceWritePermissions)
 
 
-def createFolder(dirPath: str):
-    """ Create folder (or folder tree) on a given specified path.
+def create_dir(dirPath: str):
+    """Create folder (or folder tree) on a given specified path.
 
     Args:
         dirPath: absolute path of a folder to create
     """
-    _pathValidationCheck(dirPath)
+    _validate_path(dirPath)
 
     dirPath = os.path.normpath(dirPath)
     os.makedirs(dirPath, exist_ok=True)
 
 
-def createCleanFolder(dirPath: str):
-    """ Create new or clean existing folder on a given specified path.
+def create_clean_dir(dirPath: str):
+    """Create new or clean existing folder on a given specified path.
     Path existence is checked with check() at the end.
 
-    Args:    
+    Args:
         dirPath: absolute path of a folder to create
     """
-    _pathValidationCheck(dirPath)
+    _validate_path(dirPath)
 
     if os.path.exists(dirPath):
-        cleanFolder(dirPath)
+        clean_dir(dirPath)
     else:
-        createFolder(dirPath)
+        create_dir(dirPath)
 
 
-def removeOldItems(dirPath: str, days: int) -> List[str]:
-    """ Remove items (files, folders) inside the given folder that were modified 
-    more than specified number of days ago. 
+def remove_old_items(dirPath: str, days: int) -> List[str]:
+    """Remove items (files, folders) inside the given folder that were modified
+    more than specified number of days ago.
 
     Note:
         modification time and current time can be the same when this
@@ -292,7 +290,7 @@ def removeOldItems(dirPath: str, days: int) -> List[str]:
 
     Args:
         dirPath: path to a folder with files/folders to remove.
-        days: number of days file/folder must be old to be 
+        days: number of days file/folder must be old to be
             removed (last modification time).
 
     Returns:
@@ -301,25 +299,25 @@ def removeOldItems(dirPath: str, days: int) -> List[str]:
     dirPath = check(dirPath)
 
     removedItems: List[str] = []
-    daysInSeconds = dlpt.time.timeToSeconds(d=days)
+    daysInSeconds = dlpt.time.time_to_seconds(d=days)
     currentTime = int(time.time())  # see note about int()
     for item in os.listdir(dirPath):
         itemPath = os.path.join(dirPath, item)
         lastModTime = int(os.path.getmtime(itemPath))  # see note about int()
         if lastModTime < (currentTime - daysInSeconds):
             if os.path.isfile(itemPath):
-                removeFile(itemPath)
+                remove_file(itemPath)
             else:
-                removeFolderTree(itemPath)
+                remove_dir_tree(itemPath)
             removedItems.append(itemPath)
 
     return removedItems
 
 
-def withFwSlashes(path: str) -> str:
-    """ Convert path to use forward slashes.
+def with_fw_slashes(path: str) -> str:
+    """Convert path to use forward slashes.
 
-    Note: 
+    Note:
         This function does not do ``os.path.normpath()`` so it is also
         usable for UNCs.
 
@@ -329,15 +327,15 @@ def withFwSlashes(path: str) -> str:
     Returns:
         A path with converted back slashes to forward slashes.
     """
-    _pathValidationCheck(path)
+    _validate_path(path)
 
     path = path.replace("\\", "/")
 
     return path
 
 
-def withDoubleBwSlashes(path: str) -> str:
-    """ Convert and return path to use double back slashes.
+def with_double_bw_slashes(path: str) -> str:
+    """Convert and return path to use double back slashes.
 
     Args:
         path: path to convert
@@ -345,15 +343,15 @@ def withDoubleBwSlashes(path: str) -> str:
     Returns:
         A converted path with double back slashes.
     """
-    path = _pathValidationCheck(path)
+    path = _validate_path(path)
 
     path = path.replace("\\", "\\\\")
 
     return path
 
 
-def getName(fPath: str, withExt: bool = True) -> str:
-    """ Return a file name from file path or raise exception. 
+def get_name(fPath: str, withExt: bool = True) -> str:
+    """Return a file name from file path or raise exception.
 
     Note:
         No file existence check is performed.
@@ -365,10 +363,10 @@ def getName(fPath: str, withExt: bool = True) -> str:
     Returns:
         A file name with/without extension.
     """
-    _pathValidationCheck(fPath)
+    _validate_path(fPath)
 
     fileName = os.path.basename(fPath)
-    ext = getExt(fPath)
+    ext = get_ext(fPath)
 
     if not withExt:
         fileName = fileName.replace(ext, "")
@@ -376,8 +374,8 @@ def getName(fPath: str, withExt: bool = True) -> str:
     return fileName
 
 
-def getExt(fPath: str) -> str:
-    """ Return file extension (with dot) from file path or raise exception.
+def get_ext(fPath: str) -> str:
+    """Return file extension (with dot) from file path or raise exception.
 
     Note:
         No file existence check is performed.
@@ -388,33 +386,33 @@ def getExt(fPath: str) -> str:
     Returns:
         A file extension.
     """
-    _pathValidationCheck(fPath)
+    _validate_path(fPath)
 
     _, ext = os.path.splitext(fPath)
 
     return ext
 
 
-def getFilesInFolder(dirPath: str,
-                     includeExt: Optional[List[str]] = None,
-                     excludeExt: Optional[List[str]] = None) -> List[str]:
-    """ Get a list of files in a given ``dirPath``. 
+def get_files_in_dir(
+    dirPath: str, includeExt: Optional[List[str]] = None, excludeExt: Optional[List[str]] = None
+) -> List[str]:
+    """Get a list of files in a given ``dirPath``.
     If ``extensionFilter`` is set, only return files that has the same extension.
 
     Note:
-        Only one of ``includeExt`` or ``excludeExt`` must be set, or exception 
+        Only one of ``includeExt`` or ``excludeExt`` must be set, or exception
         is raised. Lower case extension strings are compared.
 
     Args:
         dirPath: path to a folder to scan.
         includeExt: if set, only files with given extension(s) are returned.
-        excludeExt: if set, files with given extension(s) are excluded 
+        excludeExt: if set, files with given extension(s) are excluded
             from return list.
 
     Returns:
         List of matching files from `dirPath``.
     """
-    _pathValidationCheck(dirPath)
+    _validate_path(dirPath)
     check(dirPath)
     dirPath = os.path.normpath(dirPath)
 
@@ -451,20 +449,20 @@ def getFilesInFolder(dirPath: str,
     return files
 
 
-def getFilesInFolderTree(folderTreePath: str,
-                         includeExt: Optional[List[str]] = None,
-                         excludeExt: Optional[List[str]] = None) -> List[str]:
-    """ Same as :func:`getFilesInFolder()`, but scan through all files in 
+def get_files_in_dir_tree(
+    folderTreePath: str, includeExt: Optional[List[str]] = None, excludeExt: Optional[List[str]] = None
+) -> List[str]:
+    """Same as :func:`get_files_in_dir()`, but scan through all files in
     all folders.
 
     Note:
-        Only one of ``includeExt`` or ``excludeExt`` must be set, or exception 
+        Only one of ``includeExt`` or ``excludeExt`` must be set, or exception
         is raised. Lower case extension strings are compared.
 
     Args:
         folderTreePath: path to a folder tree to scan.
         includeExt: if set, only files with given extension(s) are returned.
-        excludeExt: if set, files with given extension(s) are excluded 
+        excludeExt: if set, files with given extension(s) are excluded
             from return list.
 
     Returns:
@@ -474,16 +472,14 @@ def getFilesInFolderTree(folderTreePath: str,
 
     allFiles = []
     for (rootFolderPath, _, _) in os.walk(folderTreePath):
-        thisFolderFiles = getFilesInFolder(rootFolderPath, includeExt, excludeExt)
+        thisFolderFiles = get_files_in_dir(rootFolderPath, includeExt, excludeExt)
         allFiles.extend(thisFolderFiles)
 
     return allFiles
 
 
-def getFoldersInFolder(dirPath: str,
-                       nameFilter: Optional[str] = None,
-                       compareLowerCase: bool = True) -> List[str]:
-    """ Get a list of folders in a given 'dirPath'.
+def get_dirs_in_dir(dirPath: str, nameFilter: Optional[str] = None, compareLowerCase: bool = True) -> List[str]:
+    """Get a list of folders in a given 'dirPath'.
 
     Args:
         dirPath: path to a folder to scan.
@@ -495,7 +491,7 @@ def getFoldersInFolder(dirPath: str,
     Returns:
         List of matching folders from `dirPath``.
     """
-    _pathValidationCheck(dirPath)
+    _validate_path(dirPath)
     check(dirPath)
     dirPath = os.path.normpath(dirPath)
 
@@ -520,7 +516,7 @@ def getFoldersInFolder(dirPath: str,
     return folders
 
 
-def openWithDefaultBrowser(url: str):  # pragma: no cover
+def open_in_web_browser(url: str):  # pragma: no cover
     """Open given address in a default web browser as a non-blocking subprocess.
 
     Args:
@@ -529,14 +525,14 @@ def openWithDefaultBrowser(url: str):  # pragma: no cover
     webbrowser.open(url, new=2)  # 2 = new tab
 
 
-def openWithDefaultApp(fPath: str):  # pragma: no cover
-    """ Open given file with OS default application as a non-blocking subprocess.
+def open_with_default_app(fPath: str):  # pragma: no cover
+    """Open given file with OS default application as a non-blocking subprocess.
 
-    Args:    
+    Args:
         fPath: path to a file to open.
     """
     fPath = check(fPath)
-    fPath = f"\"{fPath}\""
+    fPath = f'"{fPath}"'
 
     args = []
     if os.name == "nt":
@@ -547,8 +543,8 @@ def openWithDefaultApp(fPath: str):  # pragma: no cover
         os.popen(f"open {fPath}")
 
 
-def _pathValidationCheck(path: Optional[str]) -> str:
-    """ Raise exception if given path is not a string or it is an empty string.
+def _validate_path(path: Optional[str]) -> str:
+    """Raise exception if given path is not a string or it is an empty string.
 
     Args:
         path: path to check.
@@ -557,17 +553,17 @@ def _pathValidationCheck(path: Optional[str]) -> str:
         Given path.
     """
     if isinstance(path, str):
-        if path.strip() != '':
+        if path.strip() != "":
             return path
     elif isinstance(path, pathlib.Path):
         return path
 
-    # 0 - current frame  of getCallerLocation scope
-    # 1 - frame of this _pathValidationCheck()
-    # 2 - frame of the caller of this function (_pathValidationCheck() is a
+    # 0 - current frame  of get_caller_location scope
+    # 1 - frame of this _validate_path()
+    # 2 - frame of the caller of this function (_validate_path() is a
     #   private function, should be only used inside pth.py)
     # 3 - frame of the caller of a function in paths, that further called
-    # _pathValidationCheck() func
-    callerLocation = dlpt.utils.getCallerLocation(3)
+    # _validate_path() func
+    callerLocation = dlpt.utils.get_caller_location(3)
     errorMsg = f"Invalid path format - expected non-empty string: '{path}'\n\t{callerLocation}"
     raise ValueError(errorMsg)

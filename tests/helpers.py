@@ -8,36 +8,36 @@ def sleep(sleepTime: float):
     time.sleep(sleepTime)
 
 
-def sleepWithExitCode(sleepTime: float, sysExitCode: int):
+def sleep_with_exit_code(sleepTime: float, sysExitCode: int):
     sleep(sleepTime)
 
     if sysExitCode:
         sys.exit(sysExitCode)
 
 
-def sleepWithRetCode(sleepTime: float, returnCode: int):
+def sleep_with_return_code(sleepTime: float, returnCode: int):
     sleep(sleepTime)
 
     if returnCode:
         return returnCode
 
 
-def mpChild(sleepTime: float):
+def multiprocess_child(sleepTime: float):
     """
-    This function is spawned by mpParent() and does nothing except wait.
+    This function is spawned by multiprocess_parent() and does nothing except wait.
     """
     time.sleep(sleepTime)
 
 
-def mpParent(childNum: int, sleepTime: float = 3):
+def multiprocess_parent(childNum: int, sleepTime: float = 3):
     """
-    This function spawns other child processes mpChild() - 
+    This function spawns other child processes multiprocess_child() -
     needed for PID and process control test functions.
     """
     childs = []
     # spawn child processes
     for child in range(childNum):
-        proc = multiprocessing.Process(target=mpChild, args=(sleepTime, ))
+        proc = multiprocessing.Process(target=multiprocess_child, args=(sleepTime,))
         childs.append(proc)
         proc.start()
 
@@ -48,8 +48,8 @@ def mpParent(childNum: int, sleepTime: float = 3):
     time.sleep(1)
 
 
-def getTestProcArgs(sleepTimeSec: Optional[float] = 10) -> List[str]:
-    """ Return command line string necessary to spawn this file as a subprocess 
+def get_test_proc_args(sleepTimeSec: Optional[float] = 10) -> List[str]:
+    """Return command line string necessary to spawn this file as a subprocess
     (and execute __main__).
 
     Args:

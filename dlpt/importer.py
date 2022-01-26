@@ -12,13 +12,13 @@ from typing import Optional
 import dlpt
 
 
-class ModuleImporter():
+class ModuleImporter:
     def __init__(self, fPath: str, baseFolderPath: Optional[str] = None):
         """
         Dynamically import module from given `fPath`.
 
         Args:
-            fPath: abs path to a python module (file) which will be 
+            fPath: abs path to a python module (file) which will be
                 dynamically imported.
             baseFolderPath: path to a root folder from where module
                 will be imported. Example:
@@ -26,7 +26,7 @@ class ModuleImporter():
                 ``baseFolderPath = C:/root/someFolder/``
                 -> module will be imported as: `someSubfolder.myModule`
 
-        NOTE: 
+        NOTE:
             `baseFolderPath` (or `fPath` root folder, if `baseFolderPath`
             is not specified) is added to `sys.path`. It is NOT removed once
             object is garbage-collected.
@@ -61,7 +61,7 @@ class ModuleImporter():
         """
         Import module and return module instance object.
 
-        Returns: 
+        Returns:
             Imported module instance (object).
         """
 
@@ -73,7 +73,7 @@ class ModuleImporter():
         else:
             sys.path.append(self.baseFolderPath)
 
-        ext = dlpt.pth.getExt(self.fPath)
+        ext = dlpt.pth.get_ext(self.fPath)
         relPath = os.path.relpath(self.fPath, self.baseFolderPath)
         importName = relPath.replace(ext, "").replace(os.path.sep, ".")
 
@@ -90,7 +90,7 @@ class ModuleImporter():
 
         return self._module
 
-    def getModule(self) -> ModuleType:
+    def get_module(self) -> ModuleType:
         """
         Return imported module object.
 
@@ -101,7 +101,7 @@ class ModuleImporter():
 
         return self._module
 
-    def hasObject(self, name: str, raiseException: bool = True) -> bool:
+    def has_object(self, name: str, raiseException: bool = True) -> bool:
         """
         Check if imported module has object with objectName.
 
@@ -112,7 +112,7 @@ class ModuleImporter():
                 False otherwise).
 
         Returns:
-            True if imported module has object with name `objectName`, False
+            True if imported module has object with `name`, False
             otherwise.
         """
         if self._module:

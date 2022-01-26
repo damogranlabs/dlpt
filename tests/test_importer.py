@@ -13,7 +13,7 @@ FUNCTION_NAME = "testFunc"
 FUNCTION_RET_VAL = "retVal"
 
 
-def createTempPyFile(fPath):
+def create_tmp_py_file(fPath):
     lines = []
     lines.append("import sys")
     lines.append(f"\n")
@@ -21,22 +21,22 @@ def createTempPyFile(fPath):
     lines.append(f"{VARIABLE_NAME} = {VARIABLE_DEFAULT_VALUE}\n")
     lines.append(f"\n")
     lines.append(f"def {FUNCTION_NAME}():\n")
-    lines.append(f"     return \"{FUNCTION_RET_VAL}\"\n")
+    lines.append(f'     return "{FUNCTION_RET_VAL}"\n')
 
-    with open(fPath, 'w+') as fHandler:
+    with open(fPath, "w+") as fHandler:
         fHandler.writelines(lines)
 
 
-def checkModule(importer: "dlpt.importer.ModuleImporter"):
-    module = importer.getModule()
+def check_module(importer: "dlpt.importer.ModuleImporter"):
+    module = importer.get_module()
 
-    assert importer.hasObject(VARIABLE_NAME) is True
-    assert importer.hasObject(FUNCTION_NAME) is True
+    assert importer.has_object(VARIABLE_NAME) is True
+    assert importer.has_object(FUNCTION_NAME) is True
     assert callable(getattr(module, FUNCTION_NAME)) is True
 
     with pytest.raises(Exception):
-        importer.hasObject("qweasdxzc")
-    assert importer.hasObject("qweasdxzc", False) is False
+        importer.has_object("qweasdxzc")
+    assert importer.has_object("qweasdxzc", False) is False
 
     assert VARIABLE_NAME == "variableToChange"
     assert module.variableToChange == VARIABLE_DEFAULT_VALUE  # type: ignore
@@ -47,9 +47,9 @@ def test_basic(tmp_path):
     with pytest.raises(ValueError):
         dlpt.importer.ModuleImporter(tmp_path)
 
-    createTempPyFile(tmpFilePath)
+    create_tmp_py_file(tmpFilePath)
     importer = dlpt.importer.ModuleImporter(tmpFilePath)
-    checkModule(importer)
+    check_module(importer)
 
     # rel path
     baseFolder = os.path.dirname(os.path.dirname(tmpFilePath))
@@ -69,37 +69,37 @@ def test_basic(tmp_path):
 
     # non-existing path
     with pytest.raises(FileNotFoundError):
-        dlpt.pth.removeFile(tmpFilePath)
+        dlpt.pth.remove_file(tmpFilePath)
         dlpt.importer.ModuleImporter(tmpFilePath)
 
     # non-valid python module
     with pytest.raises(Exception):
         with open(tmpFilePath, "w+") as fHandler:
-            fHandler.write("123 = \"not a valid py syntax\"\n")
+            fHandler.write('123 = "not a valid py syntax"\n')
         dlpt.importer.ModuleImporter(tmpFilePath)
 
 
-def test_customBaseFolder_sameFolder(tmp_path):
+def test_custom_base_dir_same_dir(tmp_path):
     fPath = os.path.join(tmp_path, MODULE_NAME)
-    createTempPyFile(fPath)
+    create_tmp_py_file(fPath)
 
     importer = dlpt.importer.ModuleImporter(fPath, tmp_path)
-    checkModule(importer)
+    check_module(importer)
 
 
-def test_customBaseFolder_subFolder(tmp_path):
+def test_custom_base_dir_subdir(tmp_path):
     dirPath = os.path.join(tmp_path, "root", "package", "subFolder")
-    dlpt.pth.createFolder(dirPath)
+    dlpt.pth.create_dir(dirPath)
     fPath = os.path.join(dirPath, MODULE_NAME)
-    createTempPyFile(fPath)
+    create_tmp_py_file(fPath)
 
     importer = dlpt.importer.ModuleImporter(fPath, tmp_path)
-    checkModule(importer)
+    check_module(importer)
 
 
-def test_customBaseFolder_invalidFolder(tmp_path):
+def test_custom_base_dir_invalid_dir(tmp_path):
     fPath = os.path.join(tmp_path, MODULE_NAME)
-    createTempPyFile(fPath)
+    create_tmp_py_file(fPath)
 
     with pytest.raises(ValueError):
         dlpt.importer.ModuleImporter(fPath, os.getcwd())

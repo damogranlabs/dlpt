@@ -13,13 +13,13 @@ from types import ModuleType
 import dlpt
 
 
-def floatToStr(number: float, showNumOfDigits: int = 2) -> str:
-    """ Convert float number with any number of decimal digits and return string 
+def float_to_str(number: float, showNumOfDigits: int = 2) -> str:
+    """Convert float number with any number of decimal digits and return string
     with ``showNumbOfDigits`` places after ``.``.
 
     Args:
         number: float number to convert to string.
-        showNumOfDigits: number of decimal places (characters) that are 
+        showNumOfDigits: number of decimal places (characters) that are
             added/stripped after ``.``.
     """
     number = round(number, showNumOfDigits)
@@ -31,20 +31,20 @@ def floatToStr(number: float, showNumOfDigits: int = 2) -> str:
     return numberStr
 
 
-def getIntFromStr(number: str) -> int:
-    """ Return integer representation of a given number string. 
+def get_int_from_str(number: str) -> int:
+    """Return integer representation of a given number string.
     HEX number strings must start with ``0x``. Negative numbers are also supported.
 
     Args:
         numberStr: int/float string representation of a given number.
     """
-    num = int(getFloatFromStr(number))
+    num = int(get_float_from_str(number))
 
     return num
 
 
-def getFloatFromStr(number: str) -> float:
-    """ Return float representation of a given number string.
+def get_float_from_str(number: str) -> float:
+    """Return float representation of a given number string.
     HEX number strings must start with ``0x``.
 
     Args:
@@ -67,8 +67,8 @@ def getFloatFromStr(number: str) -> float:
     return num
 
 
-def getListIntersection(listOne: List[Any], listTwo: List[Any]) -> List[Any]:
-    """ Return intersection of a given lists.
+def get_list_intersection(listOne: List[Any], listTwo: List[Any]) -> List[Any]:
+    """Return intersection of a given lists.
 
     Note:
         Operation does not necessary maintain items order!
@@ -86,8 +86,8 @@ def getListIntersection(listOne: List[Any], listTwo: List[Any]) -> List[Any]:
     return intersection
 
 
-def getListStr(data: List[Any], separator: str = ', ') -> str:
-    """ Return a human readable list string (for printing purposes).
+def get_list_str(data: List[Any], separator: str = ", ") -> str:
+    """Return a human readable list string (for printing purposes).
 
     Args:
         data: list to transform to string.
@@ -101,8 +101,8 @@ def getListStr(data: List[Any], separator: str = ', ') -> str:
     return readableStr
 
 
-def getListDifference(listOne: List[Any], listTwo: List[Any]) -> List[Any]:
-    """ Return difference (items that are unique just to a one of given lists)
+def get_list_difference(listOne: List[Any], listTwo: List[Any]) -> List[Any]:
+    """Return difference (items that are unique just to a one of given lists)
     of a given lists.
 
     Note:
@@ -117,10 +117,10 @@ def getListDifference(listOne: List[Any], listTwo: List[Any]) -> List[Any]:
     return difference
 
 
-def removeListDuplicates(data: List[Any]) -> List[Any]:
-    """ Return a list of items without any duplicates.
+def remove_list_duplicates(data: List[Any]) -> List[Any]:
+    """Return a list of items without any duplicates.
 
-    Note: 
+    Note:
         Operation does not necessary maintain items order!
 
     Args:
@@ -131,14 +131,14 @@ def removeListDuplicates(data: List[Any]) -> List[Any]:
     return data
 
 
-def searchStrInLines(stringToSearch: str, lines: List[str], exactMatch: bool = False) -> Optional[int]:
-    """ Return index of a first line where ``stringToSearch`` string can be found.
+def search_str_in_lines(stringToSearch: str, lines: List[str], exactMatch: bool = False) -> Optional[int]:
+    """Return index of a first line where ``stringToSearch`` string can be found.
         Otherwise, return None.
 
     Args:
         stringToSearch: string to search in lines.
         lines: list of strings, where 'stringToSearch' is searched.
-        exactMatch: if True, only exact 'stringToSearch' string is 
+        exactMatch: if True, only exact 'stringToSearch' string is
             compared in lines. Otherwise, only string presence is checked.
     """
     for lineIndex, line in enumerate(lines):
@@ -152,8 +152,8 @@ def searchStrInLines(stringToSearch: str, lines: List[str], exactMatch: bool = F
     return None
 
 
-def areListValuesEqual(listOne: List[Any], listTwo: List[Any]) -> bool:
-    """ Return True if lists have the same values, False otherwise.
+def are_list_values_equal(listOne: List[Any], listTwo: List[Any]) -> bool:
+    """Return True if lists have the same values, False otherwise.
 
     Note:
         Items order is not respected. If order must also be respected,
@@ -175,8 +175,8 @@ def areListValuesEqual(listOne: List[Any], listTwo: List[Any]) -> bool:
         return False
 
 
-def areDictKeysEqual(d1: Dict[Any, Any], d2: Dict[Any, Any]) -> bool:
-    """ Return True if dicts have the same keys, False otherwise.
+def are_dict_keys_equal(d1: Dict[Any, Any], d2: Dict[Any, Any]) -> bool:
+    """Return True if dicts have the same keys, False otherwise.
 
     Args:
         d1: first dict to compare
@@ -185,19 +185,19 @@ def areDictKeysEqual(d1: Dict[Any, Any], d2: Dict[Any, Any]) -> bool:
     if len(d1) == len(d2):
         d1Keys = list(d1.keys())
         d2Keys = list(d2.keys())
-        haveSameKeys = areListValuesEqual(d1Keys, d2Keys)
+        haveSameKeys = are_list_values_equal(d1Keys, d2Keys)
 
         return haveSameKeys
     else:
         return False
 
 
-def areDictValuesEqual(d1: Dict[Any, Any], d2: Dict[Any, Any]) -> bool:
-    """ Return True if dicts have the same values, False otherwise.
+def are_dict_values_equal(d1: Dict[Any, Any], d2: Dict[Any, Any]) -> bool:
+    """Return True if dicts have the same values, False otherwise.
 
     Note:
-        When comparing dict items that are not simple types (int, str, ...), 
-        function might return False if comparing different instances, regardles 
+        When comparing dict items that are not simple types (int, str, ...),
+        function might return False if comparing different instances, regardles
         if object type is the same.
 
     Args:
@@ -206,16 +206,16 @@ def areDictValuesEqual(d1: Dict[Any, Any], d2: Dict[Any, Any]) -> bool:
     """
     d1Values = list(d1.values())
     d2Values = list(d2.values())
-    haveSameValues = areListValuesEqual(d1Values, d2Values)
+    haveSameValues = are_list_values_equal(d1Values, d2Values)
 
     return haveSameValues
 
 
-def mapDictToClass(obj: object, data: Dict[str, Any]) -> object:
-    """ Return an object ``obj`` updated by the values of data dictionary.
+def map_dict_to_class(obj: object, data: Dict[str, Any]) -> object:
+    """Return an object ``obj`` updated by the values of data dictionary.
 
-    Note: 
-        Only data keys, that match obj variable names are updated. 
+    Note:
+        Only data keys, that match obj variable names are updated.
         Others are silently ignored.
 
     Args:
@@ -228,8 +228,8 @@ def mapDictToClass(obj: object, data: Dict[str, Any]) -> object:
     return obj
 
 
-def getObjPublicVars(obj: object) -> Dict[str, Any]:
-    """ Return a dictionary of class variables that does not start with '_' or '__'.
+def get_obj_public_vars(obj: object) -> Dict[str, Any]:
+    """Return a dictionary of class variables that does not start with '_' or '__'.
         Each item represents: 'name': <value>
 
     Note:
@@ -243,7 +243,7 @@ def getObjPublicVars(obj: object) -> Dict[str, Any]:
     relevantVariables = {}
 
     for key in dir(obj):
-        if not key.startswith('_'):
+        if not key.startswith("_"):
             value = getattr(obj, key)
             if not callable(value):
                 relevantVariables[key] = value
@@ -251,12 +251,12 @@ def getObjPublicVars(obj: object) -> Dict[str, Any]:
     return relevantVariables
 
 
-def getObjPublicMethods(obj: object) -> Dict[str, Callable[..., Any]]:
-    """ Return a dictionary of object public methods that does not start 
+def get_obj_public_methods(obj: object) -> Dict[str, Callable[..., Any]]:
+    """Return a dictionary of object public methods that does not start
     with '_' or '__'. Each item represents: 'name': <reference to a method>
 
     Note:
-        Only class 'public' methods are returned, without ``@staticmethod``. 
+        Only class 'public' methods are returned, without ``@staticmethod``.
         They are of type '<bound method...>'
 
     Args:
@@ -267,14 +267,14 @@ def getObjPublicMethods(obj: object) -> Dict[str, Callable[..., Any]]:
     relevantMethods = {}
     for func in functions:
         name, reference = func
-        if not name.startswith('_'):
+        if not name.startswith("_"):
             relevantMethods[name] = reference
 
     return relevantMethods
 
 
-def getCallablesFromModule(moduleInstance: ModuleType) -> Dict[str, Callable[..., Any]]:
-    """ Return a dictionary of public methods that does not start with '_' or '__'.
+def get_module_callables(moduleInstance: ModuleType) -> Dict[str, Callable[..., Any]]:
+    """Return a dictionary of public methods that does not start with '_' or '__'.
     Each item represents: 'name': <reference to a callable object>
 
     Args:
@@ -283,21 +283,21 @@ def getCallablesFromModule(moduleInstance: ModuleType) -> Dict[str, Callable[...
     callableObjects = {}
     for name, value in moduleInstance.__dict__.items():
         if callable(value):
-            if not name.startswith('_'):
+            if not name.startswith("_"):
                 callableObjects[name] = value
 
     return callableObjects
 
 
-def getPublicClassesFromModule(moduleInstance: ModuleType) -> Dict[str, Callable[..., Any]]:
-    """ Return a dictionary of public classes that does not start with '_' or '__'.
+def get_module_public_classes(moduleInstance: ModuleType) -> Dict[str, Callable[..., Any]]:
+    """Return a dictionary of public classes that does not start with '_' or '__'.
     Each item represents: 'name': <reference to a callable class>
 
     Args:
         moduleInstance: module object to inspect.
     """
     relevantMethods = {}
-    objects = getCallablesFromModule(moduleInstance)
+    objects = get_module_callables(moduleInstance)
     for name, value in objects.items():
         if inspect.isclass(value):
             relevantMethods[name] = value
@@ -305,15 +305,15 @@ def getPublicClassesFromModule(moduleInstance: ModuleType) -> Dict[str, Callable
     return relevantMethods
 
 
-def getPublicFunctionsFromModule(moduleInstance) -> Dict[str, Callable[..., Any]]:
-    """ Get a list of references to all callable objects from a given module 
+def get_module_public_functions(moduleInstance) -> Dict[str, Callable[..., Any]]:
+    """Get a list of references to all callable objects from a given module
     handler.
 
     Args:
         moduleInstance: module object to inspect.
     """
     relevantMethods = {}
-    objects = getCallablesFromModule(moduleInstance)
+    objects = get_module_callables(moduleInstance)
     for name, value in objects.items():
         if inspect.isfunction(value):
             relevantMethods[name] = value
@@ -321,12 +321,12 @@ def getPublicFunctionsFromModule(moduleInstance) -> Dict[str, Callable[..., Any]
     return relevantMethods
 
 
-def getCallerLocation(depth: int = 2) -> str:
-    """ Return a function/location/line number of a caller function.
+def get_caller_location(depth: int = 2) -> str:
+    """Return a function/location/line number of a caller function.
     Return string format: "<function()> @ <absolute file path>:<line number>"
 
     Note:
-        Using inspect module can be slow -> ``inspect.getouterframes()`` call 
+        Using inspect module can be slow -> ``inspect.getouterframes()`` call
         ``inspect.stack()`` which `actually read files`_.
 
     Warning:
@@ -335,7 +335,7 @@ def getCallerLocation(depth: int = 2) -> str:
 
     Args:
         depth: stack frame depth inspection. The first (index = 0) entry in the
-            returned list represents current frame; the last entry represents 
+            returned list represents current frame; the last entry represents
             the outermost call on frame’s stack.
 
     .. _actually read files:

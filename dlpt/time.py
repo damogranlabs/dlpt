@@ -23,8 +23,8 @@ DATE_TIME_FORMAT_FILE_NAME = f"{DATE_FORMAT}_%H-%M-%S"
 _lastTimedFunctionTimeSec: float = 0
 
 
-def timestampToDatetime(timestamp: float) -> datetime.datetime:
-    """ Return a datetime object for a given timestamp (as returned by
+def timestamp_to_datetime(timestamp: float) -> datetime.datetime:
+    """Return a datetime object for a given timestamp (as returned by
     `time.time()`).
 
     Args:
@@ -38,46 +38,42 @@ def timestampToDatetime(timestamp: float) -> datetime.datetime:
     return dt
 
 
-def timestampToStr(timestamp: float,
-                   fmt: str = TIME_FORMAT,
-                   msecDigits: int = 0) -> str:
-    """ Return a string of converted timestamp (as returned by `time.time()`) by 
+def timestamp_to_str(timestamp: float, fmt: str = TIME_FORMAT, msecDigits: int = 0) -> str:
+    """Return a string of converted timestamp (as returned by `time.time()`) by
     following the given format.
 
     Args:
         timestamp: timestamp as a number since the epoch (time.time()).
         fmt: output string format.
-        msecDigits: check _msecFormatter()
+        msecDigits: check _format_msec()
 
     Returns:
         Timestamp as a string, based on a given format.
     """
-    dt = timestampToDatetime(timestamp)
-    dtmStr = _msecFormatter(dt, fmt, msecDigits)
+    dt = timestamp_to_datetime(timestamp)
+    dtmStr = _format_msec(dt, fmt, msecDigits)
 
     return dtmStr
 
 
-def secToStr(seconds: float,
-             fmt: str = TIME_FORMAT_HMS_STRING,
-             hideZeroes: bool = True) -> str:
-    """ Return a string of a converted time (in seconds) by following the given
+def sec_to_str(seconds: float, fmt: str = TIME_FORMAT_HMS_STRING, hideZeroes: bool = True) -> str:
+    """Return a string of a converted time (in seconds) by following the given
     format.
 
     Note: Only applicable for hours, minutes and seconds. Days and larger time
         units are silently ignored.
 
-    Note: Seconds are always displayed as a 2 digit float, while hours and 
+    Note: Seconds are always displayed as a 2 digit float, while hours and
         numbers are integers. Example: 2 days and 4 hours -> 52 h 0 min 0.00 sec
 
     Args:
         seconds: time (duration) as a number of seconds.
-        fmt: output string format. This function does not support setting float 
-            number of digits for seconds. Output format can be changed if 
+        fmt: output string format. This function does not support setting float
+            number of digits for seconds. Output format can be changed if
             ``hideZeroes`` arg is True.
-        hideZeroes: if True, leading parts (hours, minutes) can be 
+        hideZeroes: if True, leading parts (hours, minutes) can be
             omitted (if zero), Otherwise, fmt is strictly respected. Note: this
-            is applicable only in the most common use cases, where 
+            is applicable only in the most common use cases, where
             time is displayed in order <hours> <minutes> <seconds>.
             If ``hideZeroes`` is True, leading zero-value parts are stripped to
             the first next time part: hours to minutes, minutes to seconds.
@@ -105,15 +101,13 @@ def secToStr(seconds: float,
                 if secPos != -1:
                     fmt = fmt[secPos:]
 
-    timeStr = fmt.replace("%H", str(int(h))) \
-        .replace("%M", str(int(m))) \
-        .replace("%S", dlpt.utils.floatToStr(s))
+    timeStr = fmt.replace("%H", str(int(h))).replace("%M", str(int(m))).replace("%S", dlpt.utils.float_to_str(s))
 
     return timeStr
 
 
-def timeToSeconds(d: int = 0, h: int = 0, m: int = 0, s: float = 0.0) -> float:
-    """ Return 'seconds' representation of a given time as defined by days, hours,
+def time_to_seconds(d: int = 0, h: int = 0, m: int = 0, s: float = 0.0) -> float:
+    """Return 'seconds' representation of a given time as defined by days, hours,
     minutes and seconds.
 
     Args:
@@ -130,11 +124,11 @@ def timeToSeconds(d: int = 0, h: int = 0, m: int = 0, s: float = 0.0) -> float:
     return sec
 
 
-def datetimeToStr(dt: datetime.datetime, fmt: str = TIME_FORMAT) -> str:
-    """ Return a string representation of a datetime object.
+def datetime_to_str(dt: datetime.datetime, fmt: str = TIME_FORMAT) -> str:
+    """Return a string representation of a datetime object.
 
-    Note: receives datetime object, not timedelta - check 
-        :func:`timedeltaToStr()`.
+    Note: receives datetime object, not timedelta - check
+        :func:`timedelta_to_str()`.
 
     Args:
         dt: datetime object to convert to string.
@@ -148,12 +142,11 @@ def datetimeToStr(dt: datetime.datetime, fmt: str = TIME_FORMAT) -> str:
     return dtStr
 
 
-def timedeltaToStr(td: datetime.timedelta,
-                   fmt: str = TIME_FORMAT_MS_STRING) -> str:
-    """ Return a string representation of a datetime timedelta object.
+def timedelta_to_str(td: datetime.timedelta, fmt: str = TIME_FORMAT_MS_STRING) -> str:
+    """Return a string representation of a datetime timedelta object.
 
-    Note: receives timedelta object, not datetime - check 
-        :func:`datetimeToStr()`.
+    Note: receives timedelta object, not datetime - check
+        :func:`datetime_to_str()`.
 
     Args:
         td: datetime.timedelta object to convert to string.
@@ -163,36 +156,35 @@ def timedeltaToStr(td: datetime.timedelta,
     Returns:
         String representation of `datetime.timedelta` object.
     """
-    tdStr = secToStr(td.total_seconds(), fmt, False)
+    tdStr = sec_to_str(td.total_seconds(), fmt, False)
 
     return tdStr
 
 
-def getCurrentDateTimeStr(fmt: str = DATE_TIME_FORMAT,
-                          msecDigits: int = 0) -> str:
-    """ Return a string of a current timestamp by following the given format.
+def get_current_datetime_str(fmt: str = DATE_TIME_FORMAT, msecDigits: int = 0) -> str:
+    """Return a string of a current timestamp by following the given format.
 
-    Args: 
+    Args:
         fmt: output string format.
-        msecDigits: check :func:`_msecFormatter()`.
+        msecDigits: check :func:`_format_msec()`.
 
     Returns:
         Formatted current date and time string.
     """
     dt = datetime.datetime.now()
-    dtmStr = _msecFormatter(dt, fmt, msecDigits)
+    dtmStr = _format_msec(dt, fmt, msecDigits)
 
     return dtmStr
 
 
-def _msecFormatter(dt: datetime.datetime, fmt: str, msecDigits: int) -> str:
-    """ Return a string of a formated date/time/msec.
+def _format_msec(dt: datetime.datetime, fmt: str, msecDigits: int) -> str:
+    """Return a string of a formated date/time/msec.
 
     Args:
-        dt: parsed datetime object as get with `datetime.datetime.now()` or 
+        dt: parsed datetime object as get with `datetime.datetime.now()` or
             `datetime.datetime.fromtimestamp(timestamp)`
         fmt: date/time output formatter
-        msecDigits: number of millisecond digits to display, in 
+        msecDigits: number of millisecond digits to display, in
             a range of 0 - 3. Note: Only applicable to `TIME_FORMAT` or a custom
             formatter that ends with '%S'. Note: msecDigits only limit max
             number of displayed digits. It does not guarantee that output string
@@ -200,9 +192,9 @@ def _msecFormatter(dt: datetime.datetime, fmt: str, msecDigits: int) -> str:
     """
     dtStr = dt.strftime(fmt)
     if msecDigits > 0:
-        if fmt.endswith('%S'):
+        if fmt.endswith("%S"):
             msecStr = str(int(dt.microsecond / 1000))[:msecDigits]
-            if msecStr != '':
+            if msecStr != "":
                 dtStr = f"{dtStr}.{msecStr}"
         else:
             errorMsg = "Millisecond formatting supported only for formatters "
@@ -215,22 +207,23 @@ def _msecFormatter(dt: datetime.datetime, fmt: str, msecDigits: int) -> str:
 T_EXEC_TIME = TypeVar("T_EXEC_TIME")
 
 
-def printExecTime(func: Callable[..., T_EXEC_TIME]) -> Callable[..., T_EXEC_TIME]:
-    """ Development decorator to get and print (to console) approximate 
-    execution time. Additionally, user can get execution time with 
-    :func:`getLastTimedFunctionDurationSec()`.
+def print_exec_time(func: Callable[..., T_EXEC_TIME]) -> Callable[..., T_EXEC_TIME]:
+    """Development decorator to get and print (to console) approximate
+    execution time. Additionally, user can get execution time with
+    :func:`get_last_measured_time_sec()`.
 
     Args:
         func: function 'pointer' to get execution time.
 
     Example:
-        >>> @dlpt.time.printExecTime
+        >>> @dlpt.time.print_exec_time
             def myFunction(<parameters>):
                 pass
         >>> myFunction(args)
-        >>> dlpt.time.getLastTimedFunctionDurationSec()
+        >>> dlpt.time.get_last_measured_time_sec()
         42.6
     """
+
     def _timed(*args, **kwargs) -> Any:
         startTime = time.perf_counter()
         result = func(*args, **kwargs)
@@ -247,23 +240,24 @@ def printExecTime(func: Callable[..., T_EXEC_TIME]) -> Callable[..., T_EXEC_TIME
     return _timed
 
 
-def funcStopwatch(func: Callable[..., T_EXEC_TIME]) -> Callable[..., T_EXEC_TIME]:
-    """ Call function and track its execution time. Similar to 
-    a :func:`printExecTime` decorator, but can be used with function with 
+def func_stopwatch(func: Callable[..., T_EXEC_TIME]) -> Callable[..., T_EXEC_TIME]:
+    """Call function and track its execution time. Similar to
+    a :func:`print_exec_time` decorator, but can be used with function with
     arguments. Does not print time to console.
 
     Args:
         func: function 'pointer' to track execution time.
 
     Example:
-        >>> myFunction = dlpt.time.funcStopwatch(<myFunctionName>)
+        >>> myFunction = dlpt.time.func_stopwatch(<myFunctionName>)
         >>> myFunction(<parameters>)
-        >>> dlpt.time.getLastTimedFunctionDurationSec()
+        >>> dlpt.time.get_last_measured_time_sec()
         42.6
 
     Returns:
-        User function wrapped in :func:`funcStopwatch()`.
+        User function wrapped in :func:`func_stopwatch()`.
     """
+
     def _timed(*args, **kw):
         startTime = time.perf_counter()
         result = func(*args, **kw)
@@ -277,14 +271,14 @@ def funcStopwatch(func: Callable[..., T_EXEC_TIME]) -> Callable[..., T_EXEC_TIME
     return _timed
 
 
-def getLastTimedFunctionDurationSec() -> float:
-    """ Return execution time of the last function, that was timed by using 
-    :func:`printExecTime()` or :func:`funcStopwatch()` function.
+def get_last_measured_time_sec() -> float:
+    """Return execution time of the last function, that was timed by using
+    :func:`print_exec_time()` or :func:`func_stopwatch()` function.
 
-    Note: only valid after function calls. Otherwise, return None or a 
+    Note: only valid after function calls. Otherwise, return None or a
         previous time.
 
-    Returns: 
+    Returns:
         Last timed function or None (if no function was timed before).
     """
     return _lastTimedFunctionTimeSec

@@ -43,11 +43,11 @@ Mostly built upon standard built-in code, but with a lot more straight-forward a
 # init default logger with console and file handler (file in <cwd>/log subfolder)
 import dlpt
 
-logger = dlpt.log.createLogger("myLogger")
-dlpt.log.addConsoleHandler(logger)
-hdlr, fPath = dlpt.log.addFileHandler(logger,
+logger = dlpt.log.create_logger("my_logger")
+dlpt.log.add_console_hdlr(logger)
+hdlr, file_path = dlpt.log.add_file_hdlr(logger,
                                      "dlpt_example.log")
-log.debug(f"Logger initialised, file: {fPath}")
+log.debug(f"Logger initialised, file: {file_path}")
 ```
 
 > How do I temporary change current working directory?
@@ -57,8 +57,8 @@ import dlpt
 
 print(f"Current working directory: {os.getcwd()}")
 
-dirPath = os.path.join(os.getcwd(), "..", "..")
-with dlpt.pth.ChangeDir(dirPath):
+dir_path = os.path.join(os.getcwd(), "..", "..")
+with dlpt.pth.ChangeDir(dir_path):
     print(f"Current temporary working directory: {os.getcwd()}")
 
 print(f"Current working directory: {os.getcwd()}")
@@ -71,31 +71,31 @@ import sys
 import dlpt
 
 # a valid subprocess
-args = [sys.executable, "-c", "import dlpt; print(dlpt.utils.floatToStr(12324.5678))"]
-proc = dlpt.proc.spawnSubproc(args)
+args = [sys.executable, "-c", "import dlpt; print(dlpt.utils.float_to_str(12324.5678))"]
+proc = dlpt.proc.spawn_subproc(args)
 print(proc.stdout) # will print '12324.57'
 
 # invalid subprocess, will throw exception
 args = [sys.executable, "-c", "throw exception"]
-dlpt.proc.spawnSubproc(args)
+dlpt.proc.spawn_subproc(args)
 ```
 
 > How do I get only folders inside some location?
 ```python
 import dlpt
 
-files = dlpt.pth.getFilesInFolderTree(os.getcwd(), excludeExt=[".pyc"])
-for fPath in files:
-    print(f"File {dlpt.pth.getName(fPath)}: {fPath}")
+files = dlpt.pth.get_files_in_dir_tree(os.getcwd(), excludeExt=[".pyc"])
+for file_path in files:
+    print(f"File {dlpt.pth.get_name(file_path)}: {file_path}")
 ```
 > How do I parse JSON file with comments?
 ```python
 import dlpt
 
-fPath = input("Enter a path to a JSON file with comments: ")
-data = dlpt.json.read(fPath)
+file_path = input("Enter a path to a JSON file with comments: ")
+data = dlpt.json.read(file_path)
 # alternatively, if file was created with `dlpt.json.writeJsonpickle()`, user can:
-data = dlpt.json.readJsonpickle(fPath)
+data = dlpt.json.read_jsonpickle(file_path)
 ```
 
 > How do I format time to string in one line?
@@ -103,20 +103,21 @@ data = dlpt.json.readJsonpickle(fPath)
 import dlpt
 
 # 2 days, 4 hours, 6 mins, 12 sec, 0.33 milliseconds
-sec = dlpt.time.timeToSeconds(h=52, m=6, s=12.033)
-hmsStr = dlpt.time.secToStr(durationSec, dlpt.time.TIME_FORMAT_HMS_STRING)
-print(hmsStr) # will print: '52 h 6 min 12.33 sec'
+sec = dlpt.time.time_to_seconds(h=52, m=6, s=12.033)
+hms_str = dlpt.time.sec_to_str(durationSec, dlpt.time.TIME_FORMAT_HMS_STRING)
+print(hms_str) # will print: '52 h 6 min 12.33 sec'
 ```
 
 > How do I dynamically import some module that is not on a `sys.path`?
 ```python
 import dlpt
 
-fPath = input("Enter a path to a python module that you wish to dynamically import: ")
-importer = dlpt.importer.ModuleImporter(fPath)
-print("Does module have an object with name 'myObject'? {importer.hasObject('myObject')}")
-module = importer.getModule()
+file_path = input("Enter a path to a python module that you wish to dynamically import: ")
+importer = dlpt.importer.ModuleImporter(file_path)
+print("Does module have an object with name 'myObject'? {importer.has_object('myObject')}")
+
 # call a function of this module:
+module = importer.get_module()
 module.someFunction()
 ```
 
