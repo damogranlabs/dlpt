@@ -11,12 +11,8 @@
         "python.analysis.typeCheckingMode": "basic",
         "python.analysis.diagnosticMode": "openFilesOnly",
         // autoformat
-        "python.formatting.autopep8Args": [ //autoformatting: https://pypi.org/project/autopep8/#more-advanced-usage
-            "--max-line-length",
-            "120",
-            "--experimental",
-            "--ignore",
-            "E402,W690" // do not sort imports, do not fix various deprecated code
+        "python.formatting.blackArgs": [
+            "--line-length=120",
         ],
         // pytest
         "python.testing.unittestEnabled": false,

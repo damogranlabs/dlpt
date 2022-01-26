@@ -1,7 +1,7 @@
 pytest
 pytest-cov
 
-autopep8
+black
 pylint
 
 sphinx
