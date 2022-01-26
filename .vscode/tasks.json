@@ -6,7 +6,7 @@
             "type": "process",
             "command": "${config:python.defaultInterpreterPath}",
             "args": [
-                "${workspaceFolder}\\dlpt\\printFileCallables.py",
+                "${workspaceFolder}\\dlpt\\print_file_callables.py",
                 "${file}"
             ],
             "problemMatcher": [],
@@ -43,7 +43,8 @@
                 "twine",
                 "upload",
                 "dist/*",
-                "-u", "schperplata"
+                "-u",
+                "schperplata"
             ],
             "problemMatcher": [],
             "presentation": {

@@ -15,7 +15,7 @@
             "name": "Print File Callables",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}\\dlpt\\printFileCallables.py",
+            "program": "${workspaceFolder}\\dlpt\\print_file_callables.py",
             "args": [
                 "${file}"
             ],
