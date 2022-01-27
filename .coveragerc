@@ -2,8 +2,7 @@
 [run]
 source = dlpt
 omit=
-    dlpt/tfix.py
-    dlpt/printFileCallables.py
+    dlpt/print_file_callables.py
     tests/
 
 
