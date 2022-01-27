@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="dlpt",
-    version="2.0.0",
+    version="2.1.0",
     author="Damogran Labs",
     author_email="info@damogranlabs.com",
     description="Damogran Labs Python Tools",
@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/damogranlabs/dlpt",
     project_urls={
-            "Documentation": "https://dlpt.readthedocs.io/en/latest/",
+        "Documentation": "https://dlpt.readthedocs.io/en/latest/",
     },
     packages=["dlpt"],
     classifiers=[
@@ -22,5 +22,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
-    install_requires=["jsonpickle", "psutil"]
+    install_requires=["jsonpickle", "psutil"],
 )
