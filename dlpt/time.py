@@ -33,9 +33,7 @@ def timestamp_to_datetime(timestamp: float) -> datetime.datetime:
     Returns:
         Datetime object of a timestamp.
     """
-    dt = datetime.datetime.fromtimestamp(timestamp)
-
-    return dt
+    return datetime.datetime.fromtimestamp(timestamp)
 
 
 def timestamp_to_str(timestamp: float, fmt: str = TIME_FORMAT, msec_digits: int = 0) -> str:
@@ -51,9 +49,8 @@ def timestamp_to_str(timestamp: float, fmt: str = TIME_FORMAT, msec_digits: int 
         Timestamp as a string, based on a given format.
     """
     dt = timestamp_to_datetime(timestamp)
-    dtm_str = _format_msec(dt, fmt, msec_digits)
 
-    return dtm_str
+    return _format_msec(dt, fmt, msec_digits)
 
 
 def sec_to_str(seconds: float, fmt: str = TIME_FORMAT_HMS_STRING, hide_zeroes: bool = True) -> str:
@@ -137,9 +134,7 @@ def datetime_to_str(dt: datetime.datetime, fmt: str = TIME_FORMAT) -> str:
     Returns:
         String representation of `datetime.datetime` object.
     """
-    dt_str = datetime.datetime.strftime(dt, fmt)
-
-    return dt_str
+    return datetime.datetime.strftime(dt, fmt)
 
 
 def timedelta_to_str(td: datetime.timedelta, fmt: str = TIME_FORMAT_MS_STRING) -> str:
@@ -156,9 +151,7 @@ def timedelta_to_str(td: datetime.timedelta, fmt: str = TIME_FORMAT_MS_STRING) -
     Returns:
         String representation of `datetime.timedelta` object.
     """
-    td_str = sec_to_str(td.total_seconds(), fmt, False)
-
-    return td_str
+    return sec_to_str(td.total_seconds(), fmt, False)
 
 
 def get_current_datetime_str(fmt: str = DATE_TIME_FORMAT, msec_digits: int = 0) -> str:
@@ -172,9 +165,8 @@ def get_current_datetime_str(fmt: str = DATE_TIME_FORMAT, msec_digits: int = 0) 
         Formatted current date and time string.
     """
     dt = datetime.datetime.now()
-    dtm_str = _format_msec(dt, fmt, msec_digits)
 
-    return dtm_str
+    return _format_msec(dt, fmt, msec_digits)
 
 
 def _format_msec(dt: datetime.datetime, fmt: str, msec_digits: int) -> str:

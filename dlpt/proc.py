@@ -88,9 +88,8 @@ def get_name(pid: T_STR_INT) -> str:
         Process name as string.
     """
     proc = psutil.Process(int(pid))
-    name = proc.name()
 
-    return name
+    return proc.name()
 
 
 def get_executable(pid: T_STR_INT) -> str:

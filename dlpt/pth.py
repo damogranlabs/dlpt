@@ -329,9 +329,7 @@ def with_fw_slashes(path: str) -> str:
     """
     _validate_path(path)
 
-    path = path.replace("\\", "/")
-
-    return path
+    return path.replace("\\", "/")
 
 
 def with_double_bw_slashes(path: str) -> str:
@@ -345,9 +343,7 @@ def with_double_bw_slashes(path: str) -> str:
     """
     path = _validate_path(path)
 
-    path = path.replace("\\", "\\\\")
-
-    return path
+    return path.replace("\\", "\\\\")
 
 
 def get_name(file_path: str, with_ext: bool = True) -> str:
@@ -388,9 +384,7 @@ def get_ext(file_path: str) -> str:
     """
     _validate_path(file_path)
 
-    _, ext = os.path.splitext(file_path)
-
-    return ext
+    return os.path.splitext(file_path)[1]
 
 
 def get_files_in_dir(
@@ -534,7 +528,6 @@ def open_with_default_app(file_path: str):  # pragma: no cover
     file_path = check(file_path)
     file_path = f'"{file_path}"'
 
-    args = []
     if os.name == "nt":
         # Windows
         os.startfile(file_path)

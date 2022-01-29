@@ -38,9 +38,7 @@ def get_int_from_str(number: str) -> int:
     Args:
         number_str: int/float string representation of a given number.
     """
-    num = int(get_float_from_str(number))
-
-    return num
+    return int(get_float_from_str(number))
 
 
 def get_float_from_str(number: str) -> float:
@@ -81,9 +79,7 @@ def get_list_intersection(l1: List[Any], l2: List[Any]) -> List[Any]:
         l1: first list to compare.
         l2: second list to compare.
     """
-    intersection = list(set(l1) & set(l2))
-
-    return intersection
+    return list(set(l1) & set(l2))
 
 
 def get_list_str(data: List[Any], separator: str = ", ") -> str:
@@ -96,9 +92,8 @@ def get_list_str(data: List[Any], separator: str = ", ") -> str:
     data_str: List[str] = []
     for item in data:
         data_str.append(str(item))
-    readable_str = separator.join(data_str)
 
-    return readable_str
+    return separator.join(data_str)
 
 
 def get_list_difference(l1: List[Any], l2: List[Any]) -> List[Any]:
@@ -112,9 +107,7 @@ def get_list_difference(l1: List[Any], l2: List[Any]) -> List[Any]:
         l1: first list to compare.
         l2: second list to compare.
     """
-    difference = list(set(l1).symmetric_difference(set(l2)))
-
-    return difference
+    return list(set(l1).symmetric_difference(set(l2)))
 
 
 def remove_list_duplicates(data: List[Any]) -> List[Any]:
@@ -126,9 +119,7 @@ def remove_list_duplicates(data: List[Any]) -> List[Any]:
     Args:
         data: list with possibly duplicated items.
     """
-    data = list(set(data))
-
-    return data
+    return list(set(data))
 
 
 def search_str_in_lines(str_to_search: str, lines: List[str], exact_match: bool = False) -> Optional[int]:
@@ -185,9 +176,8 @@ def are_dict_keys_equal(d1: Dict[Any, Any], d2: Dict[Any, Any]) -> bool:
     if len(d1) == len(d2):
         d1Keys = list(d1.keys())
         d2Keys = list(d2.keys())
-        haveSameKeys = are_list_values_equal(d1Keys, d2Keys)
 
-        return haveSameKeys
+        return are_list_values_equal(d1Keys, d2Keys)
     else:
         return False
 
@@ -206,9 +196,8 @@ def are_dict_values_equal(d1: Dict[Any, Any], d2: Dict[Any, Any]) -> bool:
     """
     d1Values = list(d1.values())
     d2Values = list(d2.values())
-    haveSameValues = are_list_values_equal(d1Values, d2Values)
 
-    return haveSameValues
+    return are_list_values_equal(d1Values, d2Values)
 
 
 def map_dict_to_class(obj: object, data: Dict[str, Any]) -> object:
