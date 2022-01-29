@@ -32,18 +32,18 @@ def my_logger(request) -> Iterator[logging.Logger]:
         logging.Logger.manager.loggerDict.pop(logger.name)
     except Exception as err:
         pass
-    log._defaultLogger = None
+    log._default_logger = None
 
 
 def test_create_logger():
-    logger = log.create_logger(setAsDefault=False)
+    logger = log.create_logger(set_as_default=False)
     assert logger.name == "root"
 
     logger = log.create_logger()  # set as default
     try:
         assert logger.name == "root"
-        assert log._defaultLogger is not None
-        assert log._defaultLogger.name == logger.name
+        assert log._default_logger is not None
+        assert log._default_logger.name == logger.name
 
         with pytest.raises(Exception):
             # can't set two loggers as a default
@@ -51,7 +51,7 @@ def test_create_logger():
     except Exception as err:
         raise
     finally:
-        log._defaultLogger = None
+        log._default_logger = None
 
 
 def test_determine_logger(my_logger: logging.Logger):
@@ -69,7 +69,7 @@ def test_determine_logger(my_logger: logging.Logger):
     assert log.get_default_logger() == my_logger
     log.set_default_logger(logging.root)
     assert log.get_default_logger() == logging.root
-    log._defaultLogger = None
+    log._default_logger = None
     with pytest.raises(Exception):
         # no default logger
         log._determine_logger()
@@ -92,51 +92,51 @@ def test_add_console_hdlr(my_logger: logging.Logger):
 
 def test_add_file_hdlr(my_logger: logging.Logger, tmp_path):
     assert len(my_logger.handlers) == 0
-    hdlr, fPath = log.add_file_hdlr(my_logger, FILE_NAME, tmp_path, CUSTOM_FMT, logging.WARNING)
-    assert os.path.join(tmp_path, FILE_NAME) == fPath
+    hdlr, file_path = log.add_file_hdlr(my_logger, FILE_NAME, tmp_path, CUSTOM_FMT, logging.WARNING)
+    assert os.path.join(tmp_path, FILE_NAME) == file_path
     assert len(my_logger.handlers) == 1
     assert isinstance(hdlr, logging.FileHandler)
-    assert os.path.exists(fPath)  # log file path is not delayed
+    assert os.path.exists(file_path)  # log file path is not delayed
 
     my_logger.info(LOG_MSG_NOT_LOGGED)
-    with open(fPath, "r") as f:
+    with open(file_path, "r") as f:
         assert len(f.readlines()) == 0
 
     my_logger.warning(LOG_MSG_OK)
-    with open(fPath, "r") as f:
+    with open(file_path, "r") as f:
         lines = f.readlines()
         assert len(lines) == 1
         _check_format(lines[0])
 
-    fPaths = log.get_log_file_paths(my_logger)
-    assert len(fPaths) == 1
-    assert fPaths[0] == fPath
+    file_paths = log.get_log_file_paths(my_logger)
+    assert len(file_paths) == 1
+    assert file_paths[0] == file_path
 
 
 def test_add_file_hdlr_log_file(my_logger: logging.Logger, tmp_path):
-    hdlr, fPath = log.add_file_hdlr(my_logger, FILE_NAME, tmp_path)
+    hdlr, file_path = log.add_file_hdlr(my_logger, FILE_NAME, tmp_path)
     my_logger.warning("original line")
-    assert os.path.exists(fPath)
+    assert os.path.exists(file_path)
 
     # try to move log file, should fail
-    newDir = os.path.join(tmp_path, "newDir")
-    dlpt.pth.create_dir(newDir)
+    new_dir = os.path.join(tmp_path, "newDir")
+    dlpt.pth.create_dir(new_dir)
 
-    with log.ReleaseFileLock(my_logger, fPath):
+    with log.ReleaseFileLock(my_logger, file_path):
         # test move and copy operations
-        dlpt.pth.copy_file(fPath, newDir, "newFileName.txt")
-        newPath = shutil.move(fPath, newDir)
-    assert os.path.exists(newPath)
+        dlpt.pth.copy_file(file_path, new_dir, "newFileName.txt")
+        new_path = shutil.move(file_path, new_dir)
+    assert os.path.exists(new_path)
 
     my_logger.warning("new line after copy")
-    assert os.path.exists(fPath)
+    assert os.path.exists(file_path)
 
-    with open(fPath, "r") as f:
+    with open(file_path, "r") as f:
         # original file, last log call
         lines = f.readlines()
         assert len(lines) == 1
         assert "new line after copy" in lines[0]
-    with open(newPath, "r") as f:
+    with open(new_path, "r") as f:
         # moved file, first log call
         lines = f.readlines()
         assert len(lines) == 1
@@ -149,48 +149,48 @@ def test_add_rotating_file_hdlr(my_logger: logging.Logger, tmp_path):
     ROT_LOG_MSG = "write write write, writety write write write"
 
     assert len(my_logger.handlers) == 0
-    hdlr, fPath = log.add_rotating_file_hdlr(
+    hdlr, file_path = log.add_rotating_file_hdlr(
         my_logger, FILE_NAME, tmp_path, CUSTOM_FMT, logging.WARNING, ROT_LOG_FILE_SIZE_KB, 3
     )
-    assert os.path.join(tmp_path, FILE_NAME) == fPath
+    assert os.path.join(tmp_path, FILE_NAME) == file_path
     assert len(my_logger.handlers) == 1
     assert isinstance(hdlr, logging.handlers.RotatingFileHandler)
-    assert os.path.exists(fPath)  # log file path is not delayed
+    assert os.path.exists(file_path)  # log file path is not delayed
 
     my_logger.info(LOG_MSG_NOT_LOGGED)
-    with open(fPath, "r") as f:
+    with open(file_path, "r") as f:
         assert len(f.readlines()) == 0
 
     my_logger.warning(LOG_MSG_OK)
-    with open(fPath, "r") as f:
+    with open(file_path, "r") as f:
         lines = f.readlines()
         assert len(lines) == 1
         _check_format(lines[0])
 
     # check maz size and backup file creation
-    sizeBytes = int(ROT_LOG_FILE_SIZE_KB * 1e3)
-    logStringSize = len(ROT_LOG_MSG) + 40  # 40 = msg header size
+    size_bytes = int(ROT_LOG_FILE_SIZE_KB * 1e3)
+    log_str_size = len(ROT_LOG_MSG) + 40  # 40 = msg header size
     # primary and two old log files should be present
-    numOfWrites = int(sizeBytes / logStringSize * ROT_LOG_FILES_COUNT)
-    for _ in range(numOfWrites):
+    num_of_writes = int(size_bytes / log_str_size * ROT_LOG_FILES_COUNT)
+    for _ in range(num_of_writes):
         my_logger.warning(ROT_LOG_MSG)
 
-    logFiles = dlpt.pth.get_files_in_dir(tmp_path)
-    assert len(logFiles) == 3
+    log_files = dlpt.pth.get_files_in_dir(tmp_path)
+    assert len(log_files) == 3
 
-    assert fPath in logFiles
-    assert f"{fPath}.1" in logFiles
-    assert f"{fPath}.2" in logFiles
+    assert file_path in log_files
+    assert f"{file_path}.1" in log_files
+    assert f"{file_path}.2" in log_files
 
-    # fPath is current log file, not yet full
-    for path in [f"{fPath}.1", f"{fPath}.2"]:
+    # file_path is current log file, not yet full
+    for path in [f"{file_path}.1", f"{file_path}.2"]:
         size = os.path.getsize(path)
         assert size > ((ROT_LOG_FILE_SIZE_KB - 1) * 1e3)
         assert size < ((ROT_LOG_FILE_SIZE_KB + 1) * 1e3)
 
-    fPaths = log.get_rotating_log_file_paths(my_logger)
-    assert len(fPaths) == 1
-    assert fPaths[0] == fPath
+    file_paths = log.get_rotating_log_file_paths(my_logger)
+    assert len(file_paths) == 1
+    assert file_paths[0] == file_path
 
 
 def test_log_server_proc(my_logger: logging.Logger, tmp_path):
@@ -199,8 +199,8 @@ def test_log_server_proc(my_logger: logging.Logger, tmp_path):
     my_logger2 = log.create_logger("my_logger2", False)
     my_logger3 = log.create_logger("my_logger3", False)
 
-    fPath = os.path.join(tmp_path, FILE_NAME)
-    pid = log.create_log_server_proc(fPath)
+    file_path = os.path.join(tmp_path, FILE_NAME)
+    pid = log.create_log_server_proc(file_path)
     assert dlpt.proc.is_alive(pid)
 
     with pytest.raises(Exception):
@@ -208,9 +208,9 @@ def test_log_server_proc(my_logger: logging.Logger, tmp_path):
         log.log_server_shutdown_request(my_logger, pid)
 
     try:
-        endTime = time.time() + TIMEOUT_SEC
-        while time.time() < endTime:
-            if os.path.exists(fPath):
+        end_time = time.time() + TIMEOUT_SEC
+        while time.time() < end_time:
+            if os.path.exists(file_path):
                 break
         else:
             assert False, f"Logger server did not create a file " f"in {TIMEOUT_SEC} sec."
@@ -235,7 +235,7 @@ def test_log_server_proc(my_logger: logging.Logger, tmp_path):
 
         assert log.log_server_shutdown_request(my_logger, pid, 12) is True
         assert dlpt.proc.is_alive(pid) is False
-        with open(fPath, "r") as f:
+        with open(file_path, "r") as f:
             lines = f.readlines()
             assert len(lines) == 3, lines  # 2 msg + shutdown msg
             _check_server_format(lines[0], my_logger.name)
@@ -244,7 +244,7 @@ def test_log_server_proc(my_logger: logging.Logger, tmp_path):
     except Exception as err:
         raise
     finally:
-        dlpt.proc.kill_tree(pid, raiseException=False)
+        dlpt.proc.kill_tree(pid, raise_exception=False)
 
 
 def test_get_file_name(my_logger: logging.Logger):
@@ -262,14 +262,14 @@ def test_default_log_functions():
     with pytest.raises(Exception):
         log.debug("debug")  # no default logger set
 
-    nonDefaultLogger = log.create_logger("nonDefaultLogger", False)
-    nonDefaultHdlr = log.add_console_hdlr(nonDefaultLogger)
+    non_default_logger = log.create_logger("nonDefaultLogger", False)
+    non_default_hdlr = log.add_console_hdlr(non_default_logger)
     logger = log.create_logger("test_default_log_functions")
     hdlr = log.add_console_hdlr(logger)
 
     try:
         with mock.patch.object(logger, "_log") as func:
-            with mock.patch.object(nonDefaultLogger, "_log") as func2:
+            with mock.patch.object(non_default_logger, "_log") as func2:
                 log.debug("debug")
                 log.info("info")
                 log.warning("warning")
@@ -280,13 +280,13 @@ def test_default_log_functions():
     except Exception as err:
         raise
     finally:
-        logging.Logger.manager.loggerDict.pop(nonDefaultLogger.name)
+        logging.Logger.manager.loggerDict.pop(non_default_logger.name)
         logging.Logger.manager.loggerDict.pop(logger.name)
 
 
-def _check_format(logMsg: str):
+def _check_format(log_msg: str):
     # example: '2021-10-07 19:57:21,438.00438 WARNING: level-OK\n'
-    dateStr, timeStr, level, msg = logMsg.strip().split(" ")
+    dateStr, time_str, level, msg = log_msg.strip().split(" ")
     # example: 2021-10-07
     year, month, day = dateStr.split("-")
     assert int(year) == datetime.date.today().year
@@ -294,12 +294,12 @@ def _check_format(logMsg: str):
     assert int(day) == datetime.date.today().day
 
     # example: 19:38:47,412.00412
-    assert timeStr[2] == ":"
-    assert timeStr[5] == ":"
-    assert timeStr[8] == ","
-    assert timeStr[8] == ","
-    assert timeStr[12] == "."
-    assert len(timeStr) == 18
+    assert time_str[2] == ":"
+    assert time_str[5] == ":"
+    assert time_str[8] == ","
+    assert time_str[8] == ","
+    assert time_str[12] == "."
+    assert len(time_str) == 18
 
     # example: WARNING:
     assert level == "WARNING:"
@@ -308,20 +308,20 @@ def _check_format(logMsg: str):
     assert msg == LOG_MSG_OK
 
 
-def _check_server_format(logMsg: str, loggerName: str):
+def _check_server_format(log_msg: str, logger_name: str):
     # example: 'test_log_server_proc 21:34:59.151  WARNING: level-OK\n'
-    src, timeStr, _, level, msg = logMsg.strip().split(" ")
+    src, time_str, _, level, msg = log_msg.strip().split(" ")
     # example: WARNING:
     assert level == "WARNING:"
 
     # example: test_log_server_proc
-    assert src == loggerName
+    assert src == logger_name
 
     # example: 21:34:59.151
-    assert timeStr[2] == ":"
-    assert timeStr[5] == ":"
-    assert timeStr[8] == "."
-    assert len(timeStr) == 12
+    assert time_str[2] == ":"
+    assert time_str[5] == ":"
+    assert time_str[8] == "."
+    assert len(time_str) == 12
 
     # example: level OK
     assert msg == LOG_MSG_OK

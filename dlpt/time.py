@@ -20,7 +20,7 @@ TIME_FORMAT_MS_STRING = "%M min %S sec"
 DATE_TIME_FORMAT = f"{DATE_FORMAT}_{TIME_FORMAT}"
 DATE_TIME_FORMAT_FILE_NAME = f"{DATE_FORMAT}_%H-%M-%S"
 
-_lastTimedFunctionTimeSec: float = 0
+_last_measured_time_sec: float = 0
 
 
 def timestamp_to_datetime(timestamp: float) -> datetime.datetime:
@@ -38,25 +38,25 @@ def timestamp_to_datetime(timestamp: float) -> datetime.datetime:
     return dt
 
 
-def timestamp_to_str(timestamp: float, fmt: str = TIME_FORMAT, msecDigits: int = 0) -> str:
+def timestamp_to_str(timestamp: float, fmt: str = TIME_FORMAT, msec_digits: int = 0) -> str:
     """Return a string of converted timestamp (as returned by `time.time()`) by
     following the given format.
 
     Args:
         timestamp: timestamp as a number since the epoch (time.time()).
         fmt: output string format.
-        msecDigits: check _format_msec()
+        msec_digits: check _format_msec()
 
     Returns:
         Timestamp as a string, based on a given format.
     """
     dt = timestamp_to_datetime(timestamp)
-    dtmStr = _format_msec(dt, fmt, msecDigits)
+    dtm_str = _format_msec(dt, fmt, msec_digits)
 
-    return dtmStr
+    return dtm_str
 
 
-def sec_to_str(seconds: float, fmt: str = TIME_FORMAT_HMS_STRING, hideZeroes: bool = True) -> str:
+def sec_to_str(seconds: float, fmt: str = TIME_FORMAT_HMS_STRING, hide_zeroes: bool = True) -> str:
     """Return a string of a converted time (in seconds) by following the given
     format.
 
@@ -70,18 +70,18 @@ def sec_to_str(seconds: float, fmt: str = TIME_FORMAT_HMS_STRING, hideZeroes: bo
         seconds: time (duration) as a number of seconds.
         fmt: output string format. This function does not support setting float
             number of digits for seconds. Output format can be changed if
-            ``hideZeroes`` arg is True.
-        hideZeroes: if True, leading parts (hours, minutes) can be
+            ``hide_zeroes`` arg is True.
+        hide_zeroes: if True, leading parts (hours, minutes) can be
             omitted (if zero), Otherwise, fmt is strictly respected. Note: this
             is applicable only in the most common use cases, where
             time is displayed in order <hours> <minutes> <seconds>.
-            If ``hideZeroes`` is True, leading zero-value parts are stripped to
+            If ``hide_zeroes`` is True, leading zero-value parts are stripped to
             the first next time part: hours to minutes, minutes to seconds.
             361.5 sec  = 1 h 0 min 1.50 sec
             360 sec  = 1 h 0 min 0.00 sec
             359 sec  = 59 min 0.00 sec
             59 sec  = 59.00 sec
-            Other special time formaters can be used by setting ``hideZeroes``
+            Other special time formaters can be used by setting ``hide_zeroes``
             to False.
 
     Returns:
@@ -90,20 +90,20 @@ def sec_to_str(seconds: float, fmt: str = TIME_FORMAT_HMS_STRING, hideZeroes: bo
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
 
-    if hideZeroes:
+    if hide_zeroes:
         if h == 0:
-            minPos = fmt.find("%M")
-            if minPos != -1:
-                fmt = fmt[minPos:]
+            min_pos = fmt.find("%M")
+            if min_pos != -1:
+                fmt = fmt[min_pos:]
 
             if m == 0:
-                secPos = fmt.find("%S")
-                if secPos != -1:
-                    fmt = fmt[secPos:]
+                sec_pos = fmt.find("%S")
+                if sec_pos != -1:
+                    fmt = fmt[sec_pos:]
 
-    timeStr = fmt.replace("%H", str(int(h))).replace("%M", str(int(m))).replace("%S", dlpt.utils.float_to_str(s))
+    time_str = fmt.replace("%H", str(int(h))).replace("%M", str(int(m))).replace("%S", dlpt.utils.float_to_str(s))
 
-    return timeStr
+    return time_str
 
 
 def time_to_seconds(d: int = 0, h: int = 0, m: int = 0, s: float = 0.0) -> float:
@@ -137,9 +137,9 @@ def datetime_to_str(dt: datetime.datetime, fmt: str = TIME_FORMAT) -> str:
     Returns:
         String representation of `datetime.datetime` object.
     """
-    dtStr = datetime.datetime.strftime(dt, fmt)
+    dt_str = datetime.datetime.strftime(dt, fmt)
 
-    return dtStr
+    return dt_str
 
 
 def timedelta_to_str(td: datetime.timedelta, fmt: str = TIME_FORMAT_MS_STRING) -> str:
@@ -156,52 +156,52 @@ def timedelta_to_str(td: datetime.timedelta, fmt: str = TIME_FORMAT_MS_STRING) -
     Returns:
         String representation of `datetime.timedelta` object.
     """
-    tdStr = sec_to_str(td.total_seconds(), fmt, False)
+    td_str = sec_to_str(td.total_seconds(), fmt, False)
 
-    return tdStr
+    return td_str
 
 
-def get_current_datetime_str(fmt: str = DATE_TIME_FORMAT, msecDigits: int = 0) -> str:
+def get_current_datetime_str(fmt: str = DATE_TIME_FORMAT, msec_digits: int = 0) -> str:
     """Return a string of a current timestamp by following the given format.
 
     Args:
         fmt: output string format.
-        msecDigits: check :func:`_format_msec()`.
+        msec_digits: check :func:`_format_msec()`.
 
     Returns:
         Formatted current date and time string.
     """
     dt = datetime.datetime.now()
-    dtmStr = _format_msec(dt, fmt, msecDigits)
+    dtm_str = _format_msec(dt, fmt, msec_digits)
 
-    return dtmStr
+    return dtm_str
 
 
-def _format_msec(dt: datetime.datetime, fmt: str, msecDigits: int) -> str:
+def _format_msec(dt: datetime.datetime, fmt: str, msec_digits: int) -> str:
     """Return a string of a formated date/time/msec.
 
     Args:
         dt: parsed datetime object as get with `datetime.datetime.now()` or
             `datetime.datetime.fromtimestamp(timestamp)`
         fmt: date/time output formatter
-        msecDigits: number of millisecond digits to display, in
+        msec_digits: number of millisecond digits to display, in
             a range of 0 - 3. Note: Only applicable to `TIME_FORMAT` or a custom
-            formatter that ends with '%S'. Note: msecDigits only limit max
+            formatter that ends with '%S'. Note: msec_digits only limit max
             number of displayed digits. It does not guarantee that output string
             will actually have this number of millisecond digits.
     """
-    dtStr = dt.strftime(fmt)
-    if msecDigits > 0:
+    dt_str = dt.strftime(fmt)
+    if msec_digits > 0:
         if fmt.endswith("%S"):
-            msecStr = str(int(dt.microsecond / 1000))[:msecDigits]
-            if msecStr != "":
-                dtStr = f"{dtStr}.{msecStr}"
+            msec_str = str(int(dt.microsecond / 1000))[:msec_digits]
+            if msec_str != "":
+                dt_str = f"{dt_str}.{msec_str}"
         else:
-            errorMsg = "Millisecond formatting supported only for formatters "
-            errorMsg += f"that ends with '%S': '{fmt}'"
-            raise Exception(errorMsg)
+            err_msg = "Millisecond formatting supported only for formatters "
+            err_msg += f"that ends with '%S': '{fmt}'"
+            raise Exception(err_msg)
 
-    return dtStr
+    return dt_str
 
 
 T_EXEC_TIME = TypeVar("T_EXEC_TIME")
@@ -217,22 +217,22 @@ def print_exec_time(func: Callable[..., T_EXEC_TIME]) -> Callable[..., T_EXEC_TI
 
     Example:
         >>> @dlpt.time.print_exec_time
-            def myFunction(<parameters>):
+            def my_function(<parameters>):
                 pass
-        >>> myFunction(args)
+        >>> my_function(args)
         >>> dlpt.time.get_last_measured_time_sec()
         42.6
     """
 
     def _timed(*args, **kwargs) -> Any:
-        startTime = time.perf_counter()
+        start_time = time.perf_counter()
         result = func(*args, **kwargs)
-        endTime = time.perf_counter()
+        end_time = time.perf_counter()
 
-        global _lastTimedFunctionTimeSec
-        _lastTimedFunctionTimeSec = round(endTime - startTime, 3)
+        global _last_measured_time_sec
+        _last_measured_time_sec = round(end_time - start_time, 3)
 
-        msg = f"'{func.__name__}' execution time: {_lastTimedFunctionTimeSec} sec"
+        msg = f"'{func.__name__}' execution time: {_last_measured_time_sec} sec"
         print(msg)
 
         return result
@@ -249,8 +249,8 @@ def func_stopwatch(func: Callable[..., T_EXEC_TIME]) -> Callable[..., T_EXEC_TIM
         func: function 'pointer' to track execution time.
 
     Example:
-        >>> myFunction = dlpt.time.func_stopwatch(<myFunctionName>)
-        >>> myFunction(<parameters>)
+        >>> my_function = dlpt.time.func_stopwatch(<my_functionName>)
+        >>> my_function(<parameters>)
         >>> dlpt.time.get_last_measured_time_sec()
         42.6
 
@@ -259,12 +259,12 @@ def func_stopwatch(func: Callable[..., T_EXEC_TIME]) -> Callable[..., T_EXEC_TIM
     """
 
     def _timed(*args, **kw):
-        startTime = time.perf_counter()
+        start_time = time.perf_counter()
         result = func(*args, **kw)
-        endTime = time.perf_counter()
+        end_time = time.perf_counter()
 
-        global _lastTimedFunctionTimeSec
-        _lastTimedFunctionTimeSec = round(endTime - startTime, 3)
+        global _last_measured_time_sec
+        _last_measured_time_sec = round(end_time - start_time, 3)
 
         return result
 
@@ -281,4 +281,4 @@ def get_last_measured_time_sec() -> float:
     Returns:
         Last timed function or None (if no function was timed before).
     """
-    return _lastTimedFunctionTimeSec
+    return _last_measured_time_sec

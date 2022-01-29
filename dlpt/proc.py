@@ -33,22 +33,22 @@ class SubprocError(subprocess.SubprocessError):
         self.stderr = stderr
 
     def __str__(self) -> str:  # pragma: no cover
-        errorMsg = "Subprocess throw 'subprocess.CalledProcessError' exception."
-        errorMsg += f"\n\tCommand: {self.cmd}"
-        errorMsg += f"\n\tReturn code: {self.returncode}"
+        err_msg = "Subprocess throw 'subprocess.CalledProcessError' exception."
+        err_msg += f"\n\tCommand: {self.cmd}"
+        err_msg += f"\n\tReturn code: {self.returncode}"
 
         # determine signal if possible
         if self.returncode and (self.returncode < 0):
             try:
-                errorMsg += f" (signal: {signal.Signals(-self.returncode)})"
+                err_msg += f" (signal: {signal.Signals(-self.returncode)})"
             except ValueError:
-                errorMsg += f" (unknown signal: {-self.returncode})"
+                err_msg += f" (unknown signal: {-self.returncode})"
         # if self.stdout:
-        #    errorMsg += f"\n\tStdout: {self.stdout.strip()}" # see note above.
+        #    err_msg += f"\n\tStdout: {self.stdout.strip()}" # see note above.
         if self.stderr:
-            errorMsg += f"\n\tStderr: {self.stderr.strip()}"
+            err_msg += f"\n\tStderr: {self.stderr.strip()}"
 
-        return errorMsg
+        return err_msg
 
 
 class SubprocTimeoutError(subprocess.SubprocessError):
@@ -59,20 +59,20 @@ class SubprocTimeoutError(subprocess.SubprocessError):
         since processes stdout can be long and exception can be unreadable.
     """
 
-    def __init__(self, cmd: str, timeoutSec: float, stdout: Optional[str] = None, stderr: Optional[str] = None):
+    def __init__(self, cmd: str, timeout_sec: float, stdout: Optional[str] = None, stderr: Optional[str] = None):
         self.cmd = cmd
-        self.timeoutSec = timeoutSec
+        self.timeout_sec = timeout_sec
         self.stdout = stdout
         self.stderr = stderr
 
     def __str__(self) -> str:  # pragma: no cover
-        errorMsg = f"Subprocess throw 'subprocess.TimeoutExpired' exception."
-        errorMsg += f"\n\tCommand: {self.cmd}"
-        errorMsg += f"\n\tTimeout: {self.timeoutSec} sec"
+        err_msg = f"Subprocess throw 'subprocess.TimeoutExpired' exception."
+        err_msg += f"\n\tCommand: {self.cmd}"
+        err_msg += f"\n\tTimeout: {self.timeout_sec} sec"
         if self.stderr:
-            errorMsg += f"\n\tStderr: {self.stderr.strip()}"
+            err_msg += f"\n\tStderr: {self.stderr.strip()}"
 
-        return errorMsg
+        return err_msg
 
 
 def get_name(pid: T_STR_INT) -> str:
@@ -107,9 +107,8 @@ def get_executable(pid: T_STR_INT) -> str:
 
     """
     proc = psutil.Process(int(pid))
-    executablePath = os.path.normpath(proc.exe())
 
-    return executablePath
+    return os.path.normpath(proc.exe())
 
 
 def get_cmd_args(pid: T_STR_INT) -> List[str]:
@@ -126,10 +125,10 @@ def get_cmd_args(pid: T_STR_INT) -> List[str]:
         A list of process command line spawn arguments.
     """
     proc = psutil.Process(int(pid))
-    cmdline = proc.cmdline()
-    cmdline[0] = proc.exe()
+    cmd_line = proc.cmdline()
+    cmd_line[0] = proc.exe()
 
-    return cmdline
+    return cmd_line
 
 
 def is_alive(pid: Optional[T_STR_INT]) -> bool:
@@ -143,9 +142,9 @@ def is_alive(pid: Optional[T_STR_INT]) -> bool:
         True if given PID exists and is running, False otherwise.
     """
     if pid is None:
-        errorMsg = f"Unable to check PID - given 'pid' argument is None "
-        errorMsg += f" (expecting string or int)."
-        raise ValueError(errorMsg)
+        err_msg = f"Unable to check PID - given 'pid' argument is None "
+        err_msg += f" (expecting string or int)."
+        raise ValueError(err_msg)
 
     try:
         return psutil.Process(int(pid)).is_running()
@@ -166,77 +165,77 @@ def get_childs(pid: T_STR_INT) -> List[int]:
     Return:
         A list of process child processes PIDs.
     """
-    childProcesses = []
+    child_processes = []
 
     currentProcess = psutil.Process(int(pid))
-    childProcs = currentProcess.children(recursive=True)
-    for childProc in childProcs:
-        childProcesses.append(childProc.pid)
+    child_procs = currentProcess.children(recursive=True)
+    for childProc in child_procs:
+        child_processes.append(childProc.pid)
 
-    return childProcesses
+    return child_processes
 
 
-def kill(pid: T_STR_INT, raiseException: bool = True, timeoutSec: Optional[int] = 3) -> bool:
+def kill(pid: T_STR_INT, raise_exception: bool = True, timeout_sec: Optional[int] = 3) -> bool:
     """Kill process with a given PID.
 
     Args:
         pid: PID number.
-        raiseException: if True, exception is raised if process wasn't
+        raise_exception: if True, exception is raised if process wasn't
             successfully killed. Otherwise return False.
-        timeoutSec: wait for specified number of seconds for
+        timeout_sec: wait for specified number of seconds for
             a process to be killed. If None, return immediately.
 
     Return:
         True on successfully terminated process, False otherwise (or exception,
-        based on ``raiseException`` input argument).
+        based on ``raise_exception`` input argument).
     """
     try:
         proc = psutil.Process(int(pid))
         proc.kill()
-        proc.wait(timeoutSec)
+        proc.wait(timeout_sec)
 
         return True
 
     except Exception as err:  # pragma: no cover
-        if raiseException:
-            errorMsg = "Unexpected exception while killing process with PID: "
-            errorMsg += f"{pid}:\n{err}"
-            raise Exception(errorMsg) from err
+        if raise_exception:
+            err_msg = "Unexpected exception while killing process with PID: "
+            err_msg += f"{pid}:\n{err}"
+            raise Exception(err_msg) from err
         else:
             return False
 
 
-def kill_childs(pid: T_STR_INT, raiseException: bool = True) -> List[int]:
+def kill_childs(pid: T_STR_INT, raise_exception: bool = True) -> List[int]:
     """Kill all child processes of a process with a given PID.
 
     Args:
         pid: PID number, string or integer. Raise Exception if None.
-        raiseException: if True, exception is raised if any of child
+        raise_exception: if True, exception is raised if any of child
             processes can't be killed.
 
     Return:
         A list of killed processes.
     """
-    killedProcs: List[int] = []
+    killed_procs: List[int] = []
 
     try:
-        childPids = get_childs(pid)
+        child_pids = get_childs(pid)
     except Exception as err:  # pragma: no cover
-        if raiseException:
-            errorMsg = "Unexpected exception while getting process with PID: "
-            errorMsg += f"{pid} childs:\n{err}"
-            raise Exception(errorMsg) from err
+        if raise_exception:
+            err_msg = "Unexpected exception while getting process with PID: "
+            err_msg += f"{pid} childs:\n{err}"
+            raise Exception(err_msg) from err
         else:
             return []
     else:
-        for childPid in childPids:
-            kill(childPid, raiseException)
-            killedProcs.append(childPid)
+        for child_pid in child_pids:
+            kill(child_pid, raise_exception)
+            killed_procs.append(child_pid)
 
-        return killedProcs
+        return killed_procs
 
 
-def kill_tree(pid: T_STR_INT, raiseException: bool = True) -> List[int]:
+def kill_tree(pid: T_STR_INT, raise_exception: bool = True) -> List[int]:
     """Kill parent process and all child processes.
 
     Note:
@@ -244,42 +243,42 @@ def kill_tree(pid: T_STR_INT, raiseException: bool = True) -> List[int]:
 
     Args:
         pid: PID number, string or integer. Raise Exception if None.
-        raiseException: if True, exception is raised if any of processes
+        raise_exception: if True, exception is raised if any of processes
             can't be killed. Otherwise, False is returned.
 
     Return:
         A list of killed processes.
     """
-    killedProcs = kill_childs(pid, raiseException)  # child procs
-    kill(pid, raiseException)  # parent proc
-    killedProcs.append(int(pid))
+    killed_procs = kill_childs(pid, raise_exception)  # child procs
+    kill(pid, raise_exception)  # parent proc
+    killed_procs.append(int(pid))
 
-    return killedProcs
+    return killed_procs
 
 
-def kill_tree_multiple(pids: T_PROC_ARGS, raiseException: bool = True) -> List[int]:
+def kill_tree_multiple(pids: T_PROC_ARGS, raise_exception: bool = True) -> List[int]:
     """Iterate over pids and perform 'kill_tree()'.
 
     Args:
         pids: a list of PIDs - string or integer. Raise Exception if None.
-        raiseException: if True, exception is raised if any of processes
+        raise_exception: if True, exception is raised if any of processes
             can't be killed.
 
     Return:
         A list of killed processes.
     """
-    killedProcs = []
-    for parentPid in pids:
-        killedProcs.extend(kill_tree(parentPid, raiseException))
+    killed_procs = []
+    for parent_pid in pids:
+        killed_procs.extend(kill_tree(parent_pid, raise_exception))
 
-    return killedProcs
+    return killed_procs
 
 
-def get_alive(nameFilter: str) -> List[int]:
+def get_alive(name_filter: str) -> List[int]:
     """Return a list of currently alive process PIDs.
 
     Args:
-        nameFilter: filter return list by finding ``nameFilter``
+        name_filter: filter return list by finding ``name_filter``
             in a process name (lower case string is compared).
 
     Example:
@@ -289,10 +288,10 @@ def get_alive(nameFilter: str) -> List[int]:
     Return:
         A list of currently alive process PIDs.
     """
-    nameFilter = nameFilter.lower()
+    name_filter = name_filter.lower()
     pids = []
     for proc in psutil.process_iter(attrs=["name", "pid"]):
-        if proc.name().lower() == nameFilter:
+        if proc.name().lower() == name_filter:
             pids.append(proc.pid)
 
     return pids
@@ -328,30 +327,30 @@ def spawn_non_blocking_subproc(args: T_PROC_ARGS) -> int:
             # 0 - standard process success code
             return proc.pid
         else:  # pragma: no cover
-            errorMsg = "Spawned non-blocking subprocess returned non-success "
-            errorMsg += f"exit code: {proc.returncode}."
-            errorMsg += f"\n\tCommand: {args}\n"
-            raise Exception(errorMsg)
+            err_msg = "Spawned non-blocking subprocess returned non-success "
+            err_msg += f"exit code: {proc.returncode}."
+            err_msg += f"\n\tCommand: {args}\n"
+            raise Exception(err_msg)
     except Exception as err:
-        errorMsg = f"Exception while spawning non-blocking subprocess.\n"
-        errorMsg += f"\tCommand: {args}\n"
-        errorMsg += f"\tError: {err}"
-        raise Exception(errorMsg) from err
+        err_msg = f"Exception while spawning non-blocking subprocess.\n"
+        err_msg += f"\tCommand: {args}\n"
+        err_msg += f"\tError: {err}"
+        raise Exception(err_msg) from err
 
 
 def spawn_subproc(
     args: T_PROC_ARGS,
-    checkReturnCode: bool = True,
+    check_return_code: bool = True,
     stdout: Optional[int] = subprocess.PIPE,
     stderr: Optional[int] = subprocess.PIPE,
     stdin: Optional[int] = subprocess.PIPE,
     encoding: str = "utf-8",
-    timeoutSec: Optional[float] = None,
-    **runArgs,
+    timeout_sec: Optional[float] = None,
+    **run_args,
 ) -> subprocess.CompletedProcess:
     """Spawn subprocess and return CompletedProcess or raise exception.
     By default, raise exception on timeout (if given) or if return code is not
-    zero. With `**runArgs`, allow setting all `subprocess.run()`_
+    zero. With `**run_args`, allow setting all `subprocess.run()`_
     arguments.
 
     Note:
@@ -365,7 +364,7 @@ def spawn_subproc(
             Can be shell commands, like ping. Note: all commandline arguments
             (specifically paths) must be properly encoded. For example, path
             containing tilde will throw error.
-        checkReturnCode: if True, return code is checked by run() function.
+        check_return_code: if True, return code is checked by run() function.
             In case it is not zero, `SubprocessReturncodeError()` is raised.
             If False, `CompletedProcess` is returned.
         stdout: STDOUT routing specifier.
@@ -374,17 +373,17 @@ def spawn_subproc(
             subprocess.PIPE, which should raise exception if spawned subprocess
             require user input.
         encoding: STDOUT/ERR string encoding
-        timeoutSec: timeout in seconds. If None, no timeout is implemented.
+        timeout_sec: timeout in seconds. If None, no timeout is implemented.
             Else, if timeout is reached, process is killed and TimeoutExpired
             exception re-raised.
-        runArgs: optional key-worded `subprocess.run()`_ arguments. Note: for the
+        run_args: optional key-worded `subprocess.run()`_ arguments. Note: for the
             common basic `subprocess.run()` args,
             see :func:`spawn_subprocess()`.
 
     Example:
         >>> args = ['python.exe', 'proc.py']
-        >>> envVars = {**os.environ, 'TEST_KEY': 'testenvvar'} # optional kwarg
-        >>> proc = dlpt.proc.spawn_subproc(args, timeoutSec: 3, env=envVars)
+        >>> env_vars = {**os.environ, 'TEST_KEY': 'testenvvar'} # optional kwarg
+        >>> proc = dlpt.proc.spawn_subproc(args, timeout_sec: 3, env=env_vars)
         >>> proc.pid
         1234
         >>> proc.returncode
@@ -407,9 +406,9 @@ def spawn_subproc(
             stderr=stderr,
             stdin=stdin,
             encoding=encoding,
-            timeout=timeoutSec,
-            check=checkReturnCode,
-            **runArgs,
+            timeout=timeout_sec,
+            check=check_return_code,
+            **run_args,
         )
         return proc
 
@@ -419,29 +418,29 @@ def spawn_subproc(
         ) from err
 
     except subprocess.CalledProcessError as err:
-        # called if checkReturnCode is set to True
+        # called if check_return_code is set to True
         raise SubprocError(
             err.cmd, err.returncode, _decode(err.stdout, encoding), _decode(err.stderr, encoding)
         ) from err
 
     except Exception as err:
-        errorMsg = f"Unexpected exception while spawning subprocess:"
-        errorMsg += f"\n\tCommand: {args}"
+        err_msg = f"Unexpected exception while spawning subprocess:"
+        err_msg += f"\n\tCommand: {args}"
         if proc:  # pragma: no cover
             if proc.stdout:
-                errorMsg += f"\n\tStdout: {_decode(proc.stdout, encoding),}"
+                err_msg += f"\n\tStdout: {_decode(proc.stdout, encoding),}"
             if proc.stderr:
-                errorMsg += f"\n\tStderr: {_decode(proc.stdout, encoding),}"
-        errorMsg += f"\n\tError: {err}"
-        raise Exception(errorMsg)
+                err_msg += f"\n\tStderr: {_decode(proc.stdout, encoding),}"
+        err_msg += f"\n\tError: {err}"
+        raise Exception(err_msg)
 
 
 def spawn_shell_subproc(
     args: T_PROC_ARGS,
-    checkReturnCode: bool = True,
+    check_return_code: bool = True,
     encoding: str = "utf-8",
-    timeoutSec: Optional[float] = None,
-    **runArgs,
+    timeout_sec: Optional[float] = None,
+    **run_args,
 ) -> subprocess.CompletedProcess:
     """Similar to :func:`spawn_subproc()` but for shell commands. STDOUT/ERR is
     hidden from user and only set in returned `proc.stdout/err`.
@@ -457,14 +456,14 @@ def spawn_shell_subproc(
             Can be shell commands, like ping. Note: all commandline arguments
             (specifically paths) must be properly encoded. For example, path
             containing tilde will throw error.
-        checkReturnCode: if True, return code is checked by run() function.
+        check_return_code: if True, return code is checked by run() function.
             In case it is not zero, `SubprocessReturncodeError()` is raised.
             If False, `CompletedProcess` is returned.
         encoding: STDOUT/ERR string encoding
-        timeoutSec: timeout in seconds. If None, no timeout is implemented.
+        timeout_sec: timeout in seconds. If None, no timeout is implemented.
             Else, if timeout is reached, process is killed and TimeoutExpired
             exception re-raised.
-        runArgs: optional key-worded subprocess.run() arguments, that
+        run_args: optional key-worded subprocess.run() arguments, that
             are added to `run()` call. Note: for the common, basic
             :func:`subprocess.run()` args, see :func:`spawn_subprocess()`
 
@@ -481,12 +480,12 @@ def spawn_shell_subproc(
         args,
         stdout=None,
         stderr=None,
-        checkReturnCode=checkReturnCode,
+        check_return_code=check_return_code,
         encoding=encoding,
-        timeoutSec=timeoutSec,
+        timeout_sec=timeout_sec,
         capture_output=True,
         shell=True,
-        **runArgs,
+        **run_args,
     )
 
 
@@ -501,17 +500,17 @@ def _format_args(args: T_PROC_ARGS) -> List[str]:
         List of arguments, where each item is a string.
     """
     if not isinstance(args, list):
-        errorMsg = f"'args' parameter must be list, not '{type(args)}':{args}"
-        raise Exception(errorMsg)
+        err_msg = f"'args' parameter must be list, not '{type(args)}':{args}"
+        raise Exception(err_msg)
 
-    newArgs = []
+    new_args = []
     for arg in args:
         if isinstance(arg, str):
-            newArgs.append(arg)
+            new_args.append(arg)
         else:
-            newArgs.append(str(arg))
+            new_args.append(str(arg))
 
-    return newArgs
+    return new_args
 
 
 def _decode(data: Union[None, str, bytes], encoding: str) -> Optional[str]:

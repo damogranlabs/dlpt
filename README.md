@@ -84,7 +84,7 @@ dlpt.proc.spawn_subproc(args)
 ```python
 import dlpt
 
-files = dlpt.pth.get_files_in_dir_tree(os.getcwd(), excludeExt=[".pyc"])
+files = dlpt.pth.get_files_in_dir_tree(os.getcwd(), exclude_ext=[".pyc"])
 for file_path in files:
     print(f"File {dlpt.pth.get_name(file_path)}: {file_path}")
 ```
@@ -104,8 +104,8 @@ import dlpt
 
 # 2 days, 4 hours, 6 mins, 12 sec, 0.33 milliseconds
 sec = dlpt.time.time_to_seconds(h=52, m=6, s=12.033)
-hms_str = dlpt.time.sec_to_str(durationSec, dlpt.time.TIME_FORMAT_HMS_STRING)
-print(hms_str) # will print: '52 h 6 min 12.33 sec'
+end_time = dlpt.time.sec_to_str(duration_sec, dlpt.time.TIME_FORMAT_HMS_STRING)
+print(end_time) # will print: '52 h 6 min 12.33 sec'
 ```
 
 > How do I dynamically import some module that is not on a `sys.path`?

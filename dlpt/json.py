@@ -9,29 +9,29 @@ from typing import Dict, Optional, Union, Any, List, cast
 import dlpt
 
 
-def check(fPath: str) -> bool:
+def check(file_path: str) -> bool:
     """Check if given file is a valid JSON file.
 
     Args:
-        fPath: path to a file to check.
+        file_path: path to a file to check.
 
     Returns:
         True if file is a valid JSON file, False otherwise.
     """
-    fPath = dlpt.pth.check(fPath)
+    file_path = dlpt.pth.check(file_path)
     try:
-        with open(fPath, "r") as fHandler:
-            json.load(fHandler)
+        with open(file_path, "r") as f:
+            json.load(f)
         return True
     except Exception as err:
         return False
 
 
-def remove_comments(dataStr: str) -> str:
+def remove_comments(data_str: str) -> str:
     """Return given string with removed C/C++ style `comments`_.
 
     Args:
-        dataStr: string to remove comments from.
+        data_str: string to remove comments from.
 
     Returns:
         Input string without C/C++ style comments.
@@ -49,47 +49,47 @@ def remove_comments(dataStr: str) -> str:
 
     pattern = re.compile(r'//.*?$|/\*.*?\*/|\'(?:\\.|[^\\\'])*\'|"(?:\\.|[^\\"])*"', re.DOTALL | re.MULTILINE)
 
-    return re.sub(pattern, replacer, dataStr)
+    return re.sub(pattern, replacer, data_str)
 
 
-def read(fPath: str) -> Dict[str, Any]:
+def read(file_path: str) -> Dict[str, Any]:
     """Open the given JSON file, strip comments and return dictionary data.
 
     Args:
-        fPath: path to a file that needs to be parsed.
+        file_path: path to a file that needs to be parsed.
 
     Returns:
         Data (dictionary) of a given JSON file.
     """
-    fPath = dlpt.pth.check(fPath)
-    with open(fPath, "r") as fHandler:
-        dataStr = remove_comments(fHandler.read())
-        data = json.loads(dataStr)
+    file_path = dlpt.pth.check(file_path)
+    with open(file_path, "r") as f:
+        data_str = remove_comments(f.read())
+        data = json.loads(data_str)
 
     return data
 
 
-def write(data: Dict[str, Any], fPath: str, indent: int = 2, sortKeys: bool = True, *args):
+def write(data: Dict[str, Any], file_path: str, indent: int = 2, sort_keys: bool = True, *args):
     """Write given data to a file in a JSON format.
 
     Args:
         data: serializable object to store to a file in JSON format.
-        fPath: destination file path.
+        file_path: destination file path.
         indent: number of spaces to use while building file line indentation.
-        sortKeys: if True, data keys are sorted alphabetically, else
+        sort_keys: if True, data keys are sorted alphabetically, else
             left unchanged.
         *args: `json.dump()` additional arguments.
     """
-    with open(fPath, "w+") as fHandler:
-        json.dump(data, fHandler, sort_keys=sortKeys, indent=indent)
+    with open(file_path, "w+") as fHandler:
+        json.dump(data, fHandler, sort_keys=sort_keys, indent=indent)
 
 
-def read_jsonpickle(fPath: str, classes: Optional[Union[object, List[object]]] = None) -> Any:
+def read_jsonpickle(file_path: str, classes: Optional[Union[object, List[object]]] = None) -> Any:
     """Read given file and return unpicklable data - python objects with
     `jsonpickle`_ module.
 
     Args:
-        fPath: path to a file that needs to be read.
+        file_path: path to a file that needs to be read.
         classes: see `jsonpickle`_ `decode()` docstring. TLDR: if un-picklable
             objects are from modules which are not globally available,
             use ``classes`` arg to specify them.
@@ -100,26 +100,26 @@ def read_jsonpickle(fPath: str, classes: Optional[Union[object, List[object]]] =
     .. _jsonpickle:
         https://pypi.org/project/jsonpickle/
     """
-    dlpt.pth.check(fPath)
-    with open(fPath, "r") as fHandler:
-        dataStr = fHandler.read()
-    data = jsonpickle.decode(dataStr, classes=classes)
+    dlpt.pth.check(file_path)
+    with open(file_path, "r") as f:
+        data_str = f.read()
+    data = jsonpickle.decode(data_str, classes=classes)
 
     return data
 
 
-def write_jsonpickle(data: Any, fPath: str, indent: int = 2):
+def write_jsonpickle(data: Any, file_path: str, indent: int = 2):
     """Write given data to a file in a JSON format with `jsonpickle`_ module,
     which adds data type info for unpickling with :func:`read_jsonpickle()`.
 
     Args:
         data: serializable object to store to a file in JSON format.
-        fPath: destination file path.
+        file_path: destination file path.
         indent: number of spaces for line indentation.
 
     .. _jsonpickle:
         https://pypi.org/project/jsonpickle/
     """
-    dataStr = cast(str, jsonpickle.encode(data, indent=indent))
-    with open(fPath, "w+") as fHandler:
-        fHandler.write(dataStr)
+    data_str = cast(str, jsonpickle.encode(data, indent=indent))
+    with open(file_path, "w+") as f:
+        f.write(data_str)

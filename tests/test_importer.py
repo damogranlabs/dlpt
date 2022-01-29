@@ -13,7 +13,7 @@ FUNCTION_NAME = "testFunc"
 FUNCTION_RET_VAL = "retVal"
 
 
-def create_tmp_py_file(fPath):
+def create_tmp_py_file(file_path):
     lines = []
     lines.append("import sys")
     lines.append(f"\n")
@@ -23,7 +23,7 @@ def create_tmp_py_file(fPath):
     lines.append(f"def {FUNCTION_NAME}():\n")
     lines.append(f'     return "{FUNCTION_RET_VAL}"\n')
 
-    with open(fPath, "w+") as fHandler:
+    with open(file_path, "w+") as fHandler:
         fHandler.writelines(lines)
 
 
@@ -43,63 +43,63 @@ def check_module(importer: "dlpt.importer.ModuleImporter"):
 
 
 def test_basic(tmp_path):
-    tmpFilePath = os.path.join(tmp_path, "test_basic.py")
+    tmp_file_path = os.path.join(tmp_path, "test_basic.py")
     with pytest.raises(ValueError):
         dlpt.importer.ModuleImporter(tmp_path)
 
-    create_tmp_py_file(tmpFilePath)
-    importer = dlpt.importer.ModuleImporter(tmpFilePath)
+    create_tmp_py_file(tmp_file_path)
+    importer = dlpt.importer.ModuleImporter(tmp_file_path)
     check_module(importer)
 
     # rel path
-    baseFolder = os.path.dirname(os.path.dirname(tmpFilePath))
-    relPath = str(os.path.relpath(tmpFilePath, baseFolder))
-    with dlpt.pth.ChangeDir(baseFolder):
+    base_dir_path = os.path.dirname(os.path.dirname(tmp_file_path))
+    rel_path = str(os.path.relpath(tmp_file_path, base_dir_path))
+    with dlpt.pth.ChangeDir(base_dir_path):
         with pytest.raises(ValueError):
-            dlpt.importer.ModuleImporter(relPath)
+            dlpt.importer.ModuleImporter(rel_path)
 
     # file is not inside base folder
-    baseFolder = os.path.dirname(os.path.dirname(tmpFilePath))
+    base_dir_path = os.path.dirname(os.path.dirname(tmp_file_path))
     with pytest.raises(ValueError):
-        dlpt.importer.ModuleImporter(__file__, baseFolder)
+        dlpt.importer.ModuleImporter(__file__, base_dir_path)
 
     # folder, not file
     with pytest.raises(ValueError):
-        dlpt.importer.ModuleImporter(os.path.dirname(tmpFilePath))
+        dlpt.importer.ModuleImporter(os.path.dirname(tmp_file_path))
 
     # non-existing path
     with pytest.raises(FileNotFoundError):
-        dlpt.pth.remove_file(tmpFilePath)
-        dlpt.importer.ModuleImporter(tmpFilePath)
+        dlpt.pth.remove_file(tmp_file_path)
+        dlpt.importer.ModuleImporter(tmp_file_path)
 
     # non-valid python module
     with pytest.raises(Exception):
-        with open(tmpFilePath, "w+") as fHandler:
-            fHandler.write('123 = "not a valid py syntax"\n')
-        dlpt.importer.ModuleImporter(tmpFilePath)
+        with open(tmp_file_path, "w+") as f:
+            f.write('123 = "not a valid py syntax"\n')
+        dlpt.importer.ModuleImporter(tmp_file_path)
 
 
 def test_custom_base_dir_same_dir(tmp_path):
-    fPath = os.path.join(tmp_path, MODULE_NAME)
-    create_tmp_py_file(fPath)
+    file_path = os.path.join(tmp_path, MODULE_NAME)
+    create_tmp_py_file(file_path)
 
-    importer = dlpt.importer.ModuleImporter(fPath, tmp_path)
+    importer = dlpt.importer.ModuleImporter(file_path, tmp_path)
     check_module(importer)
 
 
 def test_custom_base_dir_subdir(tmp_path):
-    dirPath = os.path.join(tmp_path, "root", "package", "subFolder")
-    dlpt.pth.create_dir(dirPath)
-    fPath = os.path.join(dirPath, MODULE_NAME)
-    create_tmp_py_file(fPath)
+    dir_path = os.path.join(tmp_path, "root", "package", "subFolder")
+    dlpt.pth.create_dir(dir_path)
+    file_path = os.path.join(dir_path, MODULE_NAME)
+    create_tmp_py_file(file_path)
 
-    importer = dlpt.importer.ModuleImporter(fPath, tmp_path)
+    importer = dlpt.importer.ModuleImporter(file_path, tmp_path)
     check_module(importer)
 
 
 def test_custom_base_dir_invalid_dir(tmp_path):
-    fPath = os.path.join(tmp_path, MODULE_NAME)
-    create_tmp_py_file(fPath)
+    file_path = os.path.join(tmp_path, MODULE_NAME)
+    create_tmp_py_file(file_path)
 
     with pytest.raises(ValueError):
-        dlpt.importer.ModuleImporter(fPath, os.getcwd())
+        dlpt.importer.ModuleImporter(file_path, os.getcwd())

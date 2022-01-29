@@ -1,5 +1,5 @@
 """
-Functions for common path, file and folder manipulation.
+Functions for common path, file and directory manipulation.
 """
 import errno
 import os
@@ -13,7 +13,7 @@ from typing import Optional, List
 import dlpt
 
 
-FILE_FOLDER_REMOVE_RETRY_DELAY_SEC = 0.5
+FILE_DIR_REMOVE_RETRY_DELAY_SEC = 0.5
 
 
 class ChangeDir:
@@ -22,16 +22,16 @@ class ChangeDir:
         an original on exit.
 
         Args:
-            path: path to an existing local folder/file that is
+            path: path to an existing local directory/file that is
                 temporary set as working directory. If file path is given,
-                its folder is taken as new working dir folder.
+                its directory is taken as new temporary working dir.
 
         Example:
             >>> with dlpt.pth.ChangeDir("C:/somePath"):
                     func("that does something in CWD")
         """
         self.path = resolve(path)
-        self.originalWd = os.getcwd()
+        self.original_wd = os.getcwd()
 
         if os.path.isfile(self.path):
             self.path = os.path.dirname(self.path)
@@ -41,7 +41,7 @@ class ChangeDir:
         os.chdir(self.path)
 
     def __exit__(self, exc_type, exc_value, traceback):
-        os.chdir(self.originalWd)
+        os.chdir(self.original_wd)
 
 
 def check(path: Optional[str]) -> str:
@@ -61,9 +61,9 @@ def check(path: Optional[str]) -> str:
     if os.path.exists(path):
         return os.path.normpath(path)
 
-    callerLocation = dlpt.utils.get_caller_location()
-    errorMsg = f"Path does not exist: {path}\n\t{callerLocation}"
-    raise FileNotFoundError(errorMsg)
+    caller_location = dlpt.utils.get_caller_location()
+    err_msg = f"Path does not exist: {path}\n\t{caller_location}"
+    raise FileNotFoundError(err_msg)
 
 
 def resolve(path: str) -> str:
@@ -80,106 +80,106 @@ def resolve(path: str) -> str:
 
 
 def _set_w_permissions(path: str):
-    """Set file/folder write permmissions.
+    """Set file/directory write permmissions.
 
     Args:
-        path: absolute path to a file/folder to modify permissions.
+        path: absolute path to a file/directory to modify permissions.
     """
     os.chmod(path, stat.S_IWRITE)
     if not os.access(path, os.W_OK):  # pragma no cover
-        errorMsg = f"Unable to modify write permission of a given path: {path}"
-        raise Exception(errorMsg)
+        err_msg = f"Unable to modify write permission of a given path: {path}"
+        raise Exception(err_msg)
 
 
-def copy_file(srcFilePath: str, dstDirPath: str, dstFileName: Optional[str] = None) -> str:
+def copy_file(src_file_path: str, dst_dir_path: str, dst_file_name: Optional[str] = None) -> str:
     """Copy given file to a new location, while dstFile is removed prior
-    copying. Any intermediate folders are created automatically.
+    copying. Any intermediate directories are created automatically.
 
     Args:
-        srcFilePath: path to a file to be copied.
-        dstDirPath: absolute destination folder path.
-        dstFileName: new destination file name. If None, original file
+        src_file_path: path to a file to be copied.
+        dst_dir_path: absolute destination directory path.
+        dst_file_name: new destination file name. If None, original file
             name is used.
 
     Returns:
         A path to a copied file.
     """
-    srcFilePath = check(srcFilePath)
-    if not os.path.isfile(srcFilePath):
-        errorMsg = f"'copy_file()' is designed to copy files, "
-        errorMsg += f"not folders/links: {srcFilePath}"
-        raise ValueError(errorMsg)
+    src_file_path = check(src_file_path)
+    if not os.path.isfile(src_file_path):
+        err_msg = f"'copy_file()' is designed to copy files, "
+        err_msg += f"not directories/links: {src_file_path}"
+        raise ValueError(err_msg)
 
-    if dstFileName is None:
-        dstFileName = get_name(srcFilePath)
-    dstFilePath = os.path.normpath(os.path.join(dstDirPath, dstFileName))
+    if dst_file_name is None:
+        dst_file_name = get_name(src_file_path)
+    dst_file_path = os.path.normpath(os.path.join(dst_dir_path, dst_file_name))
 
-    create_dir(dstDirPath)
-    remove_file(dstFilePath)
-    shutil.copyfile(srcFilePath, dstFilePath)
+    create_dir(dst_dir_path)
+    remove_file(dst_file_path)
+    shutil.copyfile(src_file_path, dst_file_path)
 
-    return dstFilePath
+    return dst_file_path
 
 
-def copy_dir(srcDirPath: str, dstDirPath: str) -> str:
-    """Copy given folder to a new location, while dstFolder is removed prior
-    copying. Any intermediate folders are created automatically.
+def copy_dir(src_dir_path: str, dst_dir_path: str) -> str:
+    """Copy given directory to a new location, while `dst_dir_path` is removed
+    prior copying. Any intermediate directories are created automatically.
 
     Args:
-        srcDirPath: path to a file to be copied.
-        dstDirPath: new destination path.
+        src_dir_path: path to a file to be copied.
+        dst_dir_path: new destination path.
 
     Returns:
-        A path to a copied folder.
+        A path to a copied directory.
     """
-    srcDirPath = check(srcDirPath)
-    if not os.path.isdir(srcDirPath):
-        errorMsg = "'copy_dir()' is designed to copy folders, "
-        errorMsg += f"not files/links: {srcDirPath}"
-        raise ValueError(errorMsg)
+    src_dir_path = check(src_dir_path)
+    if not os.path.isdir(src_dir_path):
+        err_msg = "'copy_dir()' is designed to copy directories, "
+        err_msg += f"not files/links: {src_dir_path}"
+        raise ValueError(err_msg)
 
-    _validate_path(dstDirPath)
-    dstDirPath = os.path.normpath(dstDirPath)
-    remove_dir_tree(dstDirPath)
+    _validate_path(dst_dir_path)
+    dst_dir_path = os.path.normpath(dst_dir_path)
+    remove_dir_tree(dst_dir_path)
 
-    shutil.copytree(srcDirPath, dstDirPath)
+    shutil.copytree(src_dir_path, dst_dir_path)
 
-    return dstDirPath
+    return dst_dir_path
 
 
-def remove_file(fPath: str, forceWritePermissions: bool = True, retry: int = 3):
-    """This function tries to remove file (FILE, not FOLDER) on a given path.
+def remove_file(file_path: str, force_write_permissions: bool = True, retry: int = 3):
+    """This function tries to remove file (FILE, not DIRECTORY) on a given path.
     Optionally, write permissions are set to a file.
 
     Args:
-        fPath: path to a file.
-        forceWritePermissions: if True, write permissions are set to
+        file_path: path to a file.
+        force_write_permissions: if True, write permissions are set to
             a file so it can be removed.
         retry: on failure, retry removal specified number of times.
     """
-    _validate_path(fPath)
+    _validate_path(file_path)
 
-    if os.path.exists(fPath):
-        if not os.path.isfile(fPath):
-            errorMsg = "Function 'remove_file()' is designed to remove files, "
-            errorMsg += f"not folders/links: {fPath}"
-            raise ValueError(errorMsg)
+    if os.path.exists(file_path):
+        if not os.path.isfile(file_path):
+            err_msg = "Function 'remove_file()' is designed to remove files, "
+            err_msg += f"not directories/links: {file_path}"
+            raise ValueError(err_msg)
 
         take = 0
         for take in range(retry):
             try:
-                if forceWritePermissions:
-                    _set_w_permissions(fPath)
+                if force_write_permissions:
+                    _set_w_permissions(file_path)
                 # else: don't force it, see what will happen - don't care
                 # about the consequences. Might raise an exception.
-                os.unlink(fPath)
+                os.unlink(file_path)
             except Exception as err:
-                time.sleep(FILE_FOLDER_REMOVE_RETRY_DELAY_SEC)
+                time.sleep(FILE_DIR_REMOVE_RETRY_DELAY_SEC)
             else:
                 break  # on success, escape retrying
         else:
-            errorMsg = f"Unable to 'remove_file()' after {take+1} times: {fPath}"
-            raise Exception(errorMsg)
+            err_msg = f"Unable to 'remove_file()' after {take+1} times: {file_path}"
+            raise Exception(err_msg)
 
 
 def _on_remove_dir_err(function, path, exception):  # pragma: no cover
@@ -197,91 +197,91 @@ def _on_remove_dir_err(function, path, exception):  # pragma: no cover
         raise  # type: ignore
 
 
-def remove_dir_tree(dirPath: str, forceWritePermissions: bool = True, retry: int = 3):
-    """Remove folder (FOLDER, not FILE) and all its content on a given path.
+def remove_dir_tree(dir_path: str, force_write_permissions: bool = True, retry: int = 3):
+    """Remove directory (DIRECTORY, not FILE) and all its content on a given path.
 
     Args:
-        dirPath: path of a folder to remove.
-        forceWritePermissions: if True, shutil.rmtree() error callback
+        dir_path: path of a directory to remove.
+        force_write_permissions: if True, shutil.rmtree() error callback
             function is used to change permissions and retry.
         retry: on failure, retry removal specified number of times. Must be > 0.
             Sometimes file are locked with other processes, or a race
             condition occurred.
     """
-    _validate_path(dirPath)
+    _validate_path(dir_path)
 
-    if os.path.exists(dirPath):
-        if not os.path.isdir(dirPath):
-            errorMsg = f"'remove_dir_tree()' is designed to remove folders, not files/links: {dirPath}"
-            raise ValueError(errorMsg)
+    if os.path.exists(dir_path):
+        if not os.path.isdir(dir_path):
+            err_msg = f"'remove_dir_tree()' is designed to remove directories, not files/links: {dir_path}"
+            raise ValueError(err_msg)
 
         take = 0
         for take in range(retry):
             try:
-                if forceWritePermissions:
-                    shutil.rmtree(dirPath, ignore_errors=False, onerror=_on_remove_dir_err)
+                if force_write_permissions:
+                    shutil.rmtree(dir_path, ignore_errors=False, onerror=_on_remove_dir_err)
                 else:
-                    shutil.rmtree(dirPath)
+                    shutil.rmtree(dir_path)
             except Exception as err:
                 if take < (retry - 1):
-                    time.sleep(FILE_FOLDER_REMOVE_RETRY_DELAY_SEC)
+                    time.sleep(FILE_DIR_REMOVE_RETRY_DELAY_SEC)
             else:
                 break  # on success, escape retrying
         else:
-            errorMsg = f"Unable to 'remove_dir_tree()' after {take} times: {dirPath}"
-            raise Exception(errorMsg)
+            err_msg = f"Unable to 'remove_dir_tree()' after {take} times: {dir_path}"
+            raise Exception(err_msg)
 
 
-def clean_dir(dirPath: str, forceWritePermissions: bool = True):
-    """Delete all folder content (files, sub-folders) in a given folder, but
-    not the root folder.
+def clean_dir(dir_path: str, force_write_permissions: bool = True):
+    """Delete all directory content (files, sub-dirs) in a given directory, but
+    not the root directory itself.
 
     Args:
-        dirPath: path to a folder to clean all its content
-        forceWritePermissions: if True, write permissions are set to be
+        dir_path: path to a directory to clean all its content
+        force_write_permissions: if True, write permissions are set to be
             able to delete files.
     """
-    _validate_path(dirPath)
+    _validate_path(dir_path)
 
-    allItems = os.listdir(dirPath)
-    for item in allItems:
-        itemPath = os.path.join(dirPath, item)
-        if os.path.isfile(itemPath):
-            remove_file(itemPath, forceWritePermissions)
+    items = os.listdir(dir_path)
+    for item in items:
+        item_path = os.path.join(dir_path, item)
+        if os.path.isfile(item_path):
+            remove_file(item_path, force_write_permissions)
         else:
-            remove_dir_tree(itemPath, forceWritePermissions)
+            remove_dir_tree(item_path, force_write_permissions)
 
 
-def create_dir(dirPath: str):
-    """Create folder (or folder tree) on a given specified path.
+def create_dir(dir_path: str):
+    """Create directory (or directory tree) on a given specified path.
 
     Args:
-        dirPath: absolute path of a folder to create
+        dir_path: absolute path of a directory to create
     """
-    _validate_path(dirPath)
+    _validate_path(dir_path)
 
-    dirPath = os.path.normpath(dirPath)
-    os.makedirs(dirPath, exist_ok=True)
+    dir_path = os.path.normpath(dir_path)
+    os.makedirs(dir_path, exist_ok=True)
 
 
-def create_clean_dir(dirPath: str):
-    """Create new or clean existing folder on a given specified path.
+def create_clean_dir(dir_path: str):
+    """Create new or clean existing directory on a given specified path.
     Path existence is checked with check() at the end.
 
     Args:
-        dirPath: absolute path of a folder to create
+        dir_path: absolute path of a directory to create
     """
-    _validate_path(dirPath)
+    _validate_path(dir_path)
 
-    if os.path.exists(dirPath):
-        clean_dir(dirPath)
+    if os.path.exists(dir_path):
+        clean_dir(dir_path)
     else:
-        create_dir(dirPath)
+        create_dir(dir_path)
 
 
-def remove_old_items(dirPath: str, days: int) -> List[str]:
-    """Remove items (files, folders) inside the given folder that were modified
-    more than specified number of days ago.
+def remove_old_items(dir_path: str, days: int) -> List[str]:
+    """Remove items (files, directories) inside the given directory that were
+    modified more than specified number of days ago.
 
     Note:
         modification time and current time can be the same when this
@@ -289,29 +289,29 @@ def remove_old_items(dirPath: str, days: int) -> List[str]:
         part (milliseconds) of current/modification timestamp is discarded.
 
     Args:
-        dirPath: path to a folder with files/folders to remove.
-        days: number of days file/folder must be old to be
+        dir_path: path to a directory with files/directories to remove.
+        days: number of days file/directory must be old to be
             removed (last modification time).
 
     Returns:
         A list of removed items.
     """
-    dirPath = check(dirPath)
+    dir_path = check(dir_path)
 
-    removedItems: List[str] = []
-    daysInSeconds = dlpt.time.time_to_seconds(d=days)
-    currentTime = int(time.time())  # see note about int()
-    for item in os.listdir(dirPath):
-        itemPath = os.path.join(dirPath, item)
-        lastModTime = int(os.path.getmtime(itemPath))  # see note about int()
-        if lastModTime < (currentTime - daysInSeconds):
-            if os.path.isfile(itemPath):
-                remove_file(itemPath)
+    removed_items: List[str] = []
+    days_in_seconds = dlpt.time.time_to_seconds(d=days)
+    current_time = int(time.time())  # see note about int()
+    for item in os.listdir(dir_path):
+        item_path = os.path.join(dir_path, item)
+        last_mod_time = int(os.path.getmtime(item_path))  # see note about int()
+        if last_mod_time < (current_time - days_in_seconds):
+            if os.path.isfile(item_path):
+                remove_file(item_path)
             else:
-                remove_dir_tree(itemPath)
-            removedItems.append(itemPath)
+                remove_dir_tree(item_path)
+            removed_items.append(item_path)
 
-    return removedItems
+    return removed_items
 
 
 def with_fw_slashes(path: str) -> str:
@@ -350,170 +350,170 @@ def with_double_bw_slashes(path: str) -> str:
     return path
 
 
-def get_name(fPath: str, withExt: bool = True) -> str:
+def get_name(file_path: str, with_ext: bool = True) -> str:
     """Return a file name from file path or raise exception.
 
     Note:
         No file existence check is performed.
 
     Args:
-        fPath: file path where file name will be fetched from
-        withExt: if False, extension is striped from file name
+        file_path: file path where file name will be fetched from
+        with_ext: if False, extension is striped from file name
 
     Returns:
         A file name with/without extension.
     """
-    _validate_path(fPath)
+    _validate_path(file_path)
 
-    fileName = os.path.basename(fPath)
-    ext = get_ext(fPath)
+    file_name = os.path.basename(file_path)
+    ext = get_ext(file_path)
 
-    if not withExt:
-        fileName = fileName.replace(ext, "")
+    if not with_ext:
+        file_name = file_name.replace(ext, "")
 
-    return fileName
+    return file_name
 
 
-def get_ext(fPath: str) -> str:
+def get_ext(file_path: str) -> str:
     """Return file extension (with dot) from file path or raise exception.
 
     Note:
         No file existence check is performed.
 
     Args:
-        fPath: file path where file name will be fetched from
+        file_path: file path where file name will be fetched from
 
     Returns:
         A file extension.
     """
-    _validate_path(fPath)
+    _validate_path(file_path)
 
-    _, ext = os.path.splitext(fPath)
+    _, ext = os.path.splitext(file_path)
 
     return ext
 
 
 def get_files_in_dir(
-    dirPath: str, includeExt: Optional[List[str]] = None, excludeExt: Optional[List[str]] = None
+    dir_path: str, include_ext: Optional[List[str]] = None, exclude_ext: Optional[List[str]] = None
 ) -> List[str]:
-    """Get a list of files in a given ``dirPath``.
+    """Get a list of files in a given ``dir_path``.
     If ``extensionFilter`` is set, only return files that has the same extension.
 
     Note:
-        Only one of ``includeExt`` or ``excludeExt`` must be set, or exception
+        Only one of ``include_ext`` or ``exclude_ext`` must be set, or exception
         is raised. Lower case extension strings are compared.
 
     Args:
-        dirPath: path to a folder to scan.
-        includeExt: if set, only files with given extension(s) are returned.
-        excludeExt: if set, files with given extension(s) are excluded
+        dir_path: path to a directory to scan.
+        include_ext: if set, only files with given extension(s) are returned.
+        exclude_ext: if set, files with given extension(s) are excluded
             from return list.
 
     Returns:
-        List of matching files from `dirPath``.
+        List of matching files from `dir_path``.
     """
-    _validate_path(dirPath)
-    check(dirPath)
-    dirPath = os.path.normpath(dirPath)
+    _validate_path(dir_path)
+    check(dir_path)
+    dir_path = os.path.normpath(dir_path)
 
-    if includeExt and excludeExt:
-        errorMsg = "Set only 'includeExt' or 'excludeExt', not both!"
-        raise Exception(errorMsg)
+    if include_ext and exclude_ext:
+        err_msg = "Set only 'include_ext' or 'exclude_ext', not both!"
+        raise Exception(err_msg)
 
-    _includeFilter: List[str] = []
-    if includeExt:
-        for ext in includeExt:
-            _includeFilter.append(ext.lower())
-    _excludeFilter: List[str] = []
-    if excludeExt:
-        for ext in excludeExt:
-            _excludeFilter.append(ext.lower())
+    _include_filter: List[str] = []
+    if include_ext:
+        for ext in include_ext:
+            _include_filter.append(ext.lower())
+    _exclude_filter: List[str] = []
+    if exclude_ext:
+        for ext in exclude_ext:
+            _exclude_filter.append(ext.lower())
 
     files = []
-    for item in os.listdir(dirPath):
-        itemPath = os.path.join(dirPath, item)
-        if os.path.isfile(itemPath):
+    for item in os.listdir(dir_path):
+        item_path = os.path.join(dir_path, item)
+        if os.path.isfile(item_path):
             _, ext = os.path.splitext(item)
             ext = ext.lower()
 
-            if excludeExt:
-                if ext in _excludeFilter:
+            if exclude_ext:
+                if ext in _exclude_filter:
                     continue
 
-            if includeExt:
-                if ext in _includeFilter:
-                    files.append(itemPath)
+            if include_ext:
+                if ext in _include_filter:
+                    files.append(item_path)
             else:
-                files.append(itemPath)
+                files.append(item_path)
 
     return files
 
 
 def get_files_in_dir_tree(
-    folderTreePath: str, includeExt: Optional[List[str]] = None, excludeExt: Optional[List[str]] = None
+    dir_tree_path: str, include_ext: Optional[List[str]] = None, exclude_ext: Optional[List[str]] = None
 ) -> List[str]:
     """Same as :func:`get_files_in_dir()`, but scan through all files in
-    all folders.
+    all directories.
 
     Note:
-        Only one of ``includeExt`` or ``excludeExt`` must be set, or exception
+        Only one of ``include_ext`` or ``exclude_ext`` must be set, or exception
         is raised. Lower case extension strings are compared.
 
     Args:
-        folderTreePath: path to a folder tree to scan.
-        includeExt: if set, only files with given extension(s) are returned.
-        excludeExt: if set, files with given extension(s) are excluded
+        dir_tree_path: path to a directory tree to scan.
+        include_ext: if set, only files with given extension(s) are returned.
+        exclude_ext: if set, files with given extension(s) are excluded
             from return list.
 
     Returns:
-        List of matching files from `dirPath`` and all its subfolders.
+        List of matching files from `dir_path`` and all its sub-directories.
     """
-    folderTreePath = check(folderTreePath)
+    dir_tree_path = check(dir_tree_path)
 
-    allFiles = []
-    for (rootFolderPath, _, _) in os.walk(folderTreePath):
-        thisFolderFiles = get_files_in_dir(rootFolderPath, includeExt, excludeExt)
-        allFiles.extend(thisFolderFiles)
+    all_files = []
+    for (root_dir_path, _, _) in os.walk(dir_tree_path):
+        this_dir_files = get_files_in_dir(root_dir_path, include_ext, exclude_ext)
+        all_files.extend(this_dir_files)
 
-    return allFiles
+    return all_files
 
 
-def get_dirs_in_dir(dirPath: str, nameFilter: Optional[str] = None, compareLowerCase: bool = True) -> List[str]:
-    """Get a list of folders in a given 'dirPath'.
+def get_dirs_in_dir(dir_path: str, name_filter: Optional[str] = None, case_insensitive: bool = True) -> List[str]:
+    """Get a list of directories in a given 'dir_path'.
 
     Args:
-        dirPath: path to a folder to scan.
-        nameFilter: if set, folders that contain this string are returned,
-            based on compareLowerCase setting.
-        compareLowerCase: if True, lower-cased nameFilter string (if set)
-            is checked in lower case folder name.
+        dir_path: path to a directory to scan.
+        name_filter: if set, directories that contain this string are returned,
+            based on `case_insensitive` setting.
+        case_insensitive: if True, lower-cased name_filter string (if set)
+            is checked in lower case directory name.
 
     Returns:
-        List of matching folders from `dirPath``.
+        List of matching directories from `dir_path``.
     """
-    _validate_path(dirPath)
-    check(dirPath)
-    dirPath = os.path.normpath(dirPath)
+    _validate_path(dir_path)
+    check(dir_path)
+    dir_path = os.path.normpath(dir_path)
 
-    if nameFilter is not None:
-        if compareLowerCase:
-            nameFilter = nameFilter.lower()
+    if name_filter is not None:
+        if case_insensitive:
+            name_filter = name_filter.lower()
 
-    folders = []
-    for item in os.listdir(dirPath):
-        itemPath = os.path.join(dirPath, item)
-        if os.path.isdir(itemPath):
-            if nameFilter is None:
-                folders.append(itemPath)
+    dirs = []
+    for item in os.listdir(dir_path):
+        item_path = os.path.join(dir_path, item)
+        if os.path.isdir(item_path):
+            if name_filter is None:
+                dirs.append(item_path)
             else:  # name filtering is in place
-                if compareLowerCase:
-                    if nameFilter in item.lower():
-                        folders.append(itemPath)
+                if case_insensitive:
+                    if name_filter in item.lower():
+                        dirs.append(item_path)
                 else:
-                    if nameFilter in item:
-                        folders.append(itemPath)
+                    if name_filter in item:
+                        dirs.append(item_path)
 
-    return folders
+    return dirs
 
 
 def open_in_web_browser(url: str):  # pragma: no cover
@@ -525,22 +525,22 @@ def open_in_web_browser(url: str):  # pragma: no cover
     webbrowser.open(url, new=2)  # 2 = new tab
 
 
-def open_with_default_app(fPath: str):  # pragma: no cover
+def open_with_default_app(file_path: str):  # pragma: no cover
     """Open given file with OS default application as a non-blocking subprocess.
 
     Args:
-        fPath: path to a file to open.
+        file_path: path to a file to open.
     """
-    fPath = check(fPath)
-    fPath = f'"{fPath}"'
+    file_path = check(file_path)
+    file_path = f'"{file_path}"'
 
     args = []
     if os.name == "nt":
         # Windows
-        os.startfile(fPath)
+        os.startfile(file_path)
     else:
         # MacOS/X # NOTE: not tested!
-        os.popen(f"open {fPath}")
+        os.popen(f"open {file_path}")
 
 
 def _validate_path(path: Optional[str]) -> str:
@@ -564,6 +564,6 @@ def _validate_path(path: Optional[str]) -> str:
     #   private function, should be only used inside pth.py)
     # 3 - frame of the caller of a function in paths, that further called
     # _validate_path() func
-    callerLocation = dlpt.utils.get_caller_location(3)
-    errorMsg = f"Invalid path format - expected non-empty string: '{path}'\n\t{callerLocation}"
-    raise ValueError(errorMsg)
+    caller_location = dlpt.utils.get_caller_location(3)
+    err_msg = f"Invalid path format - expected non-empty string: '{path}'\n\t{caller_location}"
+    raise ValueError(err_msg)

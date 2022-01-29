@@ -8,24 +8,24 @@ import dlpt
 
 
 def test_check(tmp_path):
-    fPath = os.path.join(tmp_path, "jsonTest.json")
+    file_path = os.path.join(tmp_path, "jsonTest.json")
 
     # empty file
-    with open(fPath, "w+") as fHandler:
+    with open(file_path, "w+") as f:
         pass
-    assert dlpt.json.check(fPath) is False
+    assert dlpt.json.check(file_path) is False
 
     # invalid syntax, missing \" in zxc
-    dataStr = '{"asd": "qwe","zxc: 123}'
-    with open(fPath, "w+") as fHandler:
-        fHandler.write(dataStr)
-    assert dlpt.json.check(fPath) is False
+    data_str = '{"asd": "qwe","zxc: 123}'
+    with open(file_path, "w+") as f:
+        f.write(data_str)
+    assert dlpt.json.check(file_path) is False
 
     # valid syntax
-    dataStr = '{"asd": "qwe","zxc": 123}'
-    with open(fPath, "w+") as fHandler:
-        fHandler.write(dataStr)
-    assert dlpt.json.check(fPath) is True
+    data_str = '{"asd": "qwe","zxc": 123}'
+    with open(file_path, "w+") as f:
+        f.write(data_str)
+    assert dlpt.json.check(file_path) is True
 
 
 def test_remove_comments():
@@ -40,8 +40,8 @@ def test_remove_comments():
         }
     }"""
     DATA = {"asd": "qwe", "zxc": 123, "ert": {"fgh": 456}}
-    dataStr = dlpt.json.remove_comments(DATA_STR)
-    data = json.loads(dataStr)
+    data_str = dlpt.json.remove_comments(DATA_STR)
+    data = json.loads(data_str)
 
     assert data == DATA
 
@@ -49,11 +49,11 @@ def test_remove_comments():
 def test_read(tmp_path):
     DATA_STR = '{"asd": "qwe","zxc": 123}'
 
-    with mock.patch("builtins.open") as fFunc:
-        fFunc.read = DATA_STR
+    with mock.patch("builtins.open") as file_func:
+        file_func.read = DATA_STR
 
-        with mock.patch("dlpt.json.remove_comments") as rmCommentsFunc:
-            rmCommentsFunc.return_value = DATA_STR
+        with mock.patch("dlpt.json.remove_comments") as rm_comments_func:
+            rm_comments_func.return_value = DATA_STR
 
             data = dlpt.json.read(tmp_path)
             assert isinstance(data, dict)
@@ -64,12 +64,12 @@ def test_read(tmp_path):
 
 
 def test_write(tmp_path):
-    fPath = os.path.join(tmp_path, "jsonTest.json")
+    file_path = os.path.join(tmp_path, "jsonTest.json")
 
     DATA = {"asd": "qwe", "zxc": 123, "ert": {"fgh": 456}}
 
-    dlpt.json.write(DATA, fPath)
-    data = dlpt.json.read(fPath)
+    dlpt.json.write(DATA, file_path)
+    data = dlpt.json.read(file_path)
     assert data == DATA
 
 
@@ -85,19 +85,19 @@ class _JsonTestClass:
 
 class _JsonTestSubclass:
     def __init__(self):
-        self.nestedPublic = 456
-        self._nestedPrivate = "654"
+        self.nested_public = 456
+        self._nested_private = "654"
 
 
 def test_rw_jsonpickle(tmp_path):
-    fPath = os.path.join(tmp_path, "jsonTest.json")
+    file_path = os.path.join(tmp_path, "jsonTest.json")
 
-    wData = _JsonTestClass()
-    dlpt.json.write_jsonpickle(wData, fPath)
+    w_data = _JsonTestClass()
+    dlpt.json.write_jsonpickle(w_data, file_path)
 
-    rData = dlpt.json.read_jsonpickle(fPath)
+    r_data = dlpt.json.read_jsonpickle(file_path)
 
-    assert isinstance(rData, _JsonTestClass)
-    assert rData._private == "321"
-    assert rData.nested[0].nestedPublic == 456
-    assert rData.nested[0]._nestedPrivate == "654"
+    assert isinstance(r_data, _JsonTestClass)
+    assert r_data._private == "321"
+    assert r_data.nested[0].nested_public == 456
+    assert r_data.nested[0]._nested_private == "654"

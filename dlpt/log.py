@@ -39,7 +39,7 @@ import dlpt
 
 DEFAULT_LOG_DIR_NAME = "log"
 DEFAULT_LOG_FILE_EXT = ".log"
-DEFAULT_LOG_SERVER_NAME = "loggingServer"
+DEFAULT_LOG_SERVER_NAME = "logging_server"
 DEFAULT_LOG_SERVER_FILE_NAME = f"{DEFAULT_LOG_SERVER_NAME}{DEFAULT_LOG_FILE_EXT}"
 
 # https://docs.python.org/3/library/logging.html#logrecord-attributes
@@ -56,38 +56,38 @@ DEFAULT_ROT_LOG_FILE_SIZE_KB = 100
 DEFAULT_ROT_LOG_FILE_COUNT = 1
 
 # private, do not modify
-_defaultLogger: Optional[logging.Logger] = None
+_default_logger: Optional[logging.Logger] = None
 _SERVER_SHUTDOWN_KEY = "dlptLogServerShutdown"
 
 
 def create_logger(
-    name: Optional[str] = None, setAsDefault: bool = True, level: Optional[int] = logging.DEBUG
+    name: Optional[str] = None, set_as_default: bool = True, level: Optional[int] = logging.DEBUG
 ) -> logging.Logger:
     """Create new logger instance with the given 'name' and optionally
     set it as a default logger whenever `dlpt.log.*` log functions are invoked.
 
     Args:
         name: Optional name of the new logger instance or root by default.
-        setAsDefault: If True, created logger instance will be set as a
+        set_as_default: If True, created logger instance will be set as a
             default logger whenewer `dlpt.log.*` log functions are invoked..
         logLevel: set log level for this specific logger.
             By default, everything is logged (``DEBUG`` level).
         logLevel: set log level for this specific logger. If None, do not
             change log level. By default, everything is logged (``DEBUG`` level).
     """
-    global _defaultLogger
-    if setAsDefault:
-        if _defaultLogger is not None:
-            errorMsg = f"Unable to create new default logger instance, "
-            errorMsg += f"default already set: {_defaultLogger.name}"
-            raise Exception(errorMsg)
+    global _default_logger
+    if set_as_default:
+        if _default_logger is not None:
+            err_msg = f"Unable to create new default logger instance, "
+            err_msg += f"default already set: {_default_logger.name}"
+            raise Exception(err_msg)
 
     logger = logging.getLogger(name)
     if level:
         logger.setLevel(level)
 
-    if setAsDefault:
-        _defaultLogger = logger
+    if set_as_default:
+        _default_logger = logger
 
     return logger
 
@@ -106,10 +106,10 @@ def _get_logger(logger: Union[logging.Logger, str]) -> logging.Logger:
         if logger in logging.Logger.manager.loggerDict:
             return logging.getLogger(logger)
         else:
-            errorMsg = f"Logger with name '{logger}' does not exist. Use "
-            errorMsg += "`dlpt.log.create_logger()` or manually create new "
-            errorMsg += "logging.Logger instance."
-            raise ValueError(errorMsg)
+            err_msg = f"Logger with name '{logger}' does not exist. Use "
+            err_msg += "`dlpt.log.create_logger()` or manually create new "
+            err_msg += "logging.Logger instance."
+            raise ValueError(err_msg)
     else:
         return logger
 
@@ -149,8 +149,8 @@ def add_console_hdlr(
 
 def add_file_hdlr(
     logger: Union[logging.Logger, str],
-    fName: Optional[str] = None,
-    dirPath: Optional[str] = None,
+    file_name: Optional[str] = None,
+    dir_path: Optional[str] = None,
     fmt: Optional[logging.Formatter] = None,
     level: int = logging.DEBUG,
     mode: str = "w",
@@ -159,10 +159,10 @@ def add_file_hdlr(
 
     Args:
         logger: logger instance or logger name.
-        fName: name of a log file. If there is no file extension, default
+        file_name: name of a log file. If there is no file extension, default
             ``DEFAULT_LOG_FILE_EXT`` is appended. If ``None``, logger name
             is used as a file name.
-        dirPath: path to a folder where logs will be stored. If ``None``,
+        dir_path: path to a folder where logs will be stored. If ``None``,
             path is fetched with :func:`get_default_log_dir()`.If log
             folder does not exist, it is created.
         fmt: Optional custom formatter for created handler. By default,
@@ -176,48 +176,48 @@ def add_file_hdlr(
     """
     logger = _get_logger(logger)
 
-    fName = get_file_name(logger, fName)
-    if dirPath is None:
-        dirPath = get_default_log_dir()  # pragma: no cover
+    file_name = get_file_name(logger, file_name)
+    if dir_path is None:
+        dir_path = get_default_log_dir()  # pragma: no cover
     else:
-        dirPath = os.path.normpath(dirPath)
-    dlpt.pth.create_dir(dirPath)
-    fPath = os.path.join(dirPath, fName)
+        dir_path = os.path.normpath(dir_path)
+    dlpt.pth.create_dir(dir_path)
+    file_path = os.path.join(dir_path, file_name)
 
     if fmt is None:  # pragma: no cover
         fmt = logging.Formatter(DEFAULT_FMT, datefmt=DEFAULT_FMT_TIME)
 
-    hdlr = logging.FileHandler(fPath, mode=mode, encoding="utf-8")
+    hdlr = logging.FileHandler(file_path, mode=mode, encoding="utf-8")
     hdlr.setLevel(level)
     hdlr.setFormatter(fmt)
 
     logger.addHandler(hdlr)
 
-    return (hdlr, fPath)
+    return (hdlr, file_path)
 
 
 def add_rotating_file_hdlr(
     logger: Union[logging.Logger, str],
-    fName: Optional[str] = None,
-    dirPath: Optional[str] = None,
+    file_name: Optional[str] = None,
+    dir_path: Optional[str] = None,
     fmt: Optional[logging.Formatter] = None,
     level: int = logging.DEBUG,
-    maxSizeKb: int = DEFAULT_ROT_LOG_FILE_SIZE_KB,
-    backupCount: int = DEFAULT_ROT_LOG_FILE_COUNT,
+    max_size_kb: int = DEFAULT_ROT_LOG_FILE_SIZE_KB,
+    backup_count: int = DEFAULT_ROT_LOG_FILE_COUNT,
 ) -> Tuple[logging.handlers.RotatingFileHandler, str]:
     """Add rotating file handler to logger instance.
 
     Args:
         logger: logger instance or logger name.
-        fName: name of a log file. If there is no file extension, default
+        file_name: name of a log file. If there is no file extension, default
             ``DEFAULT_LOG_FILE_EXT`` is appended. If ``None``, logger name
             is used as a file name.
-        dirPath: path to a folder where logs will be stored. If ``None``,
+        dir_path: path to a folder where logs will be stored. If ``None``,
             path is fetched with :func:`get_default_log_dir()`. If log
             folder does not exist, it is created.
-        maxSizeKb: number of KB at which rollover is performed on a
+        max_size_kb: number of KB at which rollover is performed on a
             current log file.
-        backupCount: number of files to store (if file with given name
+        backup_count: number of files to store (if file with given name
             already exists).
         fmt: Optional custom formatter for created handler. By default,
             DEFAULT_FORMATTER and DEFAULT_FORMATTER_TIME is used.
@@ -229,24 +229,24 @@ def add_rotating_file_hdlr(
     """
     logger = _get_logger(logger)
 
-    fName = get_file_name(logger, fName)
-    if dirPath is None:
-        dirPath = get_default_log_dir()  # pragma: no cover
+    file_name = get_file_name(logger, file_name)
+    if dir_path is None:
+        dir_path = get_default_log_dir()  # pragma: no cover
     else:
-        dirPath = os.path.normpath(dirPath)
-    dlpt.pth.create_dir(dirPath)
-    fPath = os.path.join(dirPath, fName)
+        dir_path = os.path.normpath(dir_path)
+    dlpt.pth.create_dir(dir_path)
+    file_path = os.path.join(dir_path, file_name)
 
     if fmt is None:  # pragma: no cover
         fmt = logging.Formatter(DEFAULT_FMT, datefmt=DEFAULT_FMT_TIME)
 
-    hdlr = logging.handlers.RotatingFileHandler(fPath, maxBytes=int(maxSizeKb * 1e3), backupCount=backupCount)
+    hdlr = logging.handlers.RotatingFileHandler(file_path, maxBytes=int(max_size_kb * 1e3), backupCount=backup_count)
     hdlr.setLevel(level)
     hdlr.setFormatter(fmt)
 
     logger.addHandler(hdlr)
 
-    return (hdlr, fPath)
+    return (hdlr, file_path)
 
 
 def add_logging_server_hdlr(
@@ -291,12 +291,12 @@ def get_log_file_paths(logger: Union[logging.Logger, str]) -> List[str]:
     """
     logger = _get_logger(logger)
 
-    fPaths = []
+    file_paths = []
     for hdlr in logger.handlers:
         if isinstance(hdlr, logging.FileHandler):
-            fPaths.append(os.path.normpath(hdlr.baseFilename))
+            file_paths.append(os.path.normpath(hdlr.baseFilename))
 
-    return fPaths
+    return file_paths
 
 
 def get_rotating_log_file_paths(logger: Union[logging.Logger, str]) -> List[str]:
@@ -311,12 +311,12 @@ def get_rotating_log_file_paths(logger: Union[logging.Logger, str]) -> List[str]
     """
     logger = _get_logger(logger)
 
-    fPaths = []
+    file_paths = []
     for hdlr in logger.handlers:
         if isinstance(hdlr, logging.handlers.RotatingFileHandler):
-            fPaths.append(os.path.normpath(hdlr.baseFilename))
+            file_paths.append(os.path.normpath(hdlr.baseFilename))
 
-    return fPaths
+    return file_paths
 
 
 def get_default_logger() -> Optional[logging.Logger]:
@@ -326,7 +326,7 @@ def get_default_logger() -> Optional[logging.Logger]:
         Current logger instance when `dlpt.log.*` log functions are
         invoked.
     """
-    return _defaultLogger
+    return _default_logger
 
 
 def set_default_logger(logger: logging.Logger):
@@ -337,18 +337,18 @@ def set_default_logger(logger: logging.Logger):
     Returns:
         Current logger instance object.
     """
-    global _defaultLogger
+    global _default_logger
 
-    _defaultLogger = logger
+    _default_logger = logger
 
 
-def get_file_name(logger: Union[logging.Logger, str], fName: Optional[str] = None) -> str:
+def get_file_name(logger: Union[logging.Logger, str], file_name: Optional[str] = None) -> str:
     """Determine log file name, based on a current logger
-    name or given `fName`.
+    name or given `file_name`.
 
     Args:
         logger: logger instance or logger name.
-        fName: if given, this name is checked (for extension) or default
+        file_name: if given, this name is checked (for extension) or default
             file name is created from logger name.
 
     Returns:
@@ -356,13 +356,13 @@ def get_file_name(logger: Union[logging.Logger, str], fName: Optional[str] = Non
     """
     logger = _get_logger(logger)
 
-    if fName is None:
-        fName = f"{logger.name}{DEFAULT_LOG_FILE_EXT}"
+    if file_name is None:
+        file_name = f"{logger.name}{DEFAULT_LOG_FILE_EXT}"
     else:
-        if dlpt.pth.get_ext(fName) == "":
-            fName = f"{fName}{DEFAULT_LOG_FILE_EXT}"
+        if dlpt.pth.get_ext(file_name) == "":
+            file_name = f"{file_name}{DEFAULT_LOG_FILE_EXT}"
 
-    return fName
+    return file_name
 
 
 def get_default_log_dir() -> str:
@@ -371,9 +371,9 @@ def get_default_log_dir() -> str:
     Returns:
         Path to a folder where logs are usually created.
     """
-    dirPath = os.path.join(os.getcwd(), DEFAULT_LOG_DIR_NAME)
+    dir_path = os.path.join(os.getcwd(), DEFAULT_LOG_DIR_NAME)
 
-    return dlpt.pth.resolve(dirPath)
+    return dlpt.pth.resolve(dir_path)
 
 
 def _check_default_logger() -> logging.Logger:
@@ -383,29 +383,29 @@ def _check_default_logger() -> logging.Logger:
     Returns:
         Logger instance object.
     """
-    if _defaultLogger is None:
-        errorMsg = "No default logger instance available."
-        raise Exception(errorMsg)
+    if _default_logger is None:
+        err_msg = "No default logger instance available."
+        raise Exception(err_msg)
     else:
-        return _defaultLogger
+        return _default_logger
 
 
 class ReleaseFileLock:
-    def __init__(self, logger: Union[logging.Logger, str], fPath: str):
+    def __init__(self, logger: Union[logging.Logger, str], file_path: str):
         """Temporary release file handler of logging file streams to be able
         to copy file (for example, log file is locked by logger on Windows.) Use
         as a context manager.
 
         Args:
             logger: logger instance or logger name.
-            fPath: logging file path
+            file_path: logging file path
 
         Example:
-            >>> with dlpt.log.ReleaseFileLock(logger, fPath):
-            >>>     shutil.move(fPath, tmp_path)
+            >>> with dlpt.log.ReleaseFileLock(logger, file_path):
+            >>>     shutil.move(file_path, tmp_path)
         """
         self.logger = _get_logger(logger)
-        self.fPath = dlpt.pth.resolve(fPath)
+        self.file_path = dlpt.pth.resolve(file_path)
 
         self.hdlrs: List[logging.FileHandler] = []
 
@@ -415,7 +415,7 @@ class ReleaseFileLock:
         """
         for hdlr in self.logger.handlers:
             if isinstance(hdlr, logging.FileHandler):
-                if dlpt.pth.resolve(hdlr.baseFilename) == self.fPath:
+                if dlpt.pth.resolve(hdlr.baseFilename) == self.file_path:
                     self.hdlrs.append(hdlr)
                     hdlr.flush()
                     hdlr.stream.close()
@@ -534,12 +534,12 @@ class LoggingServer(socketserver.ThreadingTCPServer):
             self.handle_error(request, client_address)  # pragma: no cover
 
 
-def create_log_server_proc(fPath: str, port: int = DEFAULT_SERVER_SOCKET_PORT) -> int:
+def create_log_server_proc(file_path: str, port: int = DEFAULT_SERVER_SOCKET_PORT) -> int:
     """Create socket server logger subprocess that logs all received messages
     on a given ``port`` socket to a log file handler.
 
     Args:
-        fPath: absolute path to a log file, including extension.
+        file_path: absolute path to a log file, including extension.
         port: port where socket server will listen.
 
     Note:
@@ -552,25 +552,25 @@ def create_log_server_proc(fPath: str, port: int = DEFAULT_SERVER_SOCKET_PORT) -
         PID of created socket server subprocess.
     """
     if not _is_port_free(port):  # pragma: no cover
-        errorMsg = f"Unable to reuse port {port} for a logging "
-        errorMsg += "(socket server) purposes. Port in use?"
-        raise Exception(errorMsg)
+        err_msg = f"Unable to reuse port {port} for a logging "
+        err_msg += "(socket server) purposes. Port in use?"
+        raise Exception(err_msg)
 
-    socketServerProc = multiprocessing.Process(
+    socket_server_proc = multiprocessing.Process(
         target=_spawn_log_server_proc,
         args=(
-            fPath,
+            file_path,
             port,
         ),
         daemon=True,
     )
 
-    socketServerProc.start()
-    assert socketServerProc.pid is not None
+    socket_server_proc.start()
+    assert socket_server_proc.pid is not None
     # Let's try and shutdown automatically on application exit...
-    atexit.register(dlpt.proc.kill_tree, socketServerProc.pid, False)
+    atexit.register(dlpt.proc.kill_tree, socket_server_proc.pid, False)
 
-    return socketServerProc.pid
+    return socket_server_proc.pid
 
 
 def _is_port_free(port: int, host: str = "localhost") -> bool:
@@ -589,32 +589,32 @@ def _is_port_free(port: int, host: str = "localhost") -> bool:
     .. _checked:
         https://stackoverflow.com/questions/2470971/fast-way-to-test-if-a-port-is-in-use-using-python
     """
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socketHandler:
-        socketHandler.settimeout(0.2)
-        isFree = False
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socket_hdlr:
+        socket_hdlr.settimeout(0.2)
+        is_free = False
         try:
-            socketHandler.bind((host, port))
-            isFree = True
+            socket_hdlr.bind((host, port))
+            is_free = True
         except Exception as err:  # pragma: no cover
             pass
 
-        return isFree
+        return is_free
 
 
-def _spawn_log_server_proc(fPath: str, port: int):  # pragma: no cover
+def _spawn_log_server_proc(file_path: str, port: int):  # pragma: no cover
     """Function that is spawned as subprocess (see
     :func:`create_log_server_proc()`) and initialize log socket server and
     file log handler.
 
     Args:
-        fPath: absolute path to a log file, including extension.
+        file_path: absolute path to a log file, including extension.
         port: port where socket server will listen.
     """
-    logger = create_logger(setAsDefault=False)
+    logger = create_logger(set_as_default=False)
     fmt = logging.Formatter(DEFAULT_SERVER_FMT, datefmt=DEFAULT_SERVER_FMT_TIME)
-    fName = dlpt.pth.get_name(fPath)
-    dirPath = os.path.dirname(fPath)
-    add_file_hdlr(logger, fName, dirPath, fmt)
+    file_name = dlpt.pth.get_name(file_path)
+    dir_path = os.path.dirname(file_path)
+    add_file_hdlr(logger, file_name, dir_path, fmt)
 
     server = LoggingServer(port)
 
@@ -623,7 +623,7 @@ def _spawn_log_server_proc(fPath: str, port: int):  # pragma: no cover
     t.join()
 
 
-def log_server_shutdown_request(logger: Union[logging.Logger, str], pid: int, timeoutSec: int = 3) -> bool:
+def log_server_shutdown_request(logger: Union[logging.Logger, str], pid: int, timeout_sec: int = 3) -> bool:
     """Send 'unique' log message that indicates to server to perform
     shutdown - close all connections and finish process.
 
@@ -631,7 +631,7 @@ def log_server_shutdown_request(logger: Union[logging.Logger, str], pid: int, ti
         logger: logger instance or logger name. Note that logging server
             handler must be available in this logger.
         pid: logging server PID.
-        timeoutSec: time to wait until logging server PID is checked for status.
+        timeout_sec: time to wait until logging server PID is checked for status.
             In case of 0, function return value is not relevant.
 
     Returns:
@@ -652,14 +652,14 @@ def log_server_shutdown_request(logger: Union[logging.Logger, str], pid: int, ti
 
             try:
                 proc = psutil.Process(pid)
-                proc.wait(timeoutSec)
+                proc.wait(timeout_sec)
                 return True
             except psutil.TimeoutExpired:  # pragma: no cover
                 return False
     else:
-        errorMsg = "Given logger does not have 'logging server handler' added, "
-        errorMsg += "unable to send server shutdown request."
-        raise Exception(errorMsg)
+        err_msg = "Given logger does not have 'logging server handler' added, "
+        err_msg += "unable to send server shutdown request."
+        raise Exception(err_msg)
 
 
 def _determine_logger(logger: Union[None, logging.Logger, str] = None) -> logging.Logger:

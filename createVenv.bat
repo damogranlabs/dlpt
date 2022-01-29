@@ -1,6 +1,6 @@
 @echo off
 
-SET PY_EXE_PATH=python
+SET PY_EXE_PATH="C:\Python3.8.7\python.exe"
 
 %PY_EXE_PATH% -m venv ./env
 CALL .\env\Scripts\activate.bat
