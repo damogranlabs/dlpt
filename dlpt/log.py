@@ -106,9 +106,8 @@ def _get_logger(logger: Union[logging.Logger, str]) -> logging.Logger:
         if logger in logging.Logger.manager.loggerDict:
             return logging.getLogger(logger)
         else:
-            err_msg = f"Logger with name '{logger}' does not exist. Use "
-            err_msg += "`dlpt.log.create_logger()` or manually create new "
-            err_msg += "logging.Logger instance."
+            err_msg = f"Logger with name '{logger}' does not exist. "
+            err_msg += "Use  `dlpt.log.create_logger()` or manually create new logging.Logger instance."
             raise ValueError(err_msg)
     else:
         return logger
