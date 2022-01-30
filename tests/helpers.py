@@ -4,40 +4,40 @@ import time
 from typing import List, Optional
 
 
-def sleep(sleepTime: float):
-    time.sleep(sleepTime)
+def sleep(sleep_time: float):
+    time.sleep(sleep_time)
 
 
-def sleep_with_exit_code(sleepTime: float, sysExitCode: int):
-    sleep(sleepTime)
+def sleep_with_exit_code(sleep_time: float, sys_exit_code: int):
+    sleep(sleep_time)
 
-    if sysExitCode:
-        sys.exit(sysExitCode)
-
-
-def sleep_with_return_code(sleepTime: float, returnCode: int):
-    sleep(sleepTime)
-
-    if returnCode:
-        return returnCode
+    if sys_exit_code:
+        sys.exit(sys_exit_code)
 
 
-def multiprocess_child(sleepTime: float):
+def sleep_with_return_code(sleep_time: float, return_code: int):
+    sleep(sleep_time)
+
+    if return_code:
+        return return_code
+
+
+def multiprocess_child(sleep_time: float):
     """
     This function is spawned by multiprocess_parent() and does nothing except wait.
     """
-    time.sleep(sleepTime)
+    time.sleep(sleep_time)
 
 
-def multiprocess_parent(childNum: int, sleepTime: float = 3):
+def multiprocess_parent(child_num: int, sleep_time: float = 3):
     """
     This function spawns other child processes multiprocess_child() -
     needed for PID and process control test functions.
     """
     childs = []
     # spawn child processes
-    for child in range(childNum):
-        proc = multiprocessing.Process(target=multiprocess_child, args=(sleepTime,))
+    for child in range(child_num):
+        proc = multiprocessing.Process(target=multiprocess_child, args=(sleep_time,))
         childs.append(proc)
         proc.start()
 
@@ -48,7 +48,7 @@ def multiprocess_parent(childNum: int, sleepTime: float = 3):
     time.sleep(1)
 
 
-def get_test_proc_args(sleepTimeSec: Optional[float] = 10) -> List[str]:
+def get_test_proc_args(sleep_time: Optional[float] = 10) -> List[str]:
     """Return command line string necessary to spawn this file as a subprocess
     (and execute __main__).
 
@@ -59,16 +59,16 @@ def get_test_proc_args(sleepTimeSec: Optional[float] = 10) -> List[str]:
         Command line arguments (list of strings) to spawn this file __main__.
 
     """
-    args = [sys.executable, __file__, str(sleepTimeSec)]
+    args = [sys.executable, __file__, str(sleep_time)]
 
     return args
 
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
-        sleepTime = float(sys.argv[1])
+        sleep_time = float(sys.argv[1])
     else:
-        sleepTime = 10
-    sleep(sleepTime)
+        sleep_time = 10
+    sleep(sleep_time)
 
     sys.exit(0)
