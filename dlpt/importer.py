@@ -15,7 +15,7 @@ import dlpt
 class ModuleImporter:
     def __init__(self, file_path: str, base_dir_path: Optional[str] = None):
         """
-        Dynamically import module from given `file_path`.
+        Dynamically import module from given ``file_path``.
 
         Args:
             file_path: abs path to a python module (file) which will be
@@ -27,7 +27,7 @@ class ModuleImporter:
                 -> module will be imported as: `someSubfolder.myModule`
 
         NOTE:
-            `base_dir_path` (or `file_path` root folder, if `base_dir_path`
+            ``base_dir_path`` (or ``file_path`` root directory, if ``base_dir_path``
             is not specified) is added to `sys.path`. It is NOT removed once
             object is garbage-collected.
         """
@@ -49,8 +49,8 @@ class ModuleImporter:
 
         if self.base_dir_path not in self.file_path:
             err_msg = f"Given `file_path` is not inside `base_dir_path`:"
-            err_msg += f"\n\tfilePath: {self.file_path}"
-            err_msg += f"\n\tbase_dir_path: {self.base_dir_path}"
+            err_msg += f"\n\t`filePath`: {self.file_path}"
+            err_msg += f"\n\t`base_dir_path`: {self.base_dir_path}"
             raise ValueError(err_msg)
 
         self._module: Optional[ModuleType] = None
