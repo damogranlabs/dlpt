@@ -172,10 +172,10 @@ def are_dict_keys_equal(d1: Dict[Any, Any], d2: Dict[Any, Any]) -> bool:
         d2: second dict to compare
     """
     if len(d1) == len(d2):
-        d1Keys = list(d1.keys())
-        d2Keys = list(d2.keys())
+        d1_keys = list(d1.keys())
+        d2_keys = list(d2.keys())
 
-        return are_list_values_equal(d1Keys, d2Keys)
+        return are_list_values_equal(d1_keys, d2_keys)
     else:
         return False
 
@@ -192,10 +192,10 @@ def are_dict_values_equal(d1: Dict[Any, Any], d2: Dict[Any, Any]) -> bool:
         d1: first dict to compare
         d2: second dict to compare
     """
-    d1Values = list(d1.values())
-    d2Values = list(d2.values())
+    d1_values = list(d1.values())
+    d2_values = list(d2.values())
 
-    return are_list_values_equal(d1Values, d2Values)
+    return are_list_values_equal(d1_values, d2_values)
 
 
 def map_dict_to_class(obj: object, data: Dict[str, Any]) -> object:
