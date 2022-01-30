@@ -140,8 +140,7 @@ def is_alive(pid: Optional[T_STR_INT]) -> bool:
         True if given PID exists and is running, False otherwise.
     """
     if pid is None:
-        err_msg = f"Unable to check PID - given 'pid' argument is None "
-        err_msg += f" (expecting string or int)."
+        err_msg = f"Unable to check PID - given 'pid' argument is None (expecting string or int)."
         raise ValueError(err_msg)
 
     try:
@@ -196,8 +195,7 @@ def kill(pid: T_STR_INT, raise_exception: bool = True, timeout_sec: Optional[int
 
     except Exception as err:  # pragma: no cover
         if raise_exception:
-            err_msg = "Unexpected exception while killing process with PID: "
-            err_msg += f"{pid}:\n{err}"
+            err_msg = f"Unexpected exception while killing process with PID: {pid}:\n{err}"
             raise Exception(err_msg) from err
         else:
             return False
@@ -220,8 +218,7 @@ def kill_childs(pid: T_STR_INT, raise_exception: bool = True) -> List[int]:
         child_pids = get_childs(pid)
     except Exception as err:  # pragma: no cover
         if raise_exception:
-            err_msg = "Unexpected exception while getting process with PID: "
-            err_msg += f"{pid} childs:\n{err}"
+            err_msg = f"Unexpected exception while getting process with PID: {pid} childs:\n{err}"
             raise Exception(err_msg) from err
         else:
             return []
@@ -325,8 +322,7 @@ def spawn_non_blocking_subproc(args: T_PROC_ARGS) -> int:
             # 0 - standard process success code
             return proc.pid
         else:  # pragma: no cover
-            err_msg = "Spawned non-blocking subprocess returned non-success "
-            err_msg += f"exit code: {proc.returncode}."
+            err_msg = f"Spawned non-blocking subprocess returned non-success exit code: {proc.returncode}."
             err_msg += f"\n\tCommand: {args}\n"
             raise Exception(err_msg)
     except Exception as err:
