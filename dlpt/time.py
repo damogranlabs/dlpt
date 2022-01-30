@@ -189,8 +189,7 @@ def _format_msec(dt: datetime.datetime, fmt: str, msec_digits: int) -> str:
             if msec_str != "":
                 dt_str = f"{dt_str}.{msec_str}"
         else:
-            err_msg = "Millisecond formatting supported only for formatters "
-            err_msg += f"that ends with '%S': '{fmt}'"
+            err_msg = f"Millisecond formatting supported only for formatters that ends with '%S': '{fmt}'"
             raise Exception(err_msg)
 
     return dt_str

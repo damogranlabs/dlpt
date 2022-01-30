@@ -106,8 +106,7 @@ def copy_file(src_file_path: str, dst_dir_path: str, dst_file_name: Optional[str
     """
     src_file_path = check(src_file_path)
     if not os.path.isfile(src_file_path):
-        err_msg = f"'copy_file()' is designed to copy files, "
-        err_msg += f"not directories/links: {src_file_path}"
+        err_msg = f"'copy_file()' is designed to copy files, not directories/links: {src_file_path}"
         raise ValueError(err_msg)
 
     if dst_file_name is None:
@@ -134,8 +133,7 @@ def copy_dir(src_dir_path: str, dst_dir_path: str) -> str:
     """
     src_dir_path = check(src_dir_path)
     if not os.path.isdir(src_dir_path):
-        err_msg = "'copy_dir()' is designed to copy directories, "
-        err_msg += f"not files/links: {src_dir_path}"
+        err_msg = "'copy_dir()' is designed to copy directories, not files/links: {src_dir_path}"
         raise ValueError(err_msg)
 
     _validate_path(dst_dir_path)
@@ -161,8 +159,7 @@ def remove_file(file_path: str, force_write_permissions: bool = True, retry: int
 
     if os.path.exists(file_path):
         if not os.path.isfile(file_path):
-            err_msg = "Function 'remove_file()' is designed to remove files, "
-            err_msg += f"not directories/links: {file_path}"
+            err_msg = f"Function 'remove_file()' is designed to remove files, not directories/links: {file_path}"
             raise ValueError(err_msg)
 
         take = 0
