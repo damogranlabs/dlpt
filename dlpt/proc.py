@@ -195,7 +195,7 @@ def kill(pid: T_STR_INT, raise_exception: bool = True, timeout_sec: Optional[int
 
     except Exception as err:  # pragma: no cover
         if raise_exception:
-            err_msg = f"Unexpected exception while killing process with PID: {pid}:\n{err}"
+            err_msg = f"Unexpected exception while killing process with PID: {pid}"
             raise Exception(err_msg) from err
         else:
             return False
@@ -218,7 +218,7 @@ def kill_childs(pid: T_STR_INT, raise_exception: bool = True) -> List[int]:
         child_pids = get_childs(pid)
     except Exception as err:  # pragma: no cover
         if raise_exception:
-            err_msg = f"Unexpected exception while getting process with PID: {pid} childs:\n{err}"
+            err_msg = f"Unexpected exception while getting child process of process with PID: {pid}"
             raise Exception(err_msg) from err
         else:
             return []
@@ -326,9 +326,8 @@ def spawn_non_blocking_subproc(args: T_PROC_ARGS) -> int:
             err_msg += f"\n\tCommand: {args}\n"
             raise Exception(err_msg)
     except Exception as err:
-        err_msg = f"Exception while spawning non-blocking subprocess.\n"
-        err_msg += f"\tCommand: {args}\n"
-        err_msg += f"\tError: {err}"
+        err_msg = f"Exception while spawning non-blocking subprocess."
+        err_msg += f"\n\tCommand: {args}\n"
         raise Exception(err_msg) from err
 
 
@@ -425,8 +424,7 @@ def spawn_subproc(
                 err_msg += f"\n\tStdout: {_decode(proc.stdout, encoding),}"
             if proc.stderr:
                 err_msg += f"\n\tStderr: {_decode(proc.stdout, encoding),}"
-        err_msg += f"\n\tError: {err}"
-        raise Exception(err_msg)
+        raise Exception(err_msg) from err
 
 
 def spawn_shell_subproc(
@@ -494,7 +492,7 @@ def _format_args(args: T_PROC_ARGS) -> List[str]:
         List of arguments, where each item is a string.
     """
     if not isinstance(args, list):
-        err_msg = f"'args' parameter must be list, not '{type(args)}':{args}"
+        err_msg = f"'args' parameter must be list, not '{type(args)}': {args}"
         raise Exception(err_msg)
 
     new_args = []
