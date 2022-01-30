@@ -10,8 +10,6 @@ import inspect
 from typing import Optional, Callable, Dict, Any, List
 from types import ModuleType
 
-import dlpt
-
 
 def float_to_str(number: float, show_num_of_digits: int = 2) -> str:
     """Convert float number with any number of decimal digits and return string
