@@ -162,9 +162,9 @@ def add_file_hdlr(
         file_name: name of a log file. If there is no file extension, default
             ``DEFAULT_LOG_FILE_EXT`` is appended. If ``None``, logger name
             is used as a file name.
-        dir_path: path to a folder where logs will be stored. If ``None``,
+        dir_path: path to a directory where logs will be stored. If ``None``,
             path is fetched with :func:`get_default_log_dir()`.If log
-            folder does not exist, it is created.
+            directory does not exist, it is created.
         fmt: Optional custom formatter for created handler. By default,
             DEFAULT_FORMATTER and DEFAULT_FORMATTER_TIME is used.
         level: Log level for this specific handler. By default,
@@ -212,9 +212,9 @@ def add_rotating_file_hdlr(
         file_name: name of a log file. If there is no file extension, default
             ``DEFAULT_LOG_FILE_EXT`` is appended. If ``None``, logger name
             is used as a file name.
-        dir_path: path to a folder where logs will be stored. If ``None``,
+        dir_path: path to a directory where logs will be stored. If ``None``,
             path is fetched with :func:`get_default_log_dir()`. If log
-            folder does not exist, it is created.
+            directory does not exist, it is created.
         max_size_kb: number of KB at which rollover is performed on a
             current log file.
         backup_count: number of files to store (if file with given name
@@ -366,10 +366,10 @@ def get_file_name(logger: Union[logging.Logger, str], file_name: Optional[str] =
 
 
 def get_default_log_dir() -> str:
-    """Get default log folder path: <cwd>/log folder.
+    """Get default log directory path: <cwd>/DEFAULT_LOG_DIR_NAME.
 
     Returns:
-        Path to a folder where logs are usually created.
+        Path to a directory where logs are usually created.
     """
     dir_path = os.path.join(os.getcwd(), DEFAULT_LOG_DIR_NAME)
 

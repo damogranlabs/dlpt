@@ -20,11 +20,11 @@ class ModuleImporter:
         Args:
             file_path: abs path to a python module (file) which will be
                 dynamically imported.
-            base_dir_path: path to a root folder from where module
+            base_dir_path: path to a root directory from where module
                 will be imported. Example:
-                ``file_path = C:/root/someFolder/someSubfolder/myModule.py``
-                ``base_dir_path = C:/root/someFolder/``
-                -> module will be imported as: `someSubfolder.myModule`
+                ``file_path = C:/root/someDir/someSubdir/myModule.py``
+                ``base_dir_path = C:/root/someDir/``
+                -> module will be imported as: `someSubdir.myModule`
 
         NOTE:
             ``base_dir_path`` (or ``file_path`` root directory, if ``base_dir_path``
@@ -65,7 +65,7 @@ class ModuleImporter:
             Imported module instance (object).
         """
 
-        # add base folder to sys.path because of
+        # add base directory to sys.path because of
         # possible other imports inside module, pickling, ...
         for path in sys.path:
             if os.path.normpath(path).lower() == self.base_dir_path.lower():

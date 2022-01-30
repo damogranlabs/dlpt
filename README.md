@@ -17,7 +17,7 @@ in every single project. Everyday struggle with:
 * how do I initialize logger and add file handler?
 * how do I temporary change current working directory?
 * how do I spawn a subprocess and add stdout on any exception?
-* how do I get only folders inside some location?
+* how do I get only directories inside some location?
 * how do I parse JSON file with comments?
 * how do I format time to string in one line?
 * how do I dynamically import some module that is not on a `sys.path`?
@@ -28,7 +28,7 @@ just simplified.
 Mostly built upon standard built-in code, but with a lot more straight-forward and less cluttered API.
 
 ## Modules
-`dlpt.pth`: everything about paths and filed/folder operations: list files/folders, copy/remove, get extensions, ...  
+`dlpt.pth`: everything about paths and file/directory operations: list files/directories, copy/remove, get extensions, ...  
 `dlpt.utils`: everyhting we always need and never remember: list/dict comparison, values<->string transformation, module inspections, ...  
 `dlpt.log`: create new logger(s) and/or add common handlers (console/stream, file, ...) to any logger. Supports cross-process logging.  
 `dlpt.proc`: everything about common process use cases, but with more info on exceptions and easier straight-forward API.  
@@ -40,7 +40,7 @@ Mostly built upon standard built-in code, but with a lot more straight-forward a
 ## Examples:  
 > How do I initialize logger and add file handler?
 ```python
-# init default logger with console and file handler (file in <cwd>/log subfolder)
+# init default logger with console and file handler (file in <cwd>/log sub-directory)
 import dlpt
 
 logger = dlpt.log.create_logger("my_logger")
@@ -80,7 +80,7 @@ args = [sys.executable, "-c", "throw exception"]
 dlpt.proc.spawn_subproc(args)
 ```
 
-> How do I get only folders inside some location?
+> How do I get only directories inside some location?
 ```python
 import dlpt
 

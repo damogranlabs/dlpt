@@ -13,7 +13,7 @@ this_file = str(pathlib.Path(__file__).resolve())
 this_dir = os.path.dirname(this_file)
 
 url_path = "https://xkcd.com/"
-unc_path = r"\\root\rootFolder\dir1\folder2\folder3\folder4"
+unc_path = r"\\root\rootdir\dir1\dir2\dir3\dir4"
 
 
 @pytest.mark.parametrize("is_file", [False, True])
@@ -110,7 +110,7 @@ def test_copy_file_checks():
             is_file_func.return_value = False
 
             with pytest.raises(ValueError):
-                dlpt.pth.copy_file(__file__, __file__)  # folder, not file
+                dlpt.pth.copy_file(__file__, __file__)  # directory, not file
 
 
 @pytest.mark.parametrize("dst_file_name", [None, "newFileName.txt"])
@@ -165,7 +165,7 @@ def test_copy_dir_checks():
             is_dir_func.return_value = False
 
             with pytest.raises(ValueError):
-                dlpt.pth.copy_dir(__file__, __file__)  # file, not folder
+                dlpt.pth.copy_dir(__file__, __file__)  # file, not directory
 
 
 def test_copy_dir(tmp_path):
@@ -200,7 +200,7 @@ def test_remove_file_checks(tmp_path):
         is_file_func.return_value = False
 
         with pytest.raises(ValueError):
-            dlpt.pth.remove_file(tmp_path)  # folder, not file
+            dlpt.pth.remove_file(tmp_path)  # directory, not file
 
 
 @pytest.mark.parametrize("force_write_permissions", [False, True])
@@ -347,7 +347,7 @@ def test_remove_old_items(tmp_path):
     DAY_IN_SEC = 24 * 60 * 60
     current_time = time.time()
 
-    items = ["now.txt", "dayOld.txt", "dayOldFolder", "sameAsDaysArgument.txt", "oldFile.txt", "oldFolder"]
+    items = ["now.txt", "dayOld.txt", "dayOldDir", "sameAsDaysArgument.txt", "oldFile.txt", "oldDir"]
     mod_time = [
         current_time - 0,
         current_time - 1 * DAY_IN_SEC,
@@ -413,7 +413,7 @@ def test_get_ext():
 
 
 def test_get_files_in_dir(tmp_path):
-    items = ["file1.txt", "dir1", "file3.png", "folder2", "file4.jpg"]
+    items = ["file1.txt", "dir1", "file3.png", "dir2", "file4.jpg"]
     is_file = [True, False, True, False, True]
 
     with mock.patch("os.listdir") as list_func:
@@ -456,7 +456,7 @@ def test_get_files_in_dir_tree(tmp_path):
     dlpt.pth.create_dir(dir1)
     txt2 = dlpt.pth.copy_file(__file__, dir1, "file11.txt")
     png2 = dlpt.pth.copy_file(__file__, dir1, "file12.png")
-    subdir = os.path.join(dir1, "subfolder")
+    subdir = os.path.join(dir1, "subdir")
     txt3 = dlpt.pth.copy_file(__file__, subdir, "file21.txt")
     jpg3 = dlpt.pth.copy_file(__file__, subdir, "file22.jpg")
 
@@ -481,7 +481,7 @@ def test_get_files_in_dir_tree(tmp_path):
 
 
 def test_get_dirs_in_dir(tmp_path):
-    items = ["file1.txt", "folder", "file3.png", "Folder", "file4.jpg"]
+    items = ["file1.txt", "dir", "file3.png", "Dir", "file4.jpg"]
     is_dir = [False, True, False, True, False]
 
     with mock.patch("os.listdir") as list_func:
@@ -499,13 +499,13 @@ def test_get_dirs_in_dir(tmp_path):
             assert len(files) == 2
 
             is_dir_func.side_effect = is_dir
-            files = dlpt.pth.get_dirs_in_dir(tmp_path, "folder", True)  # compare lower case
+            files = dlpt.pth.get_dirs_in_dir(tmp_path, "dir", True)  # compare lower case
             assert len(files) == 2
             assert os.path.join(tmp_path, items[1]) in files
             assert os.path.join(tmp_path, items[3]) in files
 
             is_dir_func.side_effect = is_dir
-            files = dlpt.pth.get_dirs_in_dir(tmp_path, "folder", False)
+            files = dlpt.pth.get_dirs_in_dir(tmp_path, "dir", False)
             assert len(files) == 1
             assert os.path.join(tmp_path, items[1]) in files
 

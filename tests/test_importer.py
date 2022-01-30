@@ -58,12 +58,12 @@ def test_basic(tmp_path):
         with pytest.raises(ValueError):
             dlpt.importer.ModuleImporter(rel_path)
 
-    # file is not inside base folder
+    # file is not inside base directory
     base_dir_path = os.path.dirname(os.path.dirname(tmp_file_path))
     with pytest.raises(ValueError):
         dlpt.importer.ModuleImporter(__file__, base_dir_path)
 
-    # folder, not file
+    # directory, not file
     with pytest.raises(ValueError):
         dlpt.importer.ModuleImporter(os.path.dirname(tmp_file_path))
 
@@ -88,7 +88,7 @@ def test_custom_base_dir_same_dir(tmp_path):
 
 
 def test_custom_base_dir_subdir(tmp_path):
-    dir_path = os.path.join(tmp_path, "root", "package", "subFolder")
+    dir_path = os.path.join(tmp_path, "root", "package", "subdir")
     dlpt.pth.create_dir(dir_path)
     file_path = os.path.join(dir_path, MODULE_NAME)
     create_tmp_py_file(file_path)
