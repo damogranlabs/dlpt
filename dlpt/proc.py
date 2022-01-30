@@ -123,6 +123,7 @@ def get_cmd_args(pid: T_STR_INT) -> List[str]:
     """
     proc = psutil.Process(int(pid))
     cmd_line = proc.cmdline()
+    # update first item with process executable (absolute path).
     cmd_line[0] = proc.exe()
 
     return cmd_line
