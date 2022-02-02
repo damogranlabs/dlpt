@@ -40,7 +40,7 @@ def remove_comments(data_str: str) -> str:
         https://stackoverflow.com/a/241506
     """
 
-    def replacer(match: re.Match) -> str:
+    def replacer(match: re.match) -> str:
         s = match.group(0)
         if s.startswith("/"):
             return " "  # note: a space and not an empty string
