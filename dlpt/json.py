@@ -4,7 +4,7 @@ Read and write JSON files, JSON files with comments and (un)picklable JSON data.
 import json
 import jsonpickle
 import re
-from typing import Dict, Optional, Union, Any, List, cast
+from typing import Dict, Optional, Union, Any, List, cast, Match
 
 import dlpt
 
@@ -40,7 +40,7 @@ def remove_comments(data_str: str) -> str:
         https://stackoverflow.com/a/241506
     """
 
-    def replacer(match: re.match) -> str:
+    def replacer(match: Match) -> str:
         s = match.group(0)
         if s.startswith("/"):
             return " "  # note: a space and not an empty string
