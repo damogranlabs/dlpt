@@ -4,6 +4,7 @@ Functions for spawning, killing and getting process info.
 import os
 import signal
 import subprocess
+import sys
 import traceback
 from typing import Optional, List, Union, Sequence
 
@@ -470,14 +471,22 @@ def spawn_shell_subproc(
         ``CompleteProcess`` object once process execution has finished or was
         terminated.
     """
+    stdout = None
+    stderr = None
+    if (sys.version_info.major == 3) and (sys.version_info.minor < 7):
+        # 'capture_output' was introduced in py 3.6
+        stdout = subprocess.PIPE
+        stderr = subprocess.PIPE
+    else:
+        run_args["capture_output"] = True
+
     return spawn_subproc(
         args,
-        stdout=None,
-        stderr=None,
+        stdout=stdout,
+        stderr=stderr,
         check_return_code=check_return_code,
         encoding=encoding,
         timeout_sec=timeout_sec,
-        capture_output=True,
         shell=True,
         **run_args,
     )
