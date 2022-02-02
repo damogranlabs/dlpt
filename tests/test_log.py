@@ -81,13 +81,13 @@ def test_add_console_hdlr(my_logger: logging.Logger):
     assert len(my_logger.handlers) == 1
     assert isinstance(hdlr, logging.StreamHandler)
 
-    with mock.patch.object(hdlr.stream, "write") as func:
+    with mock.patch.object(hdlr, "handle") as func:
         my_logger.info(LOG_MSG_NOT_LOGGED)
         func.assert_not_called()
 
         my_logger.warning(LOG_MSG_OK)
         func.assert_called_once()
-        _check_format(func.call_args[0][0])
+        _check_format(hdlr.formatter.format(func.call_args[0][0]))
 
 
 def test_add_file_hdlr(my_logger: logging.Logger, tmp_path):
