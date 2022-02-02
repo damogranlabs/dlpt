@@ -174,9 +174,9 @@ def test_spawn_subproc_exception():
 
     # invalid arg, spawn Exception
     with pytest.raises(Exception) as err:
-        dlpt.proc.spawn_subproc(args, invalidArg=None)
+        dlpt.proc.spawn_subproc(args, invalid_arg=None)
     assert "Unexpected exception while spawning subprocess" in str(err.value)
-    assert "got an unexpected keyword argument 'invalidArg'" in str(err.value)
+    assert "got an unexpected keyword argument 'invalid_arg'" in str(err.value)
 
 
 def test_spawn_subproc_timeout():

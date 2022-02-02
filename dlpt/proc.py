@@ -4,6 +4,7 @@ Functions for spawning, killing and getting process info.
 import os
 import signal
 import subprocess
+import traceback
 from typing import Optional, List, Union, Sequence
 
 import psutil
@@ -421,9 +422,10 @@ def spawn_subproc(
         err_msg += f"\n\tCommand: {args}"
         if proc:  # pragma: no cover
             if proc.stdout:
-                err_msg += f"\n\tStdout: {_decode(proc.stdout, encoding),}"
+                err_msg += f"\n\tStdout: {_decode(proc.stdout, encoding)}"
             if proc.stderr:
-                err_msg += f"\n\tStderr: {_decode(proc.stdout, encoding),}"
+                err_msg += f"\n\tStderr: {_decode(proc.stdout, encoding)}"
+        err_msg += f"\n\tTraceback: {traceback.format_exc()}"
         raise Exception(err_msg) from err
 
 
