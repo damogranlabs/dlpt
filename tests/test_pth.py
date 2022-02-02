@@ -481,7 +481,7 @@ def test_get_files_in_dir_tree(tmp_path):
 
 
 def test_get_dirs_in_dir(tmp_path):
-    items = ["file1.txt", "dir", "file3.png", "Dir", "file4.jpg"]
+    items = ["file1.txt", "dir1", "file3.png", "Dir2", "file4.jpg"]
     is_dir = [False, True, False, True, False]
 
     with mock.patch("os.listdir") as list_func:
@@ -495,7 +495,7 @@ def test_get_dirs_in_dir(tmp_path):
             assert os.path.join(tmp_path, items[3]) in files
 
             is_dir_func.side_effect = is_dir
-            files = dlpt.pth.get_dirs_in_dir(tmp_path, "older")
+            files = dlpt.pth.get_dirs_in_dir(tmp_path, "ir")  # dir, without d.
             assert len(files) == 2
 
             is_dir_func.side_effect = is_dir
