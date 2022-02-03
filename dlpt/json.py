@@ -9,24 +9,6 @@ from typing import Dict, Optional, Union, Any, List, cast, Match
 import dlpt
 
 
-def check(file_path: str) -> bool:
-    """Check if given file is a valid JSON file.
-
-    Args:
-        file_path: path to a file to check.
-
-    Returns:
-        True if file is a valid JSON file, False otherwise.
-    """
-    file_path = dlpt.pth.check(file_path)
-    try:
-        with open(file_path, "r") as f:
-            json.load(f)
-        return True
-    except Exception as err:
-        return False
-
-
 def remove_comments(data_str: str) -> str:
     """Return given string with removed C/C++ style `comments`_.
 
@@ -69,7 +51,7 @@ def read(file_path: str) -> Dict[str, Any]:
     return data
 
 
-def write(data: Dict[str, Any], file_path: str, indent: int = 2, sort_keys: bool = True, *args):
+def write(data: Dict[str, Any], file_path: str, indent: int = 2, sort_keys: bool = True, *args, **kwargs):
     """Write given data to a file in a JSON format.
 
     Args:
@@ -79,12 +61,13 @@ def write(data: Dict[str, Any], file_path: str, indent: int = 2, sort_keys: bool
         sort_keys: if True, data keys are sorted alphabetically, else
             left unchanged.
         *args: `json.dump()` additional arguments.
+        **kwargs: `json.dump()` additional keyword arguments.
     """
     with open(file_path, "w+") as fHandler:
-        json.dump(data, fHandler, sort_keys=sort_keys, indent=indent)
+        json.dump(data, fHandler, sort_keys=sort_keys, indent=indent, *args, **kwargs)
 
 
-def read_jsonpickle(file_path: str, classes: Optional[Union[object, List[object]]] = None) -> Any:
+def read_jsonpickle(file_path: str, classes: Optional[Union[object, List[object]]] = None, *args) -> Any:
     """Read given file and return unpicklable data - python objects with
     `jsonpickle`_ module.
 
@@ -93,6 +76,7 @@ def read_jsonpickle(file_path: str, classes: Optional[Union[object, List[object]
         classes: see `jsonpickle`_ `decode()` docstring. TLDR: if un-picklable
             objects are from modules which are not globally available,
             use ``classes`` arg to specify them.
+        *args: `jsonpickle.decode()` additional arguments.
 
     Returns:
         Python object(s) of unpickled JSON data.
@@ -103,12 +87,12 @@ def read_jsonpickle(file_path: str, classes: Optional[Union[object, List[object]
     dlpt.pth.check(file_path)
     with open(file_path, "r") as f:
         data_str = f.read()
-    data = jsonpickle.decode(data_str, classes=classes)
+    data = jsonpickle.decode(data_str, classes=classes, *args)
 
     return data
 
 
-def write_jsonpickle(data: Any, file_path: str, indent: int = 2):
+def write_jsonpickle(data: Any, file_path: str, indent: int = 2, *args):
     """Write given data to a file in a JSON format with `jsonpickle`_ module,
     which adds data type info for unpickling with :func:`read_jsonpickle()`.
 
@@ -116,10 +100,11 @@ def write_jsonpickle(data: Any, file_path: str, indent: int = 2):
         data: serializable object to store to a file in JSON format.
         file_path: destination file path.
         indent: number of spaces for line indentation.
+        *args: `jsonpickle.encode()` additional arguments.
 
     .. _jsonpickle:
         https://pypi.org/project/jsonpickle/
     """
-    data_str = cast(str, jsonpickle.encode(data, indent=indent))
+    data_str = cast(str, jsonpickle.encode(data, indent=indent, *args))
     with open(file_path, "w+") as f:
         f.write(data_str)

@@ -7,27 +7,6 @@ import pytest
 import dlpt
 
 
-def test_check(tmp_path):
-    file_path = os.path.join(tmp_path, "jsonTest.json")
-
-    # empty file
-    with open(file_path, "w+") as f:
-        pass
-    assert dlpt.json.check(file_path) is False
-
-    # invalid syntax, missing \" in zxc
-    data_str = '{"asd": "qwe","zxc: 123}'
-    with open(file_path, "w+") as f:
-        f.write(data_str)
-    assert dlpt.json.check(file_path) is False
-
-    # valid syntax
-    data_str = '{"asd": "qwe","zxc": 123}'
-    with open(file_path, "w+") as f:
-        f.write(data_str)
-    assert dlpt.json.check(file_path) is True
-
-
 def test_remove_comments():
     DATA_STR = """{"asd": /*inline with special characters: !@/[]()/\\ */ "qwe",
     // comment in its own line
