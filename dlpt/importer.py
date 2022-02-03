@@ -14,32 +14,28 @@ import dlpt
 
 class ModuleImporter:
     def __init__(self, file_path: str, base_dir_path: Optional[str] = None):
-        """
-        Dynamically import module from given ``file_path``.
+        """Dynamically import module from a given ``file_path``.
 
         Args:
             file_path: abs path to a python module (file) which will be
                 dynamically imported.
             base_dir_path: path to a root directory from where module
-                will be imported. Example:
+                will be imported. If not specified, ``file_path`` root directory
+                is used as ``base_dir_path``. Example:
                 ``file_path = C:/root/someDir/someSubdir/myModule.py``
                 ``base_dir_path = C:/root/someDir/``
                 -> module will be imported as: `someSubdir.myModule`
 
         NOTE:
-            ``base_dir_path`` (or ``file_path`` root directory, if ``base_dir_path``
-            is not specified) is added to `sys.path`. It is NOT removed once
+            ``base_dir_path`` is added to `sys.path`. It is NOT removed once
             object is garbage-collected.
         """
         self.file_path = os.path.normpath(file_path)
         dlpt.pth.check(self.file_path)
         if not os.path.isabs(self.file_path):
-            err_msg = f"Given `file_path` is not an ABSOLUTE file path: "
-            err_msg += self.file_path
-            raise ValueError(err_msg)
+            raise ValueError(f"Given `file_path` is not an ABSOLUTE file path: {self.file_path}")
         if not os.path.isfile(self.file_path):
-            err_msg = f"Given `file_path` is not a FILE path: {self.file_path}"
-            raise ValueError(err_msg)
+            raise ValueError(f"Given `file_path` is not a FILE path: {self.file_path}")
 
         if base_dir_path is None:
             self.base_dir_path = os.path.dirname(self.file_path)
@@ -58,8 +54,7 @@ class ModuleImporter:
         self._import()
 
     def _import(self) -> ModuleType:
-        """
-        Import module and return module instance object.
+        """Import module and return module instance object.
 
         Returns:
             Imported module instance (object).
@@ -92,8 +87,6 @@ class ModuleImporter:
 
     def get_module(self) -> ModuleType:
         """
-        Return imported module object.
-
         Returns:
             Imported module instance (object).
         """
@@ -102,25 +95,22 @@ class ModuleImporter:
         return self._module
 
     def has_object(self, name: str, raise_exception: bool = True) -> bool:
-        """
-        Check if imported module has object with objectName.
+        """Check if imported module has object with ``name``.
 
         Args:
-            name: name of the object to check in imported module
+            name: name of the object to check existence in imported module.
             raise_exception: if True, exception is raised if object is not
-                found. Otherwise bool is returned (True if object is found,
+                found. Otherwise, bool is returned (True if object is found,
                 False otherwise).
 
         Returns:
-            True if imported module has object with `name`, False
-            otherwise.
+            True if imported module has object with `name`, False otherwise.
         """
         if self._module:
             if hasattr(self._module, name):
                 return True
 
         if raise_exception:
-            err_msg = f"Imported module has no object with name '{name}'."
-            raise Exception(err_msg)
+            raise Exception(f"Imported module has no object with name '{name}'.")
         else:
             return False
