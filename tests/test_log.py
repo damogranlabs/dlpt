@@ -274,14 +274,41 @@ def test_default_log_functions():
                 log.info("info")
                 log.warning("warning")
                 log.error("error")
+                log.error_with_traceback("error, no traceback (no exception)")
                 log.critical("critical")
-        assert func.call_count == 5
+        assert func.call_count == 6
         assert func2.call_count == 0
     except Exception as err:
         raise
     finally:
         logging.Logger.manager.loggerDict.pop(non_default_logger.name)
         logging.Logger.manager.loggerDict.pop(logger.name)
+
+
+def test_log_with_traceback(my_logger: logging.Logger):
+    assert len(my_logger.handlers) == 0
+    hdlr = log.add_console_hdlr(my_logger, CUSTOM_FMT, logging.WARNING)
+
+    with mock.patch.object(log, "warning") as warn_func:
+        with mock.patch.object(log, "error") as err_func:
+            with mock.patch.object(log, "critical") as crit_func:
+                log.warning_with_traceback("No error", my_logger)
+                log.error_with_traceback("No error", my_logger)
+                log.critical_with_traceback("No error", my_logger)
+
+                assert "exc_info" not in str(warn_func.call_args)
+                assert "exc_info" not in str(err_func.call_args)
+                assert "exc_info" not in str(crit_func.call_args)
+
+                try:
+                    raise ValueError("just some error.")
+                except Exception as err:
+                    log.warning_with_traceback("Intended error", my_logger)
+                    log.error_with_traceback("Intended error", my_logger)
+                    log.critical_with_traceback("Intended error", my_logger)
+                assert "exc_info" in str(warn_func.call_args)
+                assert "exc_info" in str(err_func.call_args)
+                assert "exc_info" in str(crit_func.call_args)
 
 
 def _check_format(log_msg: str):

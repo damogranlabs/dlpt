@@ -4,22 +4,31 @@ builtin 'logging' module.
 1. Create logger and (optionally) set it as a default `dlpt` logger. 
     Note: 
         'Default' logger means that (once initialized), any `dlpt` log 
-        functions, such as  :func:`info()` and :func:`warning()` will log to 
-        created logger. It is therefore possible to initialize logger in one 
-        place and use it in all other project files just by importing `dlpt.log`
-        and use the default logger.
-2. Use `add*()` functions to add common handlers to created logger instance:
-    console (terminal) handler, file handler, rotating file handler, server 
-    socket handler (for logs when multiple processes are used).
+        functions, such as :func:`info()` and :func:`warning()` will log to 
+        this *default* logger. Once initialized as default logger, any other
+        file can simply use `dlpt` log functions without setting up logger.
+    Example:
+        >>> #file1.py
+        >>> logger = dlpt.log.create_logger("my_logger")
+        >>> dlpt.log.add_file_hdlr(logger, "dlpt_example.log")
+        >>> dlpt.log.info("Log from file1.")
+        >>>
+        >>> #file2.py
+        >>> dlpt.log.info("Log from file2.")
+
+2. Use `dlpt.log.add_*()` functions to add common handlers to any 
+    ``logging.Logger`` instance: console (terminal) handler, file handler, 
+    rotating file handler, server socket handler (for logs when multiple 
+    processes are used).
 
 ## Logging server
 To unify logs from multiple processes, user can create logging server via 
 function :func:`create_log_server_proc()`. This process will create a custom 
-logger with file handler and open a socket connection on a designated port.
-Any logger (from any process), that has configured logging server handler (via 
-:func:`add_logging_server_hdlr()`) will push logs to this logging server and to
-a file. Note that log statements order might not be exactly the same as this is
-OS-dependant.
+logger with file handler and open a socket connection on a designated port.  
+Any logger (from any process) that has configured logging server handler (via 
+:func:`add_logging_server_hdlr()`) will push logs to this logging server and 
+therefore to a shared log file.   
+Note that log statements order might not be exactly the same as this is OS-dependant.
 """
 import atexit
 import logging
@@ -69,17 +78,14 @@ def create_logger(
     Args:
         name: Optional name of the new logger instance or root by default.
         set_as_default: If True, created logger instance will be set as a
-            default logger whenewer `dlpt.log.*` log functions are invoked..
-        logLevel: set log level for this specific logger.
-            By default, everything is logged (``DEBUG`` level).
-        logLevel: set log level for this specific logger. If None, do not
-            change log level. By default, everything is logged (``DEBUG`` level).
+            default logger whenewer `dlpt.log.*` log functions are invoked.
+        level: log level for this specific logger. If None,
+            everything is logged (``logging.DEBUG`` level).
     """
     global _default_logger
     if set_as_default:
         if _default_logger is not None:
-            err_msg = f"Unable to create new default logger instance, "
-            err_msg += f"default already set: {_default_logger.name}"
+            err_msg = f"Unable to create new default logger instance, default already set: {_default_logger.name}"
             raise Exception(err_msg)
 
     logger = logging.getLogger(name)
@@ -107,7 +113,7 @@ def _get_logger(logger: Union[logging.Logger, str]) -> logging.Logger:
             return logging.getLogger(logger)
         else:
             err_msg = f"Logger with name '{logger}' does not exist. "
-            err_msg += "Use  `dlpt.log.create_logger()` or manually create new logging.Logger instance."
+            err_msg += "Use `dlpt.log.create_logger()` or manually create new `logging.Logger` instance."
             raise ValueError(err_msg)
     else:
         return logger
@@ -126,7 +132,7 @@ def add_console_hdlr(
         logger: logger instance or logger name.
         fmt: Optional custom formatter for created handler. By default,
             DEFAULT_FORMATTER and DEFAULT_FORMATTER_TIME is used.
-        logLevel: set log level for this specific handler.
+        level: set log level for this specific handler.
             By default, everything is logged (``DEBUG`` level).
 
     Returns:
@@ -261,7 +267,7 @@ def add_logging_server_hdlr(
         logger: logger instance or logger name.
         port: socket port where logger writes data to.
         fmt: Optional custom formatter for created handler. By default,
-            DEFAULT_FORMATTER and DEFAULT_FORMATTER_TIME is used.
+            ``DEFAULT_FORMATTER`` and ``DEFAULT_FORMATTER_TIME`` is used.
         level: Log level for this specific handler. By default,
             everything is logged (``DEBUG`` level).
     """
@@ -280,7 +286,7 @@ def add_logging_server_hdlr(
 
 
 def get_log_file_paths(logger: Union[logging.Logger, str]) -> List[str]:
-    """Return log file paths of `FileHandler(s)` of a given logger instance.
+    """Return log file paths of `logging.FileHandler(s)` of a given logger instance.
 
     Args:
         logger: logger instance or logger name.
@@ -299,8 +305,8 @@ def get_log_file_paths(logger: Union[logging.Logger, str]) -> List[str]:
 
 
 def get_rotating_log_file_paths(logger: Union[logging.Logger, str]) -> List[str]:
-    """Return log file paths of `RotatingFileHandler(s)` of a given logger
-    instance.
+    """Return log file paths of `logging.RotatingFileHandler(s)` of a given
+    logger instance.
 
     Args:
         logger: logger instance or logger name.
@@ -322,8 +328,7 @@ def get_default_logger() -> Optional[logging.Logger]:
     """Get default logger instance object (if set).
 
     Returns:
-        Current logger instance when `dlpt.log.*` log functions are
-        invoked.
+        Current logger instance when `dlpt.log.*` log functions are invoked.
     """
     return _default_logger
 
@@ -332,7 +337,8 @@ def set_default_logger(logger: logging.Logger):
     """Set default logger instance.
 
     Args:
-        Logger
+        logger: logger instance or logger name.
+
     Returns:
         Current logger instance object.
     """
@@ -342,8 +348,7 @@ def set_default_logger(logger: logging.Logger):
 
 
 def get_file_name(logger: Union[logging.Logger, str], file_name: Optional[str] = None) -> str:
-    """Determine log file name, based on a current logger
-    name or given `file_name`.
+    """Determine log file name, based on a current logger name or given `file_name`.
 
     Args:
         logger: logger instance or logger name.
@@ -376,8 +381,7 @@ def get_default_log_dir() -> str:
 
 
 def _check_default_logger() -> logging.Logger:
-    """Check if default logger already exists and raise exception
-    if not.
+    """Check if default logger already exists and raise exception if not.
 
     Returns:
         Logger instance object.
@@ -656,8 +660,7 @@ def log_server_shutdown_request(logger: Union[logging.Logger, str], pid: int, ti
             except psutil.TimeoutExpired:  # pragma: no cover
                 return False
     else:
-        err_msg = "Given logger does not have 'logging server handler' added, "
-        err_msg += "unable to send server shutdown request."
+        err_msg = "Given logger does not have 'logging server handler' added, unable to send server shutdown request."
         raise Exception(err_msg)
 
 
@@ -722,6 +725,21 @@ def warning(msg: str, logger: Union[logging.Logger, str] = None, *args, **kwargs
     logger.warning(msg, *args, **kwargs)
 
 
+def warning_with_traceback(msg: str, logger: Union[logging.Logger, str] = None, *args, **kwargs):
+    """Log to a given or default logger (if available) with 'WARNING' level
+    and append exception info traceback at the end (if available).
+
+    Args:
+        msg: message to log.
+        logger: logger instance or logger name. If not set, default logger
+            is used (as set by :func:`create_logger()`).
+    """
+    _, _, tb = sys.exc_info()
+    if tb is not None:
+        kwargs["exc_info"] = True
+    warning(msg, logger, *args, **kwargs)
+
+
 def error(msg: str, logger: Union[logging.Logger, str] = None, *args, **kwargs):
     """Log to a given or default logger (if available) with 'ERROR' level.
 
@@ -735,6 +753,21 @@ def error(msg: str, logger: Union[logging.Logger, str] = None, *args, **kwargs):
     logger.error(msg, *args, **kwargs)
 
 
+def error_with_traceback(msg: str, logger: Union[logging.Logger, str] = None, *args, **kwargs):
+    """Log to a given or default logger (if available) with 'ERROR' level
+    and append exception info traceback at the end (if available).
+
+    Args:
+        msg: message to log.
+        logger: logger instance or logger name. If not set, default logger
+            is used (as set by :func:`create_logger()`).
+    """
+    _, _, tb = sys.exc_info()
+    if tb is not None:
+        kwargs["exc_info"] = True
+    error(msg, logger, *args, **kwargs)
+
+
 def critical(msg: str, logger: Union[logging.Logger, str] = None, *args, **kwargs):
     """Log to a given or default logger (if available) with 'CRITICAL' level.
 
@@ -746,3 +779,18 @@ def critical(msg: str, logger: Union[logging.Logger, str] = None, *args, **kwarg
     logger = _determine_logger()
 
     logger.critical(msg, *args, **kwargs)
+
+
+def critical_with_traceback(msg: str, logger: Union[logging.Logger, str] = None, *args, **kwargs):
+    """Log to a given or default logger (if available) with 'CRITICAL' level
+    and append exception info traceback at the end (if available).
+
+    Args:
+        msg: message to log.
+        logger: logger instance or logger name. If not set, default logger
+            is used (as set by :func:`create_logger()`).
+    """
+    _, _, tb = sys.exc_info()
+    if tb is not None:
+        kwargs["exc_info"] = True
+    critical(msg, logger, *args, **kwargs)
