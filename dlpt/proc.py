@@ -371,7 +371,7 @@ def spawn_subproc(
             exception re-raised.
         run_args: optional key-worded `subprocess.run()`_ arguments. Note: for the
             common basic `subprocess.run()` args,
-            see :func:`spawn_subprocess()`.
+            see :func:`spawn_subproc()`.
 
     Example:
         >>> args = ['python.exe', 'proc.py']
@@ -458,7 +458,7 @@ def spawn_shell_subproc(
             exception re-raised.
         run_args: optional key-worded `subprocess.run()` arguments, that
             are added to `run()` call. Note: for the common, basic
-            :func:`subprocess.run()` args, see :func:`spawn_subprocess()`
+            :func:`subprocess.run()` args, see :func:`spawn_subproc()`
 
     Example:
         >>> args = ['dir']
