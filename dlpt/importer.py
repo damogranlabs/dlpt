@@ -26,7 +26,7 @@ class ModuleImporter:
                 ``base_dir_path = C:/root/someDir/``
                 -> module will be imported as: `someSubdir.myModule`
 
-        NOTE:
+        Note:
             ``base_dir_path`` is added to `sys.path`. It is NOT removed once
             object is garbage-collected.
         """
