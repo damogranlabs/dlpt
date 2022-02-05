@@ -358,7 +358,7 @@ def spawn_subproc(
             (specifically paths) must be properly encoded. For example, path
             containing tilde will throw error.
         check_return_code: if True, return code is checked by run() function.
-            In case it is not zero, `SubprocError()` is raised.
+            In case it is not zero, :class:`SubprocError` is raised.
             If False, `subprocess.CompletedProcess` is returned.
         stdout: STDOUT routing specifier.
         stderr: STDERR routing specifier.
