@@ -21,10 +21,10 @@ P_EXIT_CODE_NOT_FOUND = 127  # process PID not found
 
 
 class SubprocError(subprocess.SubprocessError):
-    """Same as subprocess.CalledProcessError, but does not swallow stderr.
+    """Same as `subprocess.CalledProcessError`, but does not swallow stderr.
 
     Note:
-        `stdout` is silently swallowed (as with subprocess.SubprocessError),
+        `stdout` is silently swallowed (as with `subprocess.SubprocessError`),
         since processes stdout can be long and exception can be unreadable.
     """
 
@@ -35,7 +35,7 @@ class SubprocError(subprocess.SubprocessError):
         self.stderr = stderr
 
     def __str__(self) -> str:  # pragma: no cover
-        err_msg = "Subprocess throw 'subprocess.CalledProcessError' exception."
+        err_msg = "Subprocess throw `subprocess.CalledProcessError` exception."
         err_msg += f"\n\tCommand: {self.cmd}"
         err_msg += f"\n\tReturn code: {self.returncode}"
 
@@ -54,10 +54,10 @@ class SubprocError(subprocess.SubprocessError):
 
 
 class SubprocTimeoutError(subprocess.SubprocessError):
-    """Same as subprocess.TimeoutExpired, but does not swallow stderr.
+    """Same as `subprocess.TimeoutExpired`, but does not swallow stderr.
 
     Note:
-        `stdout` is silently swallowed (as with subprocess.SubprocessError),
+        `stdout` is silently swallowed (as with `subprocess.SubprocessError`),
         since processes stdout can be long and exception can be unreadable.
     """
 
@@ -111,8 +111,7 @@ def get_executable(pid: T_STR_INT) -> str:
 
 
 def get_cmd_args(pid: T_STR_INT) -> List[str]:
-    """Return a list of process command line arguments as it was
-    intially spawned.
+    """Return a list of process command line arguments as it was intially spawned.
 
     Note:
         No PID existence check is performed.
@@ -159,7 +158,6 @@ def get_childs(pid: T_STR_INT) -> List[int]:
 
     Args:
         pid: PID number of a parent process, string or integer.
-
 
     Return:
         A list of process child processes PIDs.
@@ -254,7 +252,7 @@ def kill_tree(pid: T_STR_INT, raise_exception: bool = True) -> List[int]:
 
 
 def kill_tree_multiple(pids: T_PROC_ARGS, raise_exception: bool = True) -> List[int]:
-    """Iterate over pids and perform 'kill_tree()'.
+    """Iterate over given ``pids`` and perform `kill_tree()`.
 
     Args:
         pids: a list of PIDs - string or integer. Raise Exception if None.
@@ -345,7 +343,7 @@ def spawn_subproc(
 ) -> subprocess.CompletedProcess:
     """Spawn subprocess and return CompletedProcess or raise exception.
     By default, raise exception on timeout (if given) or if return code is not
-    zero. With `**run_args`, allow setting all `subprocess.run()`_
+    zero. With ``**run_args``, allow setting all `subprocess.run()`_
     arguments.
 
     Note:
@@ -451,14 +449,14 @@ def spawn_shell_subproc(
             Can be shell commands, like ping. Note: all commandline arguments
             (specifically paths) must be properly encoded. For example, path
             containing tilde will throw error.
-        check_return_code: if True, return code is checked by run() function.
-            In case it is not zero, `SubprocessReturncodeError()` is raised.
-            If False, `CompletedProcess` is returned.
+        check_return_code: if True, return code is checked by `run()` function.
+            In case it is not zero, ``SubprocessReturncodeError`` is raised.
+            If False, ``CompletedProcess`` is returned.
         encoding: STDOUT/ERR string encoding
         timeout_sec: timeout in seconds. If None, no timeout is implemented.
             Else, if timeout is reached, process is killed and TimeoutExpired
             exception re-raised.
-        run_args: optional key-worded subprocess.run() arguments, that
+        run_args: optional key-worded `subprocess.run()` arguments, that
             are added to `run()` call. Note: for the common, basic
             :func:`subprocess.run()` args, see :func:`spawn_subprocess()`
 
@@ -517,14 +515,14 @@ def _format_args(args: T_PROC_ARGS) -> List[str]:
 
 
 def _decode(data: Union[None, str, bytes], encoding: str) -> Optional[str]:
-    """Encode given `data` with `encoding` format or return string|None.
+    """Encode given ``data`` with ``encoding`` format or return string|None.
 
     Args:
         data: data to encode.
-        encoding: selected encoding of the given `data`.
+        encoding: selected encoding of the given ``data``.
 
     Return:
-        String representation of the given `data` or None.
+        String representation of the given ``data`` or None.
     """
     if data is None:
         return None
