@@ -341,7 +341,7 @@ def spawn_subproc(
     timeout_sec: Optional[float] = None,
     **run_args,
 ) -> subprocess.CompletedProcess:
-    """Spawn subprocess and return CompletedProcess or raise exception.
+    """Spawn subprocess and return `subprocess.CompletedProcess` or raise exception.
     By default, raise exception on timeout (if given) or if return code is not
     zero. With ``**run_args``, allow setting all `subprocess.run()`_
     arguments.
@@ -358,8 +358,8 @@ def spawn_subproc(
             (specifically paths) must be properly encoded. For example, path
             containing tilde will throw error.
         check_return_code: if True, return code is checked by run() function.
-            In case it is not zero, `SubprocessReturncodeError()` is raised.
-            If False, `CompletedProcess` is returned.
+            In case it is not zero, `SubprocError()` is raised.
+            If False, `subprocess.CompletedProcess` is returned.
         stdout: STDOUT routing specifier.
         stderr: STDERR routing specifier.
         stdin: STDIN routing specifier. Note: By default, 'stdin' is set to
@@ -450,8 +450,8 @@ def spawn_shell_subproc(
             (specifically paths) must be properly encoded. For example, path
             containing tilde will throw error.
         check_return_code: if True, return code is checked by `run()` function.
-            In case it is not zero, ``SubprocessReturncodeError`` is raised.
-            If False, ``CompletedProcess`` is returned.
+            In case it is not zero, :class:`SubprocError` is raised.
+            If False, `subprocess.CompletedProcess` is returned.
         encoding: STDOUT/ERR string encoding
         timeout_sec: timeout in seconds. If None, no timeout is implemented.
             Else, if timeout is reached, process is killed and TimeoutExpired
