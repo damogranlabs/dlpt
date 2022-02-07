@@ -199,52 +199,56 @@ def test_log_server_proc(my_logger: logging.Logger, tmp_path):
     my_logger2 = log.create_logger("my_logger2", False)
     my_logger3 = log.create_logger("my_logger3", False)
 
-    file_path = os.path.join(tmp_path, FILE_NAME)
-    pid = log.create_log_server_proc(file_path)
-    assert dlpt.proc.is_alive(pid)
-
-    with pytest.raises(Exception):
-        # does not have logging server handler
-        log.log_server_shutdown_request(my_logger, pid)
-
     try:
-        end_time = time.time() + TIMEOUT_SEC
-        while time.time() < end_time:
-            if os.path.exists(file_path):
-                break
-        else:
-            assert False, f"Logger server did not create a file " f"in {TIMEOUT_SEC} sec."
+        file_path = os.path.join(tmp_path, FILE_NAME)
+        pid = log.create_log_server_proc(file_path)
+        assert dlpt.proc.is_alive(pid)
 
-        assert len(my_logger.handlers) == 0
-        hdlr = log.add_logging_server_hdlr(my_logger, fmt=CUSTOM_FMT, level=logging.WARNING)
-        assert len(my_logger.handlers) == 1
-        assert isinstance(hdlr, log._SocketHandler)
-        hdlr2 = log.add_logging_server_hdlr(my_logger2, fmt=CUSTOM_FMT, level=logging.WARNING)
-        assert len(my_logger2.handlers) == 1
-        assert isinstance(hdlr2, log._SocketHandler)
-        # my_logger3 does is_aliveave server logger handler
+        with pytest.raises(Exception):
+            # does not have logging server handler
+            log.log_server_shutdown_request(my_logger, pid)
 
-        my_logger.info(LOG_MSG_NOT_LOGGED)
-        my_logger.warning(LOG_MSG_OK)
-        my_logger2.info(LOG_MSG_NOT_LOGGED)
-        my_logger2.warning(LOG_MSG_OK)
-        my_logger3.info(LOG_MSG_NOT_LOGGED)
-        my_logger3.warning(LOG_MSG_OK)
+        try:
+            end_time = time.time() + TIMEOUT_SEC
+            while time.time() < end_time:
+                if os.path.exists(file_path):
+                    break
+            else:
+                assert False, f"Logger server did not create a file " f"in {TIMEOUT_SEC} sec."
 
-        time.sleep(1)
+            assert len(my_logger.handlers) == 0
+            hdlr = log.add_logging_server_hdlr(my_logger, fmt=CUSTOM_FMT, level=logging.WARNING)
+            assert len(my_logger.handlers) == 1
+            assert isinstance(hdlr, log._SocketHandler)
+            hdlr2 = log.add_logging_server_hdlr(my_logger2, fmt=CUSTOM_FMT, level=logging.WARNING)
+            assert len(my_logger2.handlers) == 1
+            assert isinstance(hdlr2, log._SocketHandler)
+            # my_logger3 does is_aliveave server logger handler
 
-        assert log.log_server_shutdown_request(my_logger, pid, 12) is True
-        assert dlpt.proc.is_alive(pid) is False
-        with open(file_path, "r") as f:
-            lines = f.readlines()
-            assert len(lines) == 3, lines  # 2 msg + shutdown msg
-            _check_server_format(lines[0], my_logger.name)
-            _check_server_format(lines[1], my_logger2.name)
-            assert "shutdown" in lines[2]
-    except Exception as err:
-        raise
+            my_logger.info(LOG_MSG_NOT_LOGGED)
+            my_logger.warning(LOG_MSG_OK)
+            my_logger2.info(LOG_MSG_NOT_LOGGED)
+            my_logger2.warning(LOG_MSG_OK)
+            my_logger3.info(LOG_MSG_NOT_LOGGED)
+            my_logger3.warning(LOG_MSG_OK)
+
+            time.sleep(1)
+
+            assert log.log_server_shutdown_request(my_logger, pid, 12) is True
+            assert dlpt.proc.is_alive(pid) is False
+            with open(file_path, "r") as f:
+                lines = f.readlines()
+                assert len(lines) == 3, lines  # 2 msg + shutdown msg
+                _check_server_format(lines[0], my_logger.name)
+                _check_server_format(lines[1], my_logger2.name)
+                assert "shutdown" in lines[2]
+        except Exception as err:
+            raise
+        finally:
+            dlpt.proc.kill_tree(pid, raise_exception=False)
     finally:
-        dlpt.proc.kill_tree(pid, raise_exception=False)
+        logging.Logger.manager.loggerDict.pop(my_logger2.name)
+        logging.Logger.manager.loggerDict.pop(my_logger3.name)
 
 
 def test_get_file_name(my_logger: logging.Logger):
@@ -283,6 +287,7 @@ def test_default_log_functions():
     finally:
         logging.Logger.manager.loggerDict.pop(non_default_logger.name)
         logging.Logger.manager.loggerDict.pop(logger.name)
+        log._default_logger = None
 
 
 def test_log_with_traceback(my_logger: logging.Logger):
