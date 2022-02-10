@@ -42,6 +42,7 @@ def test_change_dir(is_file):
 
 def test_validate_path():
     assert dlpt.pth._validate_path(__file__) == __file__
+    assert dlpt.pth._validate_path(pathlib.Path(__file__)) == pathlib.Path(__file__)
 
     with pytest.raises(Exception):
         dlpt.pth._validate_path(None)
