@@ -169,7 +169,7 @@ def test_spawn_subproc_exception():
 
     with pytest.raises(dlpt.proc.SubprocError) as err:
         dlpt.proc.spawn_subproc(args)
-    assert "throw 'subprocess.CalledProcessError'" in str(err.value)
+    assert "subprocess.CalledProcessError" in str(err.value)
     assert "throw exception" in str(err.value)
 
     # invalid arg, spawn Exception
