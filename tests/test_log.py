@@ -258,7 +258,7 @@ def test_get_file_name(my_logger: logging.Logger):
     assert log.get_file_name(my_logger, "asd.txt") == "asd.txt"
 
 
-def get_default_log_dir():
+def test_get_default_log_dir():
     assert log.get_default_log_dir().lower().startswith(os.getcwd().lower())
 
 
