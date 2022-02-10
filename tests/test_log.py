@@ -3,7 +3,6 @@ import logging
 import logging.handlers
 import os
 import shutil
-import socket
 import time
 from unittest import mock
 from typing import Iterator
