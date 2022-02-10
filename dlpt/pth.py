@@ -550,12 +550,7 @@ def _validate_path(path: Union[Optional[str], Optional[pathlib.Path]]) -> Union[
     elif isinstance(path, pathlib.Path):
         return path
 
-    # 0 - current frame  of get_caller_location scope
-    # 1 - frame of this _validate_path()
-    # 2 - frame of the caller of this function (_validate_path() is a
-    #   private function, should be only used inside pth.py)
-    # 3 - frame of the caller of a function in paths, that further called
-    # _validate_path() func
-    caller_location = dlpt.utils.get_caller_location(3)
-    err_msg = f"Invalid path format - expected non-empty string: '{path}'\n\t{caller_location}"
+    err_msg = f"Invalid `path` format - expected non-empty string or `pathlib.Path` object:"
+    err_msg += f"\n\tType: {type(path)}"
+    err_msg += f"\n\t`path`: {path}"
     raise ValueError(err_msg)
