@@ -625,6 +625,8 @@ def _spawn_log_server_proc(file_path: str, port: int):  # pragma: no cover
     t.start()
     t.join()
 
+    logging.shutdown()
+
 
 def log_server_shutdown_request(logger: Union[logging.Logger, str], pid: int, timeout_sec: int = 3) -> bool:
     """Send 'unique' log message that indicates to server to perform
