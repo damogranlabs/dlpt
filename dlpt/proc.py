@@ -471,7 +471,7 @@ def spawn_shell_subproc(
     """
     stdout = None
     stderr = None
-    if (sys.version_info.major == 3) and (sys.version_info.minor < 7):
+    if (sys.version_info.major == 3) and (sys.version_info.minor < 7):  # pragma: no cover
         # 'capture_output' was introduced in py 3.6
         stdout = subprocess.PIPE
         stderr = subprocess.PIPE
