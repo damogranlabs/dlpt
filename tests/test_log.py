@@ -346,16 +346,16 @@ def _check_server_format(log_msg: str, logger_name: str):
     # example: 'test_log_server_proc 21:34:59.151  WARNING: level-OK\n'
     src, time_str, _, level, msg = log_msg.strip().split(" ")
     # example: WARNING:
-    assert level == "WARNING:"
+    assert level == "WARNING:", log_msg
 
     # example: test_log_server_proc
-    assert src == logger_name
+    assert src == logger_name, log_msg
 
     # example: 21:34:59.151
-    assert time_str[2] == ":"
-    assert time_str[5] == ":"
-    assert time_str[8] == "."
-    assert len(time_str) == 12
+    assert time_str[2] == ":", log_msg
+    assert time_str[5] == ":", log_msg
+    assert time_str[8] == ".", log_msg
+    assert len(time_str) == 12, log_msg
 
     # example: level OK
-    assert msg == LOG_MSG_OK
+    assert msg == LOG_MSG_OK, log_msg
