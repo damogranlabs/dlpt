@@ -231,10 +231,13 @@ def test_log_server_proc(my_logger: logging.Logger, tmp_path):
             my_logger3.info(LOG_MSG_NOT_LOGGED)
             my_logger3.warning(LOG_MSG_OK)
 
+            # wait some time until log records are propagated through socket
             time.sleep(1)
-
             assert log.log_server_shutdown_request(my_logger, pid, 12) is True
             assert dlpt.proc.is_alive(pid) is False
+
+            # wait some time until log content is really flushed to the file
+            time.sleep(1)
             with open(file_path, "r") as f:
                 lines = f.readlines()
                 assert len(lines) == 3, lines  # 2 msg + shutdown msg
