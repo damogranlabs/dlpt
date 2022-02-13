@@ -45,8 +45,7 @@ import dlpt
 
 logger = dlpt.log.create_logger("my_logger")
 dlpt.log.add_console_hdlr(logger)
-hdlr, file_path = dlpt.log.add_file_hdlr(logger,
-                                     "dlpt_example.log")
+hdlr, file_path = dlpt.log.add_file_hdlr(logger, "dlpt_example.log")
 log.debug(f"Logger initialised, file: {file_path}")
 ```
 
