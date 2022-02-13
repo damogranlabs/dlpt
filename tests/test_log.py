@@ -216,13 +216,17 @@ def test_log_server_proc(my_logger: logging.Logger, tmp_path):
                 pytest.fail(f"Logger server did not create a file in {TIMEOUT_SEC} sec.")
 
             assert len(my_logger.handlers) == 0
+            log.add_console_hdlr(my_logger, fmt=CUSTOM_FMT, level=logging.DEBUG)
             hdlr = log.add_logging_server_hdlr(my_logger, fmt=CUSTOM_FMT, level=logging.WARNING)
-            assert len(my_logger.handlers) == 1
+            assert len(my_logger.handlers) == 2
             assert isinstance(hdlr, log._SocketHandler)
             hdlr2 = log.add_logging_server_hdlr(my_logger2, fmt=CUSTOM_FMT, level=logging.WARNING)
-            assert len(my_logger2.handlers) == 1
+            log.add_console_hdlr(my_logger2, fmt=CUSTOM_FMT, level=logging.DEBUG)
+            assert len(my_logger2.handlers) == 2
             assert isinstance(hdlr2, log._SocketHandler)
+            log.add_console_hdlr(my_logger3, fmt=CUSTOM_FMT, level=logging.DEBUG)
             # my_logger3 does not add socket server logger handler
+            assert len(my_logger3.handlers) == 1
 
             my_logger.info(LOG_MSG_NOT_LOGGED)
             my_logger.warning(LOG_MSG_OK)
