@@ -574,14 +574,14 @@ def create_log_server_proc(file_path: str, port: int = DEFAULT_SERVER_SOCKET_POR
 
 
 def _is_port_free(port: int, host: str = "localhost") -> bool:
-    """Return True if port is free, False otherwise.
+    """Return True if ``port`` is free, False otherwise.
 
     Note:
         Only TCP IPv4 port is checked.
 
     Args:
         port: port number to check.
-        host: IP address or 'localhost' where port is `checked`_.
+        host: IP address or 'localhost' where port status is `checked`_.
 
     Returns:
         ``True`` if selected TCP port is free, ``False`` otherwise.
@@ -591,14 +591,11 @@ def _is_port_free(port: int, host: str = "localhost") -> bool:
     """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socket_hdlr:
         socket_hdlr.settimeout(0.2)
-        is_free = False
         try:
             socket_hdlr.bind((host, port))
-            is_free = True
+            return True
         except Exception as err:  # pragma: no cover
-            pass
-
-        return is_free
+            return False
 
 
 def _spawn_log_server_proc(file_path: str, port: int):  # pragma: no cover
