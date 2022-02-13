@@ -44,7 +44,9 @@
                 "upload",
                 "dist/*",
                 "-u",
-                "schperplata"
+                "schperplata",
+                "-p",
+                "${input:pypi_pwd}"
             ],
             "problemMatcher": [],
             "presentation": {
@@ -65,6 +67,14 @@
                 "panel": "shared",
                 "showReuseMessage": false,
             }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "pypi_pwd",
+            "type": "promptString",
+            "description": "Type your PyPi password...",
+            "password": true
         }
     ]
 }
