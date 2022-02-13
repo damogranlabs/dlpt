@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="dlpt",
-    version="2.1.0",
+    version="3.0.0",
     author="Damogran Labs",
     author_email="info@damogranlabs.com",
     description="Damogran Labs Python Tools",
