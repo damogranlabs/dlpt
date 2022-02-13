@@ -22,9 +22,9 @@ def _wait_for_chil_procs(parent_pid: int, num_of_childs: int, timeout_sec: float
         if len(childs) == num_of_childs:
             return childs
 
-    assert False, (
+    pytest.fail(
         f"During timeout ({timeout_sec} sec) {len(childs)} child "
-        f" processes are available but expecting {num_of_childs}"
+        f"processes are available but expecting {num_of_childs}."
     )
 
 
@@ -70,7 +70,7 @@ def test_get_childs():
         if len(childs) == NUM_OF_CHILD_PROCS:
             return  # success
 
-    assert False, (
+    pytest.fail(
         f"During timeout ({TIMEOUT_SEC} sec) {len(childs)} "
         f"child processes are available but expecting {NUM_OF_CHILD_PROCS}."
     )

@@ -213,7 +213,7 @@ def test_log_server_proc(my_logger: logging.Logger, tmp_path):
                 if os.path.exists(file_path):
                     break
             else:
-                assert False, f"Logger server did not create a file in {TIMEOUT_SEC} sec."
+                pytest.fail(f"Logger server did not create a file in {TIMEOUT_SEC} sec.")
 
             assert len(my_logger.handlers) == 0
             hdlr = log.add_logging_server_hdlr(my_logger, fmt=CUSTOM_FMT, level=logging.WARNING)
