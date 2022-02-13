@@ -7,8 +7,9 @@
         "Damogran",
         "dlpt",
         "hdlr",
-        "psutil"
+        "picklable",
+        "psutil",
+        "ptvsd"
     ],
-    "ignoreWords": [],
     "import": []
 }
