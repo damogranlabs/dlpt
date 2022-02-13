@@ -195,6 +195,10 @@ def test_add_rotating_file_hdlr(my_logger: logging.Logger, tmp_path):
 def test_log_server_proc(my_logger: logging.Logger, tmp_path):
     TIMEOUT_SEC = 3
 
+    assert dlpt.log._is_port_free(
+        dlpt.log.DEFAULT_SERVER_SOCKET_PORT
+    ), f"Port {dlpt.log.DEFAULT_SERVER_SOCKET_PORT} is not free to be used as a socket server logger."
+
     my_logger2 = log.create_logger("my_logger2", False)
     my_logger3 = log.create_logger("my_logger3", False)
 
