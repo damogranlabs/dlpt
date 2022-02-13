@@ -13,12 +13,12 @@ from types import ModuleType
 
 def float_to_str(number: float, show_num_of_digits: int = 2) -> str:
     """Convert float number with any number of decimal digits and return string
-    with ``showNumbOfDigits`` places after ``.``.
+    with ``show_num_of_digits`` places after `.`.
 
     Args:
         number: float number to convert to string.
         show_num_of_digits: number of decimal places (characters) that are
-            added/stripped after ``.``.
+            added/stripped after `.`.
     """
     number = round(number, show_num_of_digits)
     if show_num_of_digits == 0:
@@ -31,31 +31,31 @@ def float_to_str(number: float, show_num_of_digits: int = 2) -> str:
 
 def get_int_from_str(number: str) -> int:
     """Return integer representation of a given number string.
-    HEX number strings must start with ``0x``. Negative numbers are also supported.
+    HEX number strings must start with `0x`. Negative numbers are also supported.
 
     Args:
-        number_str: int/float string representation of a given number.
+        number: int/float string representation of a given number.
     """
     return int(get_float_from_str(number))
 
 
 def get_float_from_str(number: str) -> float:
     """Return float representation of a given number string.
-    HEX number strings must start with ``0x``.
+    HEX number strings must start with `0x`.
 
     Args:
-        number_str: int/float/string representation of a given number.
+        number: int/float/string representation of a given number.
     """
-    number_str = number.strip()
+    number = number.strip()
     is_negative = False
-    if "-" in number_str:
-        number_str = number_str.replace("-", "")
+    if "-" in number:
+        number = number.replace("-", "")
         is_negative = True
 
-    if number_str.lower().startswith("0x"):
-        num = float(int(number_str, 16))
+    if number.lower().startswith("0x"):
+        num = float(int(number, 16))
     else:
-        num = float(number_str)
+        num = float(number)
 
     if is_negative:
         num = -num
@@ -126,9 +126,9 @@ def search_str_in_lines(str_to_search: str, lines: List[str], exact_match: bool 
 
     Args:
         str_to_search: string to search in lines.
-        lines: list of strings, where 'str_to_search' is searched.
-        exact_match: if True, only exact 'str_to_search' string is
-            compared in lines. Otherwise, only string presence is checked.
+        lines: list of strings, where ``str_to_search`` is searched.
+        exact_match: if True, only exact ``str_to_search`` string is
+            compared in ``lines``. Otherwise, only string presence is checked.
     """
     for idx, line in enumerate(lines):
         if exact_match:
@@ -165,11 +165,11 @@ def are_list_values_equal(l1: List[Any], l2: List[Any]) -> bool:
 
 
 def are_dict_keys_equal(d1: Dict[Any, Any], d2: Dict[Any, Any]) -> bool:
-    """Return True if dicts have the same keys, False otherwise.
+    """Return True if dictionaries have the same keys, False otherwise.
 
     Args:
-        d1: first dict to compare
-        d2: second dict to compare
+        d1: first dict to compare.
+        d2: second dict to compare.
     """
     if len(d1) == len(d2):
         d1_keys = list(d1.keys())
@@ -184,13 +184,13 @@ def are_dict_values_equal(d1: Dict[Any, Any], d2: Dict[Any, Any]) -> bool:
     """Return True if dicts have the same values, False otherwise.
 
     Note:
-        When comparing dict items that are not simple types (int, str, ...),
+        When comparing dict items that are not simple types (`int`, `str`, ...),
         function might return False if comparing different instances, regardles
         if object type is the same.
 
     Args:
-        d1: first dict to compare
-        d2: second dict to compare
+        d1: first dict to compare.
+        d2: second dict to compare.
     """
     d1_values = list(d1.values())
     d2_values = list(d2.values())
@@ -202,7 +202,7 @@ def map_dict_to_class(obj: object, data: Dict[str, Any]) -> object:
     """Return an object ``obj`` updated by the values of data dictionary.
 
     Note:
-        Only data keys, that match obj variable names are updated.
+        Only data keys, that match ``obj`` variable names are updated.
         Others are silently ignored.
 
     Args:
@@ -217,7 +217,7 @@ def map_dict_to_class(obj: object, data: Dict[str, Any]) -> object:
 
 def get_obj_public_vars(obj: object) -> Dict[str, Any]:
     """Return a dictionary of class variables that does not start with '_' or '__'.
-        Each item represents: 'name': <value>
+        Each item represents: '<variable name>': <variable value>
 
     Note:
         If given ``obj`` is a class reference, only 'public' static variables
@@ -240,10 +240,10 @@ def get_obj_public_vars(obj: object) -> Dict[str, Any]:
 
 def get_obj_public_methods(obj: object) -> Dict[str, Callable[..., Any]]:
     """Return a dictionary of object public methods that does not start
-    with '_' or '__'. Each item represents: 'name': <reference to a method>
+    with '_' or '__'. Each item represents: '<method name>': < method reference>
 
     Note:
-        Only class 'public' methods are returned, without ``@staticmethod``.
+        Only class 'public' methods are returned, without `@staticmethod`.
         They are of type '<bound method...>'
 
     Args:
@@ -262,7 +262,7 @@ def get_obj_public_methods(obj: object) -> Dict[str, Callable[..., Any]]:
 
 def get_module_callables(module_instance: ModuleType) -> Dict[str, Callable[..., Any]]:
     """Return a dictionary of public methods that does not start with '_' or '__'.
-    Each item represents: 'name': <reference to a callable object>
+    Each item represents: '<callable name>': <callable reference>
 
     Args:
         module_instance: module object to inspect.
@@ -278,7 +278,7 @@ def get_module_callables(module_instance: ModuleType) -> Dict[str, Callable[...,
 
 def get_module_public_classes(module_instance: ModuleType) -> Dict[str, Callable[..., Any]]:
     """Return a dictionary of public classes that does not start with '_' or '__'.
-    Each item represents: 'name': <reference to a callable class>
+    Each item represents: '<class name>': <class reference>
 
     Args:
         module_instance: module object to inspect.
@@ -293,8 +293,7 @@ def get_module_public_classes(module_instance: ModuleType) -> Dict[str, Callable
 
 
 def get_module_public_functions(module_instance: ModuleType) -> Dict[str, Callable[..., Any]]:
-    """Get a list of references to all callable objects from a given module
-    handler.
+    """Get a list of references to all callable objects from a given module instance.
 
     Args:
         module_instance: module object to inspect.
@@ -318,7 +317,7 @@ def get_caller_location(depth: int = 2) -> str:
 
     Warning:
         While steping through code in a debug session, stack can be full of
-        a debugger (example: ptvsd) entries.
+        a debugger (example: 'ptvsd') entries.
 
     Args:
         depth: stack frame depth inspection. The first (index = 0) entry in the
