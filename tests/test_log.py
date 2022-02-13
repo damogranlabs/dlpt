@@ -233,7 +233,7 @@ def test_log_server_proc(my_logger: logging.Logger, tmp_path):
 
             # wait some time until log records are propagated through socket
             time.sleep(1)
-            assert log.log_server_shutdown_request(my_logger, pid, 12) is True
+            assert log.log_server_shutdown_request(my_logger, pid) is True
             assert dlpt.proc.is_alive(pid) is False
 
             # wait some time until log content is really flushed to the file
