@@ -1,6 +1,6 @@
 """
-Utility functions to convert time in/to various formats and track execution time
-of a code.
+Utility functions to convert time in/to/from various formats and track execution 
+time of a code.
 """
 import datetime
 import time
@@ -24,14 +24,13 @@ _last_measured_time_sec: float = 0
 
 
 def timestamp_to_datetime(timestamp: float) -> datetime.datetime:
-    """Return a datetime object for a given timestamp (as returned by
-    `time.time()`).
+    """Return a datetime object for a given ``timestamp`` (as returned by `time.time()`).
 
     Args:
         timestamp: timestamp as a number since the epoch (`time.time()`).
 
     Returns:
-        Datetime object of a timestamp.
+        Datetime object of a ``timestamp``.
     """
     return datetime.datetime.fromtimestamp(timestamp)
 
@@ -41,9 +40,9 @@ def timestamp_to_str(timestamp: float, fmt: str = TIME_FORMAT, msec_digits: int 
     following the given format.
 
     Args:
-        timestamp: timestamp as a number since the epoch (time.time()).
+        timestamp: timestamp as a number since the epoch (`time.time()`).
         fmt: output string format.
-        msec_digits: check _format_msec()
+        msec_digits: See the docs check :func:`_format_msec()`
 
     Returns:
         Timestamp as a string, based on a given format.
@@ -58,7 +57,7 @@ def sec_to_str(seconds: float, fmt: str = TIME_FORMAT_HMS_STRING, hide_zeroes: b
     format.
 
     Note: Only applicable for hours, minutes and seconds. Days and larger time
-        units are silently ignored.
+        units are silently ignored (added to the hours).
 
     Note: Seconds are always displayed as a 2 digit float, while hours and
         numbers are integers. Example: 2 days and 4 hours -> 52 h 0 min 0.00 sec
@@ -69,7 +68,7 @@ def sec_to_str(seconds: float, fmt: str = TIME_FORMAT_HMS_STRING, hide_zeroes: b
             number of digits for seconds. Output format can be changed if
             ``hide_zeroes`` arg is True.
         hide_zeroes: if True, leading parts (hours, minutes) can be
-            omitted (if zero), Otherwise, fmt is strictly respected. Note: this
+            omitted (if zero), Otherwise, ``fmt`` is strictly respected. Note: this
             is applicable only in the most common use cases, where
             time is displayed in order <hours> <minutes> <seconds>.
             If ``hide_zeroes`` is True, leading zero-value parts are stripped to
@@ -113,7 +112,7 @@ def time_to_seconds(d: int = 0, h: int = 0, m: int = 0, s: float = 0.0) -> float
         m: number of minutes to add to returned seconds.
         s: number of seconds to add to returned seconds.
 
-    Retuns:
+    Returns:
         'Seconds' representation of a given time duration.
     """
     sec = (d * 24 * 60 * 60) + (h * 60 * 60) + (m * 60) + s
@@ -122,10 +121,10 @@ def time_to_seconds(d: int = 0, h: int = 0, m: int = 0, s: float = 0.0) -> float
 
 
 def datetime_to_str(dt: datetime.datetime, fmt: str = TIME_FORMAT) -> str:
-    """Return a string representation of a datetime object.
+    """Return a string representation of a given ``dt`` datetime.datetime` object.
 
-    Note: receives datetime object, not timedelta - check
-        :func:`timedelta_to_str()`.
+    Note: ``dt`` is `datetime.datetime` object, not `datetime.timedelta` -
+        check :func:`timedelta_to_str()`.
 
     Args:
         dt: datetime object to convert to string.
@@ -138,9 +137,9 @@ def datetime_to_str(dt: datetime.datetime, fmt: str = TIME_FORMAT) -> str:
 
 
 def timedelta_to_str(td: datetime.timedelta, fmt: str = TIME_FORMAT_MS_STRING) -> str:
-    """Return a string representation of a datetime timedelta object.
+    """Return a string representation of a ``td`` `datetime.timedelta` object.
 
-    Note: receives timedelta object, not datetime - check
+    Note: receives `datetime.timedelta` object, not `datetime.datetime` - check
         :func:`datetime_to_str()`.
 
     Args:
@@ -174,8 +173,8 @@ def _format_msec(dt: datetime.datetime, fmt: str, msec_digits: int) -> str:
 
     Args:
         dt: parsed datetime object as get with `datetime.datetime.now()` or
-            `datetime.datetime.fromtimestamp(timestamp)`
-        fmt: date/time output formatter
+            `datetime.datetime.fromtimestamp(timestamp)`.
+        fmt: date/time output formatter.
         msec_digits: number of millisecond digits to display, in
             a range of 0 - 3. Note: Only applicable to `TIME_FORMAT` or a custom
             formatter that ends with '%S'. Note: msec_digits only limit max
@@ -199,20 +198,20 @@ T_EXEC_TIME = TypeVar("T_EXEC_TIME")
 
 
 def print_exec_time(func: Callable[..., T_EXEC_TIME]) -> Callable[..., T_EXEC_TIME]:
-    """Development decorator to get and print (to console) approximate
-    execution time. Additionally, user can get execution time with
-    :func:`get_last_measured_time_sec()`.
+    """Decorator to get and print (to console) approximate execution time.
+    Additionally, user can get execution time with :func:`get_last_measured_time_sec()`.
 
     Args:
-        func: function 'pointer' to get execution time.
+        func: function reference to get execution time.
 
     Example:
         >>> @dlpt.time.print_exec_time
-            def my_function(<parameters>):
-                pass
-        >>> my_function(args)
+            def my_function(*args, **kwargs):
+                time.sleep(42)
+        >>> my_function()
+        "'my_function' execution time: 42.63 sec"
         >>> dlpt.time.get_last_measured_time_sec()
-        42.6
+        42.63
     """
 
     def _timed(*args, **kwargs) -> Any:
@@ -240,10 +239,12 @@ def func_stopwatch(func: Callable[..., T_EXEC_TIME]) -> Callable[..., T_EXEC_TIM
         func: function 'pointer' to track execution time.
 
     Example:
-        >>> my_function = dlpt.time.func_stopwatch(<my_functionName>)
-        >>> my_function(<parameters>)
+        >>> def my_function(*args, **kwargs):
+                time.sleep(42)
+        >>> my_function_timed = dlpt.time.func_stopwatch(my_function)
+        >>> my_function_timed(arg1, arg2)
         >>> dlpt.time.get_last_measured_time_sec()
-        42.6
+        42.63
 
     Returns:
         User function wrapped in :func:`func_stopwatch()`.
