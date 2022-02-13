@@ -222,7 +222,7 @@ def test_log_server_proc(my_logger: logging.Logger, tmp_path):
             hdlr2 = log.add_logging_server_hdlr(my_logger2, fmt=CUSTOM_FMT, level=logging.WARNING)
             assert len(my_logger2.handlers) == 1
             assert isinstance(hdlr2, log._SocketHandler)
-            # my_logger3 does is_aliveave server logger handler
+            # my_logger3 does not add socket server logger handler
 
             my_logger.info(LOG_MSG_NOT_LOGGED)
             my_logger.warning(LOG_MSG_OK)
