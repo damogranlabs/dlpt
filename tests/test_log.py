@@ -194,17 +194,23 @@ def test_add_rotating_file_hdlr(my_logger: logging.Logger, tmp_path):
 
 def test_log_server_proc(my_logger: logging.Logger, tmp_path):
     TIMEOUT_SEC = 3
+    NUM_OF_TEST_PORTS = 10
 
-    assert dlpt.log._is_port_free(
-        dlpt.log.DEFAULT_SERVER_SOCKET_PORT
-    ), f"Port {dlpt.log.DEFAULT_SERVER_SOCKET_PORT} is not free to be used as a socket server logger."
+    start_port = dlpt.log.DEFAULT_SERVER_SOCKET_PORT
+    end_port = start_port + NUM_OF_TEST_PORTS
+    for port in range(start_port, end_port):
+        if dlpt.log._is_port_free(port):
+            break
+    else:
+        pytest.fail(f"Unable to find free port to test logger socket server (range: {start_port} - {end_port})")
+        return  # IDE does not understand `NoReturn`?
 
     my_logger2 = log.create_logger("my_logger2", False)
     my_logger3 = log.create_logger("my_logger3", False)
 
     try:
         file_path = os.path.join(tmp_path, FILE_NAME)
-        pid = log.create_log_server_proc(file_path)
+        pid = log.create_log_server_proc(file_path, port)
         assert dlpt.proc.is_alive(pid)
 
         with pytest.raises(Exception):
