@@ -387,8 +387,7 @@ def _check_default_logger() -> logging.Logger:
         Logger instance object.
     """
     if _default_logger is None:
-        err_msg = "No default logger instance available."
-        raise Exception(err_msg)
+        raise Exception("No default `dlpt.log` logger instance available.")
     else:
         return _default_logger
 
@@ -555,9 +554,7 @@ def create_log_server_proc(file_path: str, port: int = DEFAULT_SERVER_SOCKET_POR
         PID of created socket server subprocess.
     """
     if not _is_port_free(port):  # pragma: no cover
-        err_msg = f"Unable to reuse port {port} for a logging "
-        err_msg += "(socket server) purposes. Port in use?"
-        raise Exception(err_msg)
+        raise Exception(f"Unable to reuse port {port} for a logging (socket server) purposes. Port in use?")
 
     socket_server_proc = multiprocessing.Process(
         target=_spawn_log_server_proc,
