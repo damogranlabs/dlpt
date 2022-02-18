@@ -246,7 +246,7 @@ def test_log_server_proc(my_logger: logging.Logger, tmp_path):
             my_logger3.warning(LOG_MSG_OK)
 
             # wait some time until log records are propagated through socket
-            time.sleep(1)
+            time.sleep(10)
             assert log.log_server_shutdown_request(my_logger, pid) is True
             assert dlpt.proc.is_alive(pid) is False
 
