@@ -9,7 +9,7 @@ import pytest
 
 import dlpt
 
-from tests import helpers
+import helpers
 
 this_pid = os.getpid()
 
